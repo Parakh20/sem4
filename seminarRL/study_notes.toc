@@ -1,0 +1,41 @@
+\contentsline {section}{\numberline {1}What is Reinforcement Learning?}{3}{section.1}%
+\contentsline {section}{\numberline {2}Markov Decision Processes (MDPs)}{3}{section.2}%
+\contentsline {subsection}{\numberline {2.1}The Markov Property}{3}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}MDP Formal Definition}{3}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Value Functions}{4}{subsection.2.3}%
+\contentsline {section}{\numberline {3}The Bellman Equation --- Step-by-Step Derivation}{4}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Derivation}{5}{subsection.3.1}%
+\contentsline {section}{\numberline {4}Q-Learning}{5}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Algorithm}{6}{subsection.4.1}%
+\contentsline {section}{\numberline {5}Policy Gradient Methods}{6}{section.5}%
+\contentsline {subsection}{\numberline {5.1}The Policy Gradient Theorem}{7}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}REINFORCE Algorithm}{7}{subsection.5.2}%
+\contentsline {section}{\numberline {6}Proximal Policy Optimisation (PPO)}{8}{section.6}%
+\contentsline {subsection}{\numberline {6.1}The Problem with Large Updates}{8}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}PPO Objective Derivation}{8}{subsection.6.2}%
+\contentsline {section}{\numberline {7}Finance Basics: Portfolios, Risk, and Return}{9}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Returns}{9}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Portfolio Returns and Variance}{9}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Risk Metrics}{9}{subsection.7.3}%
+\contentsline {section}{\numberline {8}Markowitz Portfolio Optimisation}{10}{section.8}%
+\contentsline {subsection}{\numberline {8.1}The Efficient Frontier}{10}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}Limitations of Markowitz}{10}{subsection.8.2}%
+\contentsline {section}{\numberline {9}RL for Portfolio Management: Literature Review}{11}{section.9}%
+\contentsline {subsection}{\numberline {9.1}Jiang et al.\ (2017) --- Deep RL for Portfolio Management}{11}{subsection.9.1}%
+\contentsline {subsection}{\numberline {9.2}FinRL Library}{12}{subsection.9.2}%
+\contentsline {section}{\numberline {10}Proposed Framework}{12}{section.10}%
+\contentsline {subsection}{\numberline {10.1}Contribution 1: Risk-Aware Reward Shaping}{13}{subsection.10.1}%
+\contentsline {subsection}{\numberline {10.2}Contribution 2: Noise-Aware RL via Partial Observability}{13}{subsection.10.2}%
+\contentsline {subsection}{\numberline {10.3}Contribution 3: Control-Theoretic Framing}{14}{subsection.10.3}%
+\contentsline {section}{\numberline {11}Methodology \& Experimental Setup}{15}{section.11}%
+\contentsline {subsection}{\numberline {11.1}Data Preparation}{15}{subsection.11.1}%
+\contentsline {subsection}{\numberline {11.2}Custom Gym Environment}{15}{subsection.11.2}%
+\contentsline {section}{\numberline {12}Complete Annotated Demo}{16}{section.12}%
+\contentsline {section}{\numberline {13}Expected Results and Evaluation}{18}{section.13}%
+\contentsline {subsection}{\numberline {13.1}Hyperparameter Sensitivity}{18}{subsection.13.1}%
+\contentsline {section}{\numberline {14}Challenges, Limitations, and Future Work}{18}{section.14}%
+\contentsline {subsection}{\numberline {14.1}Non-Stationarity}{18}{subsection.14.1}%
+\contentsline {subsection}{\numberline {14.2}Transaction Costs}{18}{subsection.14.2}%
+\contentsline {subsection}{\numberline {14.3}Overfitting}{19}{subsection.14.3}%
+\contentsline {subsection}{\numberline {14.4}Partial Observability Gap}{19}{subsection.14.4}%
+\contentsline {section}{\numberline {15}What to Read Next}{19}{section.15}%

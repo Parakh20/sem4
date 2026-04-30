@@ -1,0 +1,42 @@
+\contentsline {section}{\numberline {1}Lecture 18: TTC via Flat-Earth Model, Precision Landing, and Multirotor Introduction}{3}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Time-to-Collision using Flat-Earth Model}{3}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Precision Landing via Proportional Navigation Guidance}{3}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.3}Fixed-wing vs.\ Multirotor UAVs}{4}{subsection.1.3}%
+\contentsline {subsection}{\numberline {1.4}Quadrotor Movements (Physical Intuition)}{5}{subsection.1.4}%
+\contentsline {section}{\numberline {2}Lecture 19: Quadrotor Hardware and Modelling Architecture}{6}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Structural Components}{6}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Airframe Configurations}{6}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}CG Location}{7}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Autopilot Placement}{7}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}Aerodynamic Drag on Fuselage}{7}{subsection.2.5}%
+\contentsline {subsection}{\numberline {2.6}Modelling Architecture}{8}{subsection.2.6}%
+\contentsline {section}{\numberline {3}Lecture 20: Quadrotor Kinematics and Dynamics}{9}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Coordinate Frames and Euler Angles}{9}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Rigid-Body Kinematics}{9}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Rigid-Body Newton--Euler Dynamics}{9}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Quadrotor Force and Moment Model}{10}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Propulsor Model}{10}{subsection.3.5}%
+\contentsline {subsection}{\numberline {3.6}Blade Flapping and Hub Forces}{10}{subsection.3.6}%
+\contentsline {section}{\numberline {4}Lecture 21: Quadrotor Position and Velocity Control}{11}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Cascaded Control Architecture}{11}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Position Dynamics}{11}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Altitude (Z) Controller}{11}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Horizontal (X--Y) Controller}{11}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Attitude Reference Generation}{12}{subsection.4.5}%
+\contentsline {section}{\numberline {5}Lecture 22: Quadrotor Attitude Control, Control Allocation, and Motor Control}{13}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Attitude Control Objectives}{13}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Euler Angle Based Attitude Control}{13}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Rotation Matrix (SO(3)) Based Attitude Control}{13}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}Control Allocation}{14}{subsection.5.4}%
+\contentsline {subsection}{\numberline {5.5}Motor Speed Control}{15}{subsection.5.5}%
+\contentsline {subsection}{\numberline {5.6}Simulation Parameters (Example)}{15}{subsection.5.6}%
+\contentsline {section}{\numberline {6}Lecture 23: Fully Actuated Unmanned Autonomous Vehicles}{16}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Motivation}{16}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Classification: Fixed-tilt vs.\ Variable-tilt}{16}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Coordinate Frames and Propeller Configuration}{16}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Aerodynamic Wrench and Control-Wrench Matrix}{16}{subsection.6.4}%
+\contentsline {subsection}{\numberline {6.5}Actuation Classification}{17}{subsection.6.5}%
+\contentsline {subsection}{\numberline {6.6}Fixed-tilt FA-UAV Designs}{17}{subsection.6.6}%
+\contentsline {subsection}{\numberline {6.7}Variable-tilt FA-UAV Designs}{19}{subsection.6.7}%
+\contentsline {subsection}{\numberline {6.8}Summary Table: FA-UAV Configurations}{20}{subsection.6.8}%
+\contentsline {section}{\numberline {7}Consolidated Revision Checklist (Lectures 18--23)}{21}{section.7}%

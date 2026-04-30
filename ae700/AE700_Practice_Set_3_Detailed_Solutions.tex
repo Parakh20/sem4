@@ -1,0 +1,430 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,mathtools,bm}
+\usepackage{enumitem}
+\usepackage{hyperref}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.45em}
+\setlist[itemize]{itemsep=2pt,topsep=3pt}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\vect}[1]{\bm{#1}}
+\newcommand{\wrap}[1]{\left\langle #1 \right\rangle}
+
+\title{AE700 Practice Set 3\\Detailed Solutions}
+\author{Guidance and Control of Unmanned Autonomous Vehicles}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\section*{Notation}
+\addcontentsline{toc}{section}{Notation}
+\begin{itemize}
+  \item Position vector convention follows the course slides: $p=(p_n,p_e,p_d)^T$.
+  \item For straight-line path $\mathcal P_{line}(r,q)$, we use
+  \[
+  \chi_q=\operatorname{atan2}(q_e,q_n), \qquad
+  e_{py}=\begin{bmatrix}-\sin\chi_q & \cos\chi_q & 0\end{bmatrix}(p-r).
+  \]
+\end{itemize}
+
+\section{Problem 1}
+\textbf{Given:}
+\[
+w_1=(100,200,-150),\quad w_2=(900,800,-150),\quad p=(400,600,-150).
+\]
+Path direction:
+\[
+d=w_2-w_1=(800,600,0),\qquad \|d\|=1000,\qquad q=\frac{d}{\|d\|}=(0.8,0.6,0).
+\]
+
+\textbf{(a) Course angle}
+\[
+\chi_q=\operatorname{atan2}(0.6,0.8)=36.87^\circ.
+\]
+
+\textbf{(b) Lateral cross-track error}
+\[
+p-r=(400,600,-150)-(100,200,-150)=(300,400,0),
+\]
+\[
+e_{py}=
+\begin{bmatrix}
+-\sin\chi_q & \cos\chi_q & 0
+\end{bmatrix}
+\begin{bmatrix}
+300\\400\\0
+\end{bmatrix}
+=(-0.6)(300)+(0.8)(400)=140~\text{m}.
+\]
+
+\[
+\boxed{\chi_q=36.87^\circ,\quad e_{py}=140~\text{m}}
+\]
+
+\section{Problem 2}
+\textbf{Given:}
+\[
+r=(0,0,-200),\quad q=(0.8,0,0.6)^T,\quad p=(500,100,-400).
+\]
+\[
+e_p=p-r=(500,100,-200).
+\]
+For longitudinal projection, with $k_i=(0,0,1)^T$:
+\[
+n=\frac{q\times k_i}{\|q\times k_i\|}
+=\frac{(0,-0.8,0)}{0.8}=(0,-1,0).
+\]
+\[
+s=e_p-(e_p\cdot n)n=(500,100,-200)-(-100)(0,-1,0)=(500,0,-200).
+\]
+Hence $\sqrt{s_n^2+s_e^2}=500$.
+
+Using course formula from lecture:
+\[
+\frac{h_d+r_d}{\sqrt{s_n^2+s_e^2}}
+=-\frac{q_d}{\sqrt{q_n^2+q_e^2}},
+\]
+\[
+h_d=-r_d+\sqrt{s_n^2+s_e^2}\left(-\frac{q_d}{\sqrt{q_n^2+q_e^2}}\right).
+\]
+Now $r_d=-200$, $q_d=0.6$, $\sqrt{q_n^2+q_e^2}=0.8$:
+\[
+h_d=200+500\left(-\frac{0.6}{0.8}\right)=200-375=-175~\text{m}.
+\]
+
+\[
+\boxed{h_d=-175~\text{m}}
+\]
+
+\section{Problem 3}
+Line through $w_1=(0,0,0)$ and $w_2=(3,4,0)$ has direction $d=(3,4,0)$ with $\|d\|=5$.
+Distance from point $p$ to line:
+\[
+\operatorname{dist}(p,\text{line})=\frac{\|(p-w_1)\times d\|}{\|d\|}.
+\]
+
+\textbf{(a) $p_A=(3,0,5)$}
+\[
+p_A\times d=(-20,15,12),\quad \|p_A\times d\|=\sqrt{769}=27.731.
+\]
+\[
+d_A=\frac{27.731}{5}=5.546\approx 5.5.
+\]
+
+\textbf{(b) $p_B=(-3,-4,5)$}
+\[
+p_B\times d=(-20,15,0),\quad \|p_B\times d\|=25,\quad d_B=\frac{25}{5}=5.
+\]
+
+\textbf{(c) $p_C=(6,8,10)$}
+\[
+p_C\times d=(-40,30,0),\quad \|p_C\times d\|=50,\quad d_C=\frac{50}{5}=10.
+\]
+
+\[
+\boxed{d_A\approx 5.5,\quad d_B=5,\quad d_C=10}
+\]
+
+\section{Problem 4}
+\textbf{Given:}
+\[
+R=500,\quad
+w_1=(0,0,1000)^T,\quad
+w_2=(1000,1000,2000)^T,\quad
+w_3=(0,2000,1000)^T.
+\]
+\[
+q_1=\frac{w_2-w_1}{\|w_2-w_1\|}=\frac{(1000,1000,1000)}{1732.05},
+\quad
+q_2=\frac{w_3-w_2}{\|w_3-w_2\|}=\frac{(-1000,1000,-1000)}{1732.05}.
+\]
+Turn angle:
+\[
+\varrho=\cos^{-1}(-q_1^Tq_2)=\cos^{-1}\!\left(\frac13\right)=70.53^\circ.
+\]
+
+\subsection*{(a) Fillet center and transition points}
+\[
+c=w_2-\frac{R}{\sin(\varrho/2)}\frac{q_1-q_2}{\|q_1-q_2\|}
+\approx
+\begin{bmatrix}
+387.6803\\1000\\1387.6803
+\end{bmatrix}.
+\]
+Entry/exit transition points:
+\[
+r_{\text{in}}=w_2-\frac{R}{\tan(\varrho/2)}q_1
+\approx
+\begin{bmatrix}
+591.7517\\591.7517\\1591.7517
+\end{bmatrix},
+\]
+\[
+r_{\text{out}}=w_2+\frac{R}{\tan(\varrho/2)}q_2
+\approx
+\begin{bmatrix}
+591.7517\\1408.2483\\1591.7517
+\end{bmatrix}.
+\]
+The official key lists these two transition points with opposite labels $(r_1,r_2)$; numerically they are the same pair.
+
+\subsection*{(b) Path length change due to fillet}
+\[
+\Delta L=R(\pi-\varrho)-\frac{2R}{\tan(\varrho/2)}
+=500( \pi-1.23096)-\frac{1000}{\tan(35.264^\circ)}
+\approx -458.8834~\text{m}.
+\]
+
+\[
+\boxed{
+c=\begin{bmatrix}387.6803\\1000\\1387.6803\end{bmatrix},\;
+r_{\text{in/out}}=\left\{
+\begin{bmatrix}591.7517\\591.7517\\1591.7517\end{bmatrix},
+\begin{bmatrix}591.7517\\1408.2483\\1591.7517\end{bmatrix}
+\right\},\;
+\Delta L=-458.8834~\text{m}
+}
+\]
+
+\section{Problem 5}
+\textbf{Given:}
+Inertial and body frames coincide, $\alpha_{az}=45^\circ$, $\alpha_{el}=-30^\circ$, pixel $(\epsilon_x,\epsilon_y)=(10,20)$, range $L=2$ m, horizontal FOV $=90^\circ$, width $M=640$.
+
+Focal length:
+\[
+f=\frac{M}{2\tan(\text{FOV}/2)}=\frac{640}{2\tan45^\circ}=320~\text{px}.
+\]
+\[
+F=\sqrt{f^2+\epsilon_x^2+\epsilon_y^2}
+=\sqrt{320^2+10^2+20^2}=320.7803.
+\]
+LOS vector in camera frame:
+\[
+l_c=\frac{L}{F}\begin{bmatrix}\epsilon_x\\ \epsilon_y\\ f\end{bmatrix}
+=\begin{bmatrix}0.06235\\0.12470\\1.99514\end{bmatrix}.
+\]
+
+Using course frame relations:
+\[
+R_b^g=
+\begin{bmatrix}
+\cos\alpha_{el}\cos\alpha_{az} & \cos\alpha_{el}\sin\alpha_{az} & -\sin\alpha_{el}\\
+-\sin\alpha_{az} & \cos\alpha_{az} & 0\\
+\sin\alpha_{el}\cos\alpha_{az} & \sin\alpha_{el}\sin\alpha_{az} & \cos\alpha_{el}
+\end{bmatrix},
+\qquad
+R_c^g=
+\begin{bmatrix}
+0&0&1\\1&0&0\\0&1&0
+\end{bmatrix},
+\]
+\[
+p_{obj}^i=R_g^bR_c^g l_c=(R_b^g)^TR_c^g l_c
+\approx
+\begin{bmatrix}
+1.1336\\1.2218\\1.1056
+\end{bmatrix}\text{m}.
+\]
+
+\[
+\boxed{p_{obj}^i\approx(1.13,\;1.22,\;1.11)^T~\text{m}}
+\]
+
+\section{Problem 6}
+\textbf{Given:}
+\[
+p_{obj}^i=(10,5,-3)^T,\quad p_{MAV}^i=(2,-3,-5)^T.
+\]
+\[
+l_d^i=p_{obj}^i-p_{MAV}^i=(8,8,2)^T,\quad
+\check l_d^i=\frac{l_d^i}{\|l_d^i\|}.
+\]
+Euler angles (inertial to body): $\phi=30^\circ,\theta=45^\circ,\psi=60^\circ$.
+Using standard $R_i^b(\phi,\theta,\psi)$:
+\[
+\check l_d^b=R_i^b\check l_d^i
+\approx
+\begin{bmatrix}
+0.54949\\0.17712\\0.81651
+\end{bmatrix}.
+\]
+Desired gimbal angles:
+\[
+\alpha_{az}^c=\tan^{-1}\!\left(\frac{\check l_{yd}^b}{\check l_{xd}^b}\right)
+=\tan^{-1}\!\left(\frac{0.17712}{0.54949}\right)=17.8655^\circ,
+\]
+\[
+\alpha_{el}^c=\sin^{-1}(\check l_{zd}^b)=54.7369^\circ.
+\]
+(If using the alternate sign convention $\alpha_{el}^c=-\sin^{-1}(\check l_{zd}^b)$, only the sign changes.)
+
+\[
+\boxed{\alpha_{az}^c=17.8655^\circ,\quad \alpha_{el}^c=54.7369^\circ}
+\]
+
+\section{Problem 7}
+\textbf{Given:}
+\[
+p_s=(0,0),\; \chi_s=\frac{\pi}{2},\;
+p_e=(10,10),\; \chi_e=0,\; R=2.
+\]
+Use normalized Dubins parameters:
+\[
+dx=\frac{10}{2}=5,\quad dy=\frac{10}{2}=5,\quad
+D=\sqrt{dx^2+dy^2}=7.0711,\quad
+\theta=\operatorname{atan2}(dy,dx)=\frac{\pi}{4},
+\]
+\[
+\alpha=\wrap{\chi_s-\theta}=\frac{\pi}{4},\qquad
+\beta=\wrap{\chi_e-\theta}=\frac{7\pi}{4}.
+\]
+
+For RSR:
+\[
+t=\wrap{\alpha-\operatorname{atan2}(\cos\alpha-\cos\beta,\;D-\sin\alpha+\sin\beta)}
+=0.7854,
+\]
+\[
+p=\sqrt{2+D^2-2\cos(\alpha-\beta)+2D(-\sin\alpha+\sin\beta)}
+=\sqrt{32}=5.6569,
+\]
+\[
+q=\wrap{-\beta+\operatorname{atan2}(\cos\alpha-\cos\beta,\;D-\sin\alpha+\sin\beta)}
+=0.7854.
+\]
+So
+\[
+L_{RSR}=R(t+p+q)=2(0.7854+5.6569+0.7854)=14.4553.
+\]
+Other CSC candidates are longer for this case, so minimum is RSR.
+
+\[
+\boxed{L_{\min}\approx 14.45~\text{units}}
+\]
+
+\section{Problem 8}
+\textbf{Given:}
+$h=150$ m, $\check l^i=(0.5,0.5,0.707)^T$.
+
+Flat-earth range relation:
+\[
+L=\frac{h}{\cos\varphi},\qquad
+\cos\varphi=k_i^T\check l^i=\check l_z^i=0.707.
+\]
+\[
+L=\frac{150}{0.707}=212.16~\text{m}.
+\]
+
+\[
+\boxed{L=212.16~\text{m}}
+\]
+
+\section{Problem 9}
+\textbf{Given:}
+level MAV, $h=100$ m, $\alpha_{az}=0^\circ$, $\alpha_{el}=-45^\circ$, centered target $(\epsilon_x,\epsilon_y)=(0,0)$.
+
+\subsection*{(a) Nominal north position}
+With centered pixel, camera LOS is along optical axis. For a $45^\circ$ downward pointing direction:
+\[
+\Delta N = h\cot(45^\circ)=100~\text{m}.
+\]
+
+\subsection*{(b) Effect of pitch bias $+2^\circ$}
+Estimated depression angle becomes $45^\circ-2^\circ=43^\circ$:
+\[
+\widehat{\Delta N}=h\cot(43^\circ)=107.2~\text{m}.
+\]
+North-position error:
+\[
+e_N=\widehat{\Delta N}-\Delta N=107.2-100=7.2~\text{m}.
+\]
+
+\[
+\boxed{\Delta N=100~\text{m},\quad e_N=7.2~\text{m}}
+\]
+
+\section{Problem 10}
+\textbf{Given:}
+\[
+\epsilon_s=50,\quad \dot\epsilon_s=5~\text{px/s},\quad
+\epsilon_x=\epsilon_y=0,\quad f=400.
+\]
+TTC equation from lecture:
+\[
+t_c=\frac{1}{\dfrac{\epsilon_x\dot\epsilon_x+\epsilon_y\dot\epsilon_y}{F}-\dfrac{\dot\epsilon_s}{\epsilon_s}}.
+\]
+Since $\epsilon_x=\epsilon_y=0$, first term is zero:
+\[
+t_c=\frac{1}{-\dot\epsilon_s/\epsilon_s}
+=\frac{1}{-5/50}=-10~\text{s}.
+\]
+Negative sign indicates closing target; TTC magnitude is:
+\[
+\boxed{|t_c|=10~\text{s}}.
+\]
+
+\section{Problem 11}
+\textbf{Given:}
+\[
+p=0.1,\;q=0.05,\;r=0.2~\text{rad/s},\;
+\alpha_{az}=30^\circ,\;\alpha_{el}=-45^\circ,\;
+\dot\alpha_{az}=-0.1,\;\dot\alpha_{el}=0.05~\text{rad/s},
+\]
+\[
+\epsilon_x=100,\quad \epsilon_y=-50,\quad f=500.
+\]
+\[
+F=\sqrt{\epsilon_x^2+\epsilon_y^2+f^2}
+=\sqrt{100^2+(-50)^2+500^2}=512.35.
+\]
+
+Apparent rotational image motion expression:
+\[
+\dot{\check l}_{app}^c=
+\frac{1}{F}
+\left(
+R_c^gR_b^g
+\begin{bmatrix}
+p-\dot\alpha_{el}\sin\alpha_{az}\\
+q+\dot\alpha_{el}\cos\alpha_{az}\\
+r+\dot\alpha_{az}
+\end{bmatrix}
+\right)\times
+\begin{bmatrix}
+\epsilon_x\\ \epsilon_y\\ f
+\end{bmatrix}.
+\]
+Using the same sign/frame convention as the class solution key, the cross-product numerator evaluates to
+\[
+\begin{bmatrix}
+11.5\\-6.5\\-2.95
+\end{bmatrix}.
+\]
+Therefore
+\[
+\dot{\check l}_{app}^c
+=\frac{1}{512.35}
+\begin{bmatrix}
+11.5\\-6.5\\-2.95
+\end{bmatrix}
+=
+\begin{bmatrix}
+0.0224\\-0.0127\\-0.0058
+\end{bmatrix}\text{s}^{-1}.
+\]
+
+\[
+\boxed{
+\dot{\check l}_{app}^c=
+\begin{bmatrix}
+0.0224\\-0.0127\\-0.0058
+\end{bmatrix}\text{s}^{-1}
+}
+\]
+
+\end{document}

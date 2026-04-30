@@ -1,0 +1,939 @@
+\documentclass[a4paper,8pt,fleqn]{extarticle}
+
+\usepackage[T1]{fontenc}
+\usepackage[a4paper,margin=0.45cm]{geometry}
+\usepackage{multicol}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{lmodern}
+\usepackage[protrusion=true,expansion=false]{microtype}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\setlength{\columnsep}{0.7pt}
+\setlength{\multicolsep}{0pt}
+\setlength{\premulticols}{0pt}
+\setlength{\postmulticols}{0pt}
+\setlength{\mathindent}{0pt}
+\setlength{\abovedisplayskip}{0.5pt}
+\setlength{\belowdisplayskip}{0.5pt}
+\setlength{\abovedisplayshortskip}{0.5pt}
+\setlength{\belowdisplayshortskip}{0.5pt}
+\setlength{\topsep}{0pt}
+\setlength{\partopsep}{0pt}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\jot}{0pt}
+\renewcommand{\baselinestretch}{0.83}
+\emergencystretch=1.8em
+\hfuzz=4pt
+\hbadness=10000
+\vbadness=10000
+\allowdisplaybreaks
+\pagestyle{empty}
+\setlist[itemize]{leftmargin=*,topsep=0pt,itemsep=0pt,parsep=0pt,partopsep=0pt}
+\setlist[enumerate]{leftmargin=*,topsep=0pt,itemsep=0pt,parsep=0pt,partopsep=0pt}
+
+\titlespacing*{\section}{0pt}{0.4pt}{0.15em}
+\titleformat{\section}[runin]{\bfseries}{}{0em}{}[.\enspace]
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\1}{\mathbf{1}}
+\newcommand{\barF}{\overline{F}}
+\newcommand{\sub}[1]{\textbf{#1} }
+\newcommand{\probq}[2]{\textbf{Q.} #1 \emph{Sol.} #2\par}
+\DeclareMathOperator{\Pois}{Pois}
+\DeclareMathOperator{\Exp}{Exp}
+\DeclareMathOperator{\Bin}{Bin}
+\DeclareMathOperator{\Geom}{Geom}
+
+\begin{document}
+\fontsize{5.12}{5.2}\selectfont
+\begin{multicols}{3}
+
+\section*{Probability Tools}
+\sub{Indicator/tails} \(N=\sum_{k\ge1}\1\{N\ge k\}\), so \(\E[N]=\sum_{k\ge1}\PP(N\ge k)=\sum_{k\ge0}\PP(N>k)\). If \(X\ge0\), \(\E[X]=\int_0^\infty \PP(X>x)\,dx\), \(\E[X^r]=r\int_0^\infty x^{r-1}\PP(X>x)\,dx\), \(\E[XY]=\int_0^\infty\int_0^\infty \PP(X>x,Y>y)\,dx\,dy\). General \(X\): \(\E[X]=\int_0^\infty \barF(x)\,dx-\int_{-\infty}^0 F(x)\,dx=\int x\,dF(x)\).
+
+\sub{Hazard} For nonnegative continuous \(X\): \(h(t)=f(t)/\barF(t)\). Exponential has constant hazard and memoryless law.
+
+\sub{Inequalities} Markov: \(X\ge0\Rightarrow \PP(X\ge a)\le \E[X]/a\). Chebyshev: \(\PP(|X-\E[X]|\ge \epsilon)\le \Var(X)/\epsilon^2\). Chernoff: \(\PP(X\ge a)\le e^{-ta}\E[e^{tX}],\ t>0\).
+
+\sub{MGF/CF} \(M_X(s)=\E[e^{sX}],\ \phi_X(\omega)=\E[e^{j\omega X}]\). If \(X,Y\) independent: \(M_{X+Y}=M_XM_Y,\ \phi_{X+Y}=\phi_X\phi_Y\). Moments from derivatives: \(M_X^{(n)}(0)=\E[X^n]\).
+
+\sub{PGF/LST} For \(N\in\{0,1,\dots\}\), \(G_N(z)=\E[z^N]\), \(G_N'(1)=\E[N]\), \(G_N''(1)=\E[N(N-1)]\), \(\Var(N)=G_N''(1)+G_N'(1)-G_N'(1)^2\). If \(S=\sum_{i=1}^N X_i\), \(N\perp\{X_i\}\): integer-valued \(X_i\Rightarrow G_S(z)=G_N(G_X(z))\); nonnegative \(X_i\Rightarrow \tilde S(s)=G_N(\tilde F_X(s))\).
+
+\sub{Order stats} For iid cdf \(F\), pdf \(f\), \(f_{X_{(i)}}(x)=\frac{n!}{(i-1)!(n-i)!}[F(x)]^{i-1}[1-F(x)]^{n-i}f(x)\), \(\PP(X_{(i)}\le x)=\sum_{k=i}^n \binom{n}{k}F(x)^k(1-F(x))^{n-k}\).
+
+\sub{CDF transform} If \(F\) is continuous, then \(F(X)\sim U(0,1)\). If \(U\sim U(0,1)\), then \(F^{-1}(U)\) has cdf \(F\).
+
+\sub{Conditioning} Tower: \(\E[X]=\E[\E[X\mid Y]]\). Total variance: \(\Var(X)=\E[\Var(X\mid Y)]+\Var(\E[X\mid Y])\).
+
+\sub{Convergence} a.s. \(\Rightarrow\) in probability; mean square \(\Rightarrow\) in probability. WLLN/SLLN for iid with finite variance: \(\frac{X_1+\cdots+X_n}{n}\to \mu\) in probability / a.s. CLT: \(\frac{S_n-n\mu}{\sigma\sqrt n}\Rightarrow N(0,1)\).
+
+\sub{Exchange rules} MCT: \(0\le X_n\uparrow X\Rightarrow \E[X_n]\uparrow \E[X]\). DCT: \(X_n\to X\) a.s., \(|X_n|\le Y\in L^1\Rightarrow \E[X_n]\to\E[X]\). BCT is DCT with bounded \(Y\). Fatou: \(\E[\liminf X_n]\le \liminf \E[X_n]\).
+
+\sub{Wald} If \(X_i\) iid, \(N\) stopping time, \(\E[N]<\infty\), \(\E|X_1|<\infty\), then \(\E[\sum_{i=1}^N X_i]=\E[N]\E[X_1]\). If \(N\perp \{X_i\}\), \(\Var(\sum_{i=1}^N X_i)=\E[N]\Var(X_1)+(\E[X_1])^2\Var(N)\). If \(\E[X_i]=0,\Var(X_i)=\sigma^2\), then \(\Var(\sum_{i=1}^N X_i)=\sigma^2\E[N]\). For renewals, \(\E[S_{N(t)+1}]=(\E[N(t)]+1)\E[X]\).
+
+\section*{Counting Processes}
+\sub{Definition} \(N(t),t\ge0\): \(N(0)=0\), integer-valued, nondecreasing, \(N(t)-N(s)\) counts events in \((s,t]\).
+
+\sub{HPP} Rate \(\lambda>0\): independent increments and \(\PP(N(t+s)-N(s)=n)=e^{-\lambda t}\frac{(\lambda t)^n}{n!}\). Equivalent infinitesimal form: stationary+independent increments, \(\PP(N(h)=1)=\lambda h+o(h)\), \(\PP(N(h)\ge2)=o(h)\). Then \(N(t)\sim \Pois(\lambda t)\), \(\E[N(t)]=\Var(N(t))=\lambda t\).
+
+\sub{Interarrivals} \(X_i\stackrel{iid}{\sim}\Exp(\lambda)\), \(S_n=\sum_{i=1}^n X_i\sim \Gamma(n,\lambda)\), \(f_{S_n}(t)=\frac{\lambda^n t^{n-1}e^{-\lambda t}}{(n-1)!}\), \(\E[S_n]=n/\lambda\), \(\Var(S_n)=n/\lambda^2\). Memoryless: \(\PP(X>s+t\mid X>s)=e^{-\lambda t}\).
+
+\sub{Conditional counts/arrivals} For \(0<s<t\), \(N(s)\mid N(t)=n\sim \Bin(n,\frac{s}{t})\), \(\E[N(s)\mid N(t)=n]=\frac{ns}{t}\). Given \(N(t)=n\), arrival times are order stats of iid \(U(0,t)\), so \(\E[S_i\mid N(t)=n]=\frac{i}{n+1}t\), \(f_{S_1,\dots,S_n\mid N(t)=n}(s_1,\dots,s_n)=\frac{n!}{t^n}\) for \(0<s_1<\cdots<s_n<t\). Unconditionally, \(f_{S_1,\dots,S_n}(s_1,\dots,s_n)=\lambda^n e^{-\lambda s_n}\) for \(0<s_1<\cdots<s_n\).
+
+\sub{Moments/covariance} For \(s\le t\), \(\Cov(N(s),N(t))=\lambda s=\lambda\min\{s,t\}\), \(\E[N(t)N(t+s)]=\lambda t+\lambda^2 t(t+s)\).
+
+\sub{Superposition/thinning} If \(N_i\) independent Poisson rates \(\lambda_i\), then \(\sum_i N_i\) is Poisson rate \(\sum_i\lambda_i\). If each event kept with prob.\ \(p\), kept process is Poisson rate \(\lambda p\), split parts independent. Time-varying marks \(p_i(u)\): \(N_i(t)\sim \Pois(\lambda\int_0^t p_i(u)\,du)\), independent across \(i\) if \(\sum_i p_i(u)=1\).
+
+\sub{Competing exponentials} If \(T_i\sim\Exp(\lambda_i)\) independent, then \(\min_i T_i\sim \Exp(\Lambda)\), \(\Lambda=\sum_i \lambda_i\), and \(\PP(i\text{ first})=\lambda_i/\Lambda\).
+
+\sub{Random horizon} If \(T\perp N\), \(\E[N(T)]=\lambda \E[T]\), \(\Var(N(T))=\lambda\E[T]+\lambda^2\Var(T)\). If \(T\sim\Exp(\mu)\), then \(N(T)\) is geometric on \(\{0,1,\dots\}\): \(\PP(N(T)=n)=\frac{\mu}{\lambda+\mu}(\frac{\lambda}{\lambda+\mu})^n\).
+
+\sub{NHPP} Intensity \(\lambda(t)\), mean \(m(t)=\int_0^t\lambda(u)\,du\). Independent increments and \(N(t)\sim \Pois(m(t))\), \(N(t+s)-N(t)\sim \Pois(m(t+s)-m(t))\). Interarrivals generally not iid; \(T_1\) satisfies \(\PP(T_1>t)=e^{-m(t)}\). Given \(N(t)=n\), arrivals are order stats of iid with cdf \(F(x)=m(x)/m(t)\), \(0\le x\le t\). Time change: if \(m\) invertible, \(N^*(t):=N(m^{-1}(t))\) is rate-1 HPP.
+
+\sub{Compound Poisson} \(D(t)=\sum_{k=1}^{N(t)}X_k\), \(X_k\stackrel{iid}{\sim}X\), independent of \(N\): \(M_{D(t)}(\theta)=\exp\{\lambda t(M_X(\theta)-1)\}\), \(\E[D(t)]=\lambda t\,\E[X]\), \(\Var(D(t))=\lambda t\,\E[X^2]\), \(\Cov(D(s),D(t))=\lambda s\,\E[X^2]\) for \(s\le t\), and \(\frac{D(t)-\lambda t\E[X]}{\sqrt{\lambda t\,\E[X^2]}}\Rightarrow N(0,1)\).
+
+\sub{Mixed Poisson/Cox} If conditional on random constant \(\Lambda\), \(N(t)\mid \Lambda\sim \Pois(\Lambda t)\), then conditional order-stat property still holds, but increments are typically dependent. Gamma prior \(\Lambda\sim \Gamma(m,\alpha)\) gives \(\PP(N(t)=n)=\binom{m+n-1}{n}(\frac{\alpha}{\alpha+t})^m(\frac{t}{\alpha+t})^n\), \(\Lambda\mid N(t)=n\sim \Gamma(m+n,\alpha+t)\).
+
+\section*{Renewal Theory}
+\sub{Basics} \(X_i\stackrel{iid}{\sim}F\), \(S_n=\sum_{i=1}^n X_i\), \(N(t)=\max\{n:S_n\le t\}\), \(m(t)=\E[N(t)]\). Basic events: \(N(t)\ge n \iff S_n\le t\), \(N(t)<n \iff S_n>t\), \(S_{N(t)}\le t<S_{N(t)+1}\).
+
+\sub{Renewal equation} \(m(t)=\sum_{n\ge1}F^{*n}(t)=F(t)+\int_0^t m(t-x)\,dF(x)\). Laplace-Stieltjes transform: \(\tilde m(s)=\frac{\tilde F(s)}{1-\tilde F(s)}\). General equation \(g=h+g*F\): \(g(t)=h(t)+\int_0^t h(t-x)\,dm(x)\).
+
+\sub{ERT/Blackwell/KRT} If \(\mu=\E[X]\in(0,\infty)\), \(\frac{m(t)}{t}\to \frac{1}{\mu}\). If nonlattice, \(m(t+a)-m(t)\to \frac{a}{\mu}\) for \(a>0\). If \(h\) is directly Riemann integrable, \(\int_0^t h(t-x)\,dm(x)\to \frac{1}{\mu}\int_0^\infty h(u)\,du\).
+
+\sub{Reward theorem} For iid cycle pairs \((X_i,R_i)\), \(\frac{R(t)}{t}\to \frac{\E[R]}{\E[X]}\) a.s. and in mean. General design rule: \(\text{long-run average}=\frac{\E[\text{reward/cost per cycle}]}{\E[\text{cycle length}]}\). Window reward version: \(\E[\text{reward in }(t,t+a)]\to a\frac{\E[\text{reward/cycle}]}{\E[X]}\).
+
+\sub{Wald corollaries} \(N(t)+1\) is a stopping time for \(X_1,X_2,\dots\); \(N(t)\) is not. Hence \(\E[S_{N(t)+1}]=(\E[N(t)]+1)\mu\).
+
+\sub{Age/excess} \(A(t)=t-S_{N(t)}\), \(Y(t)=S_{N(t)+1}-t\). In equilibrium (nonlattice, \(\mu<\infty\)): \(\PP(A_\infty\le x)=\frac{1}{\mu}\int_0^x \barF(u)\,du\), \(\PP(Y_\infty>x)=\frac{1}{\mu}\int_x^\infty \barF(u)\,du\). If density exists, \(f_{A_\infty}(x)=f_{Y_\infty}(x)=\frac{\barF(x)}{\mu}\), \(\E[A_\infty]=\E[Y_\infty]=\frac{\E[X^2]}{2\E[X]}\). Residual given age \(s\): \(\PP(Y>x\mid A=s)=\frac{\barF(s+x)}{\barF(s)}\). Poisson special case: \(A(t),Y(t)\) iid \(\Exp(\lambda)\), independent.
+
+\sub{Inspection paradox} Interval covering a random time is length-biased: \(\lim_{t\to\infty}\E[X_{N(t)+1}]=\frac{\E[X^2]}{\E[X]}\ge \E[X]\). Size-biased density: \(f_{X^*}(x)=x f_X(x)/\E[X]\).
+
+\sub{Delayed/alternating/regenerative} Delayed renewal first cdf \(G\): \(m_D(t)=G(t)+\int_0^t m(t-x)\,dG(x)\). Alternating renewal with up/down means \(U,D\): \(\PP(\text{up in steady state})=\frac{\E[U]}{\E[U]+\E[D]}\). For regenerative state process \(X(t)\), \(\pi_i=\lim_{t\to\infty}\PP(X(t)=i)=\frac{\E[\text{time in state }i\text{ per cycle}]}{\E[\text{cycle length}]}\).
+
+\sub{Semi-Markov} If embedded DTMC has stationary law \(\pi_i\) and mean sojourn \(\mu_i\), long-run state fraction: \(p_i=\frac{\pi_i\mu_i}{\sum_j \pi_j\mu_j}\).
+
+\section*{DTMC}
+\sub{Core} Transition matrix \(P\), Chapman-Kolmogorov:
+\[
+P_{ij}^{(n+m)}=\sum_k P_{ik}^{(n)}P_{kj}^{(m)}.
+\]
+Communication classes share recurrence type. Open classes are transient. In finite DTMC, null recurrence cannot occur.
+
+\sub{Recurrence} \(j\) recurrent iff \(\sum_{n\ge1}P_{jj}^{(n)}=\infty\); transient iff finite. For irreducible DTMC: all states are transient, all null recurrent, or all positive recurrent.
+
+\sub{Period} \(d(i)=\gcd\{n\ge1:P_{ii}^{(n)}>0\}\). Period is class property. Aperiodic iff \(d(i)=1\).
+
+\sub{Stationary/ergodic} \(\pi=\pi P,\ \sum_i\pi_i=1\). For irreducible aperiodic chain: either transient/null recurrent with \(P_{ij}^{(n)}\to0\), or positive recurrent with unique \(\pi\) and
+\[
+P_{ij}^{(n)}\to \pi_j=\frac{1}{\mu_{jj}}.
+\]
+Ergodic \(=\) irreducible + aperiodic + positive recurrent.
+
+\sub{Periodic/mean limit} If irreducible positive recurrent but periodic, plain \(P_{ij}^{(n)}\) may not converge, but Ces\`aro averages do:
+\[
+\frac1n\sum_{m=1}^n P_{ij}^{(m)}\to \pi_j.
+\]
+If state \(j\) has period \(d\), then \(P_{jj}^{(nd)}\to d/\mu_{jj}\).
+
+\sub{Detailed balance} Reversible iff
+\[
+\pi_iP_{ij}=\pi_jP_{ji}\ \ \forall i,j.
+\]
+
+\sub{Time reversal} If chain is stationary with law \(\pi\), reverse DTMC has \(P^*_{ij}=\pi_jP_{ji}/\pi_i\). Reversible iff \(P^*=P\), equivalently detailed balance.
+
+\sub{Hitting/absorption} For \(A\subseteq S\), \(h_i=\PP_i(\tau_A<\infty)\):
+\[
+h_i=
+\begin{cases}
+1,&i\in A,\\
+\sum_j P_{ij}h_j,&i\notin A.
+\end{cases}
+\]
+Mean hitting time \(m_i=\E_i[\tau_A]\):
+\[
+m_i=
+\begin{cases}
+0,&i\in A,\\
+1+\sum_jP_{ij}m_j,&i\notin A.
+\end{cases}
+\]
+Absorbing finite chain with transient block \(Q\), absorbing block \(R\):
+\[
+N=(I-Q)^{-1},\qquad t=N\mathbf 1,\qquad B=NR.
+\]
+Here \(N_{ij}\) = expected visits to transient \(j\) starting from transient \(i\).
+
+\sub{Birth-death} For nearest-neighbor DTMC with \(p_i=P_{i,i+1},q_i=P_{i,i-1}\),
+\[
+\pi_{n+1}=\pi_n\frac{p_n}{q_{n+1}},\qquad
+\pi_n=\pi_0\prod_{k=1}^n \frac{p_{k-1}}{q_k}.
+\]
+Gambler's ruin on \(\{0,\dots,N\}\):
+\[
+\PP_i(\tau_N<\tau_0)=
+\begin{cases}
+\dfrac{1-(q/p)^i}{1-(q/p)^N},&p\ne q,\\[0.7ex]
+\dfrac{i}{N},&p=q.
+\end{cases}
+\]
+\[
+\E_i[\tau_{\{0,N\}}]=i(N-i)\quad (p=q=1/2).
+\]
+If \(p_i\equiv p,\ q_i\equiv q=1-p,\ p\ne q\),
+\[
+\E_i[\tau_{\{0,N\}}]=\frac{i}{q-p}-\frac{N}{q-p}\frac{1-(q/p)^i}{1-(q/p)^N}.
+\]
+Infinite-state stationary law exists iff \(1+\sum_{n\ge1}\prod_{k=1}^n\frac{p_{k-1}}{q_k}<\infty\).
+
+\sub{Embedded M/G/1} At departures, \(A(z)=\sum_{j\ge0}a_j z^j\), where \(a_j=\PP(j \text{ arrivals during service})\), \(\rho=\lambda\E[S]=A'(1)\). Stationary pgf:
+\[
+\pi(z)=\frac{(1-\rho)(z-1)A(z)}{z-A(z)},\qquad \pi_0=1-\rho,\qquad \rho<1.
+\]
+
+\sub{Embedded G/M/1} Arrival-epoch chain has geometric stationary law
+\[
+\pi_k=(1-\beta)\beta^k,\qquad k\ge0,
+\]
+where \(\beta\in(0,1)\) is the unique root of
+\[
+\beta=\int_0^\infty e^{-\mu(1-\beta)t}\,dG(t).
+\]
+
+\sub{Branching} Galton-Watson: \(X_n=\sum_{i=1}^{X_{n-1}}Z_i\), \(\mu=\E[Z], \sigma^2=\Var(Z)\), \(X_0=1\).
+\[
+\E[X_n]=\mu^n,
+\]
+\[
+\Var(X_n)=
+\begin{cases}
+\sigma^2\mu^{n-1}\dfrac{1-\mu^n}{1-\mu},&\mu\ne1,\\[0.8ex]
+n\sigma^2,&\mu=1.
+\end{cases}
+\]
+Extinction probability \(q\) is the smallest positive root of
+\[
+q=\sum_{j\ge0} P_j q^j.
+\]
+If \(P_0>0\), then \(q=1\) iff \(\mu\le1\).
+If offspring pgf is \(G\), then \(G_{X_n}(s)=G^{\circ n}(s)\). Total progeny \(T=\sum_{n\ge0}X_n\) has pgf \(H(s)=sG(H(s))\); if \(\mu<1\), \(\E[T]=1/(1-\mu)\).
+
+\section*{CTMC}
+\sub{Definition} Homogeneous CTMC:
+\[
+\PP(X(t+s)=j\mid X(s)=i,\mathcal F_s)=P_{ij}(t).
+\]
+Sojourn in state \(i\): \(\tau_i\sim \Exp(v_i)\). Next state \(j\ne i\) chosen with probs.\ \(P_{ij}\), independent of \(\tau_i\).
+
+\sub{Rates/generator} For \(i\ne j\),
+\[
+q_{ij}=v_iP_{ij},\qquad v_i=\sum_{j\ne i}q_{ij},\qquad r_{ii}=-v_i,\ r_{ij}=q_{ij}.
+\]
+Competing-clock view: while in \(i\), independent \(T_{ij}\sim \Exp(q_{ij})\); first ring determines jump.
+
+\sub{Regularity} Regular means finitely many jumps in every finite interval a.s. Finite-state and all birth-death CTMCs are regular; counterexample \(P_{i,i+1}=1,\ v_i=i^2\) can explode.
+
+\sub{Small-time} For \(i\ne j\),
+\[
+P_{ii}(h)=1-v_i h+o(h),\qquad P_{ij}(h)=q_{ij}h+o(h).
+\]
+Chapman-Kolmogorov:
+\[
+P_{ij}(t+s)=\sum_k P_{ik}(t)P_{kj}(s).
+\]
+
+\sub{Kolmogorov eqns} Backward:
+\[
+P'_{ij}(t)=\sum_{k\ne i}q_{ik}P_{kj}(t)-v_iP_{ij}(t).
+\]
+Forward:
+\[
+P'_{ij}(t)=\sum_{k\ne j}P_{ik}(t)q_{kj}-v_jP_{ij}(t).
+\]
+Matrix form:
+\[
+P'(t)=RP(t)=P(t)R.
+\]
+If the state space is finite, \(P(t)=e^{Rt}\).
+
+\sub{Birth-death} \(\lambda_n=q_{n,n+1}\), \(\mu_n=q_{n,n-1}\). Forward:
+\[
+P'_{i0}(t)=\mu_1P_{i1}(t)-\lambda_0P_{i0}(t),
+\]
+\[
+P'_{ij}(t)=\lambda_{j-1}P_{i,j-1}(t)+\mu_{j+1}P_{i,j+1}(t)-(\lambda_j+\mu_j)P_{ij}(t).
+\]
+Steady state:
+\[
+p_n\lambda_n=p_{n+1}\mu_{n+1},\qquad
+p_n=p_0\frac{\lambda_{n-1}\cdots \lambda_0}{\mu_n\cdots \mu_1}.
+\]
+Normalize with \(p_0^{-1}=1+\sum_{n\ge1}\frac{\lambda_{n-1}\cdots\lambda_0}{\mu_n\cdots\mu_1}\), finite iff positive recurrent.
+
+\sub{Standard models} Two-state \((0\xrightarrow{\lambda}1,1\xrightarrow{\mu}0)\):
+\[
+P_{00}(t)=\frac{\mu}{\lambda+\mu}+\frac{\lambda}{\lambda+\mu}e^{-(\lambda+\mu)t},
+\]
+\[
+P_{11}(t)=\frac{\lambda}{\lambda+\mu}+\frac{\mu}{\lambda+\mu}e^{-(\lambda+\mu)t}.
+\]
+Yule process \(\lambda_n=n\lambda\):
+\[
+P_{1j}(t)=e^{-\lambda t}(1-e^{-\lambda t})^{j-1},
+\]
+\[
+P_{ij}(t)=\binom{j-1}{i-1}e^{-i\lambda t}(1-e^{-\lambda t})^{j-i}.
+\]
+Simple epidemic with \(m\) people, \(\lambda_n=n(m-n)\alpha\):
+\[
+\E[T_{\text{all infected}}]=\sum_{i=1}^{m-1}\frac{1}{i(m-i)\alpha}.
+\]
+
+\sub{Stationarity} If embedded DTMC has stationary law \(\pi\), then CTMC long-run state fraction:
+\[
+p_j=\frac{\pi_j/v_j}{\sum_i \pi_i/v_i}.
+\]
+Equivalent balance:
+\[
+pR=0,\qquad p_jv_j=\sum_i p_i q_{ij}.
+\]
+
+\sub{Reversibility} In stationarity \(p\), reverse CTMC has \(q_{ij}^*=p_jq_{ji}/p_i\) for \(i\ne j\), with \(v_i^*=v_i\). Chain is reversible iff
+\[
+p_i q_{ij}=p_j q_{ji}\quad \forall i,j.
+\]
+Birth-death CTMCs are reversible. Truncating a reversible CTMC to irreducible \(A\) keeps reversibility with normalized \(p_i\) on \(A\).
+
+\sub{Recurrence} CTMC and embedded DTMC have same communication classes and same recurrence/transience. Positive/null recurrence can differ. If \(\pi=\pi P\) for embedded chain, then CTMC is positive recurrent iff
+\[
+\sum_i \frac{\pi_i}{v_i}<\infty.
+\]
+
+\sub{CTMC hitting} For \(A\subseteq S\), \(h_i=\PP_i(\tau_A<\infty)\): \(h_i=1\) on \(A\), and \(\sum_j q_{ij}h_j=0\) on \(A^c\). Mean hit \(m_i=\E_i[\tau_A]\): \(m_i=0\) on \(A\), and \(\sum_j q_{ij}m_j=-1\) on \(A^c\).
+
+\sub{Uniformization} If \(v_i\le v\), define
+\[
+P^*_{ij}=
+\begin{cases}
+q_{ij}/v,&i\ne j,\\
+1-v_i/v,&i=j.
+\end{cases}
+\]
+Then
+\[
+P_{ij}(t)=\sum_{n\ge0}(P^{*n})_{ij}e^{-vt}\frac{(vt)^n}{n!}.
+\]
+
+\section*{Queueing Theory}
+\sub{Core defs} Arrival rate \(\lambda\), service time \(S\), queue delay \(D\), system time \(W=D+S\), number in system \(N(t)\), in queue \(N_q(t)\), in service \(N_s(t)\). Long-run averages: \(L,Q,L_s,w,d\).
+
+\sub{Little/PASTA} 
+\[
+L=\lambda w,\qquad Q=\lambda d.
+\]
+For Poisson arrivals, arrivals see time averages: arrival-seen state distribution = time-average distribution.
+
+\sub{M/M/1} \(\rho=\lambda/\mu\), stable iff \(\rho<1\). Then
+\[
+p_n=(1-\rho)\rho^n,\quad L=\frac{\rho}{1-\rho},\quad Q=\frac{\rho^2}{1-\rho},\quad L_s=\rho,
+\]
+\[
+w=\frac{1}{\mu-\lambda},\qquad d=\frac{\lambda}{\mu(\mu-\lambda)}.
+\]
+Given \(N_a=n\), \(W\mid N_a=n\sim\) Erlang\((n+1,\mu)\). Mixture gives
+\[
+W\sim \Exp(\mu-\lambda).
+\]
+Also
+\(\PP(D>t)=\rho e^{-(\mu-\lambda)t},\ \PP(W>t)=e^{-(\mu-\lambda)t}\).
+
+\sub{M/M/1/N} 
+\[
+p_n=\frac{(1-\rho)\rho^n}{1-\rho^{N+1}},\qquad P_{\text{block}}=p_N,
+\]
+\[
+\lambda_s=\lambda(1-p_N),\qquad w=L/\lambda_s.
+\]
+
+\sub{M/M/m} \(\rho=\lambda/(m\mu)<1\),
+\[
+p_0=\left[\sum_{n=0}^{m-1}\frac{(m\rho)^n}{n!}+\frac{(m\rho)^m}{m!(1-\rho)}\right]^{-1},
+\]
+\[
+P_Q=\frac{(m\rho)^m}{m!(1-\rho)}p_0\quad\text{(Erlang C)},
+\]
+\[
+d=\frac{P_Q}{m\mu-\lambda},\qquad
+w=\frac{1}{\mu}+\frac{P_Q}{m\mu-\lambda},
+\]
+\[
+L=m\rho+\frac{\rho P_Q}{1-\rho},\qquad Q=\frac{\rho P_Q}{1-\rho}.
+\]
+Queue-delay tail: \(\PP(D>t)=P_Q e^{-(m\mu-\lambda)t}\).
+
+\sub{M/M/m/m} Loss system:
+\[
+p_n=\frac{(\lambda/\mu)^n/n!}{\sum_{k=0}^m (\lambda/\mu)^k/k!},\qquad
+P_{\text{block}}=p_m
+\]
+(Erlang B). Recursion: \(B(0,a)=1,\ B(m,a)=\frac{a\,B(m-1,a)}{m+a\,B(m-1,a)}\), \(a=\lambda/\mu\).
+
+\sub{M/M/\(\infty\)} \(\rho=\lambda/\mu\): \(p_n=e^{-\rho}\rho^n/n!,\ L=\rho,\ w=1/\mu.\)
+
+\sub{M/G/\(\infty\)} Starting empty with service cdf \(G\), \(N(t)\sim\Pois\!\big(\lambda\int_0^t \bar{G}(u)\,du\big)\). In steady state \(N(\infty)\sim\Pois(\lambda\E[S])\), so \(P_0=e^{-\lambda\E[S]}\).
+
+\sub{Burke/tandem} In stationary M/M/m, departures are Poisson(\(\lambda\)) and independent of current queue length/past departures. Tandem M/M/1 with common \(\lambda\):
+\[
+\PP(N_1=n_1,N_2=n_2)=(1-\rho_1)\rho_1^{n_1}(1-\rho_2)\rho_2^{n_2}.
+\]
+
+\sub{Open Jackson} Traffic equations
+\[
+\lambda_j=r_j+\sum_i \lambda_i P_{ij}.
+\]
+If \(\rho_j=\lambda_j/\mu_j<1\),
+\[
+\PP(N_1=n_1,\dots,N_K=n_K)=\prod_{j=1}^K (1-\rho_j)\rho_j^{n_j}.
+\]
+
+\sub{Closed Jackson} Visit ratios solve \(\lambda_j=\sum_i \lambda_i P_{ij}\) up to scale; \(\rho_j=\lambda_j/\mu_j\). For total jobs \(M\),
+\[
+G(M)=\sum_{n_1+\cdots+n_K=M}\rho_1^{n_1}\cdots \rho_K^{n_K},
+\]
+\[
+\PP(N_1=n_1,\dots,N_K=n_K)=\frac{\rho_1^{n_1}\cdots \rho_K^{n_K}}{G(M)}.
+\]
+
+\sub{CPU/I-O shortcuts} Open feedback CPU-I/O net: \(\lambda_1=\lambda/p_1,\ \lambda_2=\lambda p_2/p_1,\ p_2=1-p_1,\ \rho_j=\lambda_j/\mu_j\). Then
+\[
+L=\frac{\rho_1}{1-\rho_1}+\frac{\rho_2}{1-\rho_2},\qquad w=\frac{L}{\lambda}.
+\]
+Total service demands per job:
+\[
+S_1=\frac{1}{\mu_1p_1},\qquad S_2=\frac{p_2}{\mu_2p_1},
+\]
+so
+\[
+w=\frac{1}{S_1^{-1}-\lambda}+\frac{1}{S_2^{-1}-\lambda}.
+\]
+Closed 2-node CPU-I-O net with \(M\) jobs: choose \(\rho_1=1,\ \rho_2=p_2\mu_1/\mu_2\), then \(P(M-n,n)=\rho_2^n/G(M)\), \(G(M)=\sum_{n=0}^M\rho_2^n\), and \(U_{\rm CPU}(M)=G(M-1)/G(M)\).
+
+\sub{Work identity} Average work in system \(V\) obeys
+\[
+V=\lambda \E[S D]+\frac{\lambda \E[S^2]}{2}.
+\]
+If \(S\perp D\),
+\[
+V=\lambda \E[S]\,d+\frac{\lambda \E[S^2]}{2}.
+\]
+
+\sub{M/G/1} PASTA gives \(d=V\), so Pollaczek-Khintchine:
+\[
+d=\frac{\lambda \E[S^2]}{2(1-\lambda\E[S])},\qquad \rho=\lambda\E[S]<1.
+\]
+\[
+Q=\lambda d,\qquad w=d+\E[S],\qquad L=\lambda w.
+\]
+Busy period:
+\[
+\E[B]=\frac{\E[S]}{1-\rho},\qquad
+\E[C_{\text{busy period}}]=\frac{1}{1-\rho}.
+\]
+Larger \(\Var(S)\) increases \(d,Q,w,L\) when \(\E[S]\) fixed.
+Equivalent handy forms:
+\[
+Q=\frac{\lambda^2\E[S^2]}{2(1-\rho)},\qquad
+L=\rho+\frac{\lambda^2\E[S^2]}{2(1-\rho)}.
+\]
+
+\sub{M/E\(_k\)/1} \(S=\sum_{i=1}^k Y_i\), \(Y_i\sim \Exp(k\mu)\). Then \(\E[S]=1/\mu\), \(\Var(S)=1/(k\mu^2)\), and by P-K
+\[
+L=\rho+\frac{\rho^2(k+1)}{2k(1-\rho)}.
+\]
+
+\sub{M/G/1 batch arrivals} Batch arrival rate \(\lambda\), batch size \(N\), customer arrival rate \(\lambda\E[N]\). Mean queue delay:
+\[
+d=
+\frac{\E[S]\big(\E[N^2]-\E[N]\big)/(2\E[N])+\lambda \E[N]\E[S^2]/2}
+{1-\lambda \E[N]\E[S]}.
+\]
+\[
+w=d+\E[S],\qquad Q=\lambda \E[N]\,d,\qquad L=\lambda \E[N]\,w.
+\]
+
+\sub{Batch-size bias} If batch pmf is \(\alpha_j=\PP(N=j)\), a random customer sees \(N^*\) with \(\PP(N^*=j)=j\alpha_j/\E[N]\). Hence \(\E[N^*-1]=(\E[N^2]-\E[N])/\E[N]\), and mean same-batch customers ahead \(=(\E[N^2]-\E[N])/(2\E[N])\).
+
+\sub{Priority queues} Nonpreemptive, classes \(1\) and \(2\), \(\rho_i=\lambda_i\E[S_i]\),
+\[
+d_1=\frac{\lambda_1\E[S_1^2]+\lambda_2\E[S_2^2]}{2(1-\rho_1)},
+\]
+\[
+d_2=\frac{\lambda_1\E[S_1^2]+\lambda_2\E[S_2^2]}{2(1-\rho_1)(1-\rho_1-\rho_2)}.
+\]
+For \(n\) classes,
+\[
+d_i=\frac{\sum_{j=1}^n \lambda_j \E[S_j^2]}
+{2\prod_{r=1}^{i}\left(1-\sum_{k=1}^{r}\rho_k\right)}.
+\]
+
+\section*{Queue Tricks}
+\sub{Metric conversions}
+If given \(w\), use \(L=\lambda w\); if given \(d\), use \(Q=\lambda d\); if given mean service \(1/\mu\), use \(L_s=\lambda/\mu\). For Poisson arrivals use PASTA: arrival-seen probs = time-average probs. If there is loss/blocking, replace offered \(\lambda\) by accepted rate \(\lambda_s=\lambda(1-P_{\rm block})\) in Little's law.
+
+\sub{Stability checklist}
+M/M/1 or M/G/1: \(\rho=\lambda\E[S]<1\). M/M/\(m\): \(\lambda<m\mu\). Open Jackson: every \(\rho_j=\lambda_j/\mu_j<1\). If stability fails, steady-state means/delays do not exist.
+
+\sub{Recognize the model fast}
+Poisson + exponential + 1 server \(\Rightarrow\) M/M/1; same with finite capacity \(N\Rightarrow\) M/M/1/\(N\); \(m\) identical servers with waiting \(\Rightarrow\) M/M/\(m\) (Erlang C); \(m\) servers with no waiting \(\Rightarrow\) M/M/\(m\)/\(m\) (Erlang B); Poisson + general \(S\) + 1 server \(\Rightarrow\) M/G/1; Erlang-\(k\) service \(\Rightarrow\) M/E\(_k\)/1; Poisson batch arrivals \(\Rightarrow\) M/G/1 batch formula; external Poisson + routing \(\Rightarrow\) open Jackson; fixed circulating jobs \(\Rightarrow\) closed Jackson; class priorities \(\Rightarrow\) priority formulas.
+
+\sub{Direct formulas by what is asked}
+For M/M/1: \(p_n=(1-\rho)\rho^n\), \(L=\rho/(1-\rho)\), \(Q=\rho^2/(1-\rho)\), \(w=1/(\mu-\lambda)\), \(d=\lambda/[\mu(\mu-\lambda)]\), and \(W\sim\Exp(\mu-\lambda)\). For M/M/1/\(N\): \(\displaystyle p_n=\frac{(1-\rho)\rho^n}{1-\rho^{N+1}}\), \(P_{\rm block}=p_N\), \(\lambda_s=\lambda(1-p_N)\). For M/M/\(m\): use Erlang C for \(P_Q\), then \(d=P_Q/(m\mu-\lambda)\), \(w=1/\mu+d\). For M/M/\(m\)/\(m\): use Erlang B directly.
+
+\sub{Moment tricks for M/G/1-type questions}
+If only \(\E[S]\) and \(\Var(S)\) are given, first compute \(\E[S^2]=\Var(S)+(\E[S])^2\). Then for M/G/1 use \(\displaystyle d=\frac{\lambda\E[S^2]}{2(1-\lambda\E[S])}\), followed by \(Q=\lambda d,\ w=d+\E[S],\ L=\lambda w\). With same \(\E[S]\), smaller \(\Var(S)\Rightarrow\) smaller \(d,Q,w,L\). For Erlang-\(k\), \(\Var(S)=1/(k\mu^2)\). For batch arrivals, customer rate \(=\lambda\E[N]\), and the extra same-batch term comes from \((\E[N^2]-\E[N])/(2\E[N])\).
+
+\sub{Busy period / work / departures}
+For M/G/1 busy period use \(\E[B]=\E[S]/(1-\rho)\), \(\E[C_{\rm busy}]=1/(1-\rho)\), \(\rho=\lambda\E[S]\). If asked for average work, use \(V=\lambda\E[SD]+\lambda\E[S^2]/2\); if \(S\perp D\), \(V=\lambda\E[S]d+\lambda\E[S^2]/2\). In M/G/1, PASTA gives \(d=V\). In stationary M/M/1 or M/M/\(m\), Burke says departures are Poisson(\(\lambda\)) and independent of current queue length; use this immediately for tandem queues. For M/G/\(\infty\), \(N(\infty)\sim\Pois(\lambda\E[S])\), so \(P_0=e^{-\lambda\E[S]}\).
+
+\sub{Networks / loss / effective rates}
+For open Jackson, solve \(\lambda_j=r_j+\sum_i\lambda_iP_{ij}\), then \(L=\sum_j \rho_j/(1-\rho_j)\) and \(W=L/\sum_j r_j\). For closed Jackson, solve visit ratios up to scale, set \(\rho_j=\lambda_j/\mu_j\), then normalize by \(G(M)\). In any finite-buffer/loss system, first find \(P_{\rm block}\), then accepted throughput \(\lambda_s=\lambda(1-P_{\rm block})\). Utilization/busy fraction: one server gives \(\rho=\lambda\E[S]=L_s\); \(m\) identical servers gives total mean in service \(=m\rho=\lambda/\mu\).
+
+\section*{Poisson Problems}
+\sub{Recognize HPP} Independent stationary increments \(+\ N(0)=0\) \(+\) Poisson counts in short intervals \(\Rightarrow N(t)\sim \Pois(\lambda t)\). If \(P_0(t+s)=P_0(t)P_0(s)\), continuity gives \(P_0(t)=e^{-\lambda t}\).
+
+\sub{Given \(N(t)=n\)} Use order stats of \(n\) iid uniforms:
+\[
+\PP(N(s)=k\mid N(t)=n)=\binom{n}{k}\left(\frac{s}{t}\right)^k\left(1-\frac{s}{t}\right)^{n-k}.
+\]
+
+\sub{Cross moment} Write \(N(t+s)=N(t)+M\), \(M\sim \Pois(\lambda s)\perp N(t)\):
+\[
+\E[N(t)N(t+s)]=\E[N(t)^2]+\E[N(t)]\E[M]=\lambda t+\lambda^2 t(t+s).
+\]
+
+\sub{Merge/split race} Independent \(N_1,N_2\): \(N_1+N_2\) is Poisson rate \(\lambda_1+\lambda_2\); first event from process 1 with prob.\(\lambda_1/(\lambda_1+\lambda_2)\).
+
+\sub{Gamma depletion} If \(T_1\sim \Gamma(r,\mu_1),T_2\sim \Gamma(s,\mu_2)\) independent and lifetime is \(\min(T_1,T_2)\),
+\[
+\E[\min(T_1,T_2)]=\int_0^\infty \PP(T_1>t)\PP(T_2>t)\,dt.
+\]
+
+\sub{Joint density of arrivals} For \(0<s_1<\cdots<s_k\),
+\[
+f_{S_1,\dots,S_k}(s_1,\dots,s_k)=\lambda^k e^{-\lambda s_k}.
+\]
+
+\sub{Poisson from exponentials} If \(X_i\stackrel{iid}{\sim}\Exp(1)\), \(N=\min\{n:\sum_{i=1}^n X_i>\lambda\}-1\), then \(N\sim \Pois(\lambda)\).
+
+\sub{Best stopping time in horizon} Win iff exactly one event in \((s,T]\):
+\[
+\PP(\text{win};s)=e^{-\lambda(T-s)}\lambda(T-s).
+\]
+Max at \(T-s=1/\lambda\) if feasible; best value \(1/e\).
+
+\sub{Bus-or-walk} Wait up to \(s\), bus time \(B\sim \Exp(\lambda)\), ride \(R\), walk \(W\):
+\[
+\E[T(s)]=\frac{1-e^{-\lambda s}}{\lambda}+R(1-e^{-\lambda s})+We^{-\lambda s}.
+\]
+Optimal: walk now if \(W<R+1/\lambda\); wait forever if \(W>R+1/\lambda\); tie if equal.
+
+\sub{First large gap} Cars HPP rate \(\lambda\); wait to first gap of length \(T\):
+\[
+\E[W]=\frac{e^{\lambda T}-1}{\lambda}.
+\]
+
+\sub{Dead time counter} If counter ignores all events for \(h\) after each registered event, first \(k\) events all registered iff first \(k-1\) interarrivals exceed \(h\):
+\[
+\PP(\text{first }k\text{ registered})=e^{-\lambda h(k-1)}.
+\]
+Registered count \(R(t)\):
+\[
+\PP(R(t)\ge n)=1-e^{-\lambda(t-(n-1)h)}\sum_{j=0}^{n-1}\frac{[\lambda(t-(n-1)h)]^j}{j!},
+\]
+valid for \(t\ge (n-1)h\).
+
+\sub{Shock model} Shocks HPP \(\lambda\), fatal with prob.\ \(p\). Condition on failure time \(T=t\):
+\[
+N-1\mid (T=t)\sim \Pois(\lambda(1-p)t).
+\]
+
+\sub{Poisson routing} Independent \(N_i\sim \Pois(\lambda_i)\), item from \(i\) routed to \(j\) with prob.\ \(p_{ij}\). Then routed count to \(j\):
+\[
+O_j\sim \Pois\Big(\sum_i \lambda_i p_{ij}\Big),
+\]
+and destination counts are independent by thinning.
+
+\sub{Poissonization trick} If a common stream is split into type-\(i\) subprocesses of rates \(p_i\), then race-to-\(n_i\) counts becomes race between independent hitting times \(T_i\). Use \(\PP(T>\!t)=\prod_i\PP(\Pois(p_it)<n_i)\), then
+\[
+\E[T]=\int_0^\infty \PP(T>t)\,dt.
+\]
+
+\sub{Random number of classified trials} If \(N\sim \Pois(\lambda)\), each trial belongs to category \(j\) with prob.\ \(p_j\), then category counts are independent \(\Pois(\lambda p_j)\).
+
+\sub{Order-stat expectations} For Poisson arrivals \(S_i\),
+\[
+\E[S_i\mid N(t)=n]=
+\begin{cases}
+\dfrac{i}{n+1}t,&i\le n,\\[0.6ex]
+t+\dfrac{i-n}{\lambda},&i>n.
+\end{cases}
+\]
+
+\sub{Bus capacities} If buses form a renewal process with renewal function \(m_G\) and capacity \(J\),
+\[
+X(t)=\sum_{k=1}^{N_G(t)}J_k,\qquad \E[X(t)]=m_G(t)\E[J].
+\]
+In general \(X(t)\) is not Poisson.
+
+\sub{Time-varying marks} HPP rate \(\lambda\), event at time \(u\) marked type \(i\) with prob.\ \(p_i(u)\):
+\[
+N_i(t)\sim \Pois\!\left(\lambda\int_0^t p_i(u)\,du\right),
+\]
+independent over \(i\).
+
+\sub{State occupancy from marked customers} If each arrival follows state-probability profile \(p_i(u)\) after age \(u\), then number in state \(i\) at time \(t\):
+\[
+N_i(t)\sim \Pois\!\left(\lambda\int_0^t p_i(u)\,du\right),
+\]
+so mean = variance.
+
+\sub{Cars in interval} Entries HPP rate \(\lambda\), speed \(V\) iid. Number in road segment \((a,b)\) at fixed time:
+\[
+N_{(a,b)}\sim \Pois\!\left(\lambda(b-a)\E[1/V]\right).
+\]
+
+\sub{Compound Poisson moments} For \(D(t)=\sum_{k=1}^{N(t)}X_k\),
+\[
+\Var(D(t))=\lambda t\,\E[X^2],\qquad
+\Cov(D(t),D(t+s))=\lambda t\,\E[X^2].
+\]
+
+\sub{Compound Poisson transform} Always try
+\[
+M_{D(t)}(\theta)=\exp\{\lambda t(M_X(\theta)-1)\}.
+\]
+Then extract moments or coefficients.
+
+\sub{NHPP increments} Replace \(\lambda t\) by \(m(t)\):
+\[
+N(t+s)-N(t)\sim \Pois(m(t+s)-m(t)).
+\]
+Interarrivals are generally neither independent nor iid.
+
+\sub{NHPP first arrival} Use
+\[
+\PP(T_1>t)=e^{-m(t)}.
+\]
+If asked for \(S_2\), use \(f_{S_2}(s)=\lambda(s)e^{-m(s)}m(s)\).
+
+\sub{NHPP conditioned on count} Given \(N(t)=n\), arrivals are order stats of iid cdf \(F(x)=m(x)/m(t)\).
+
+\sub{Accidents + injury duration} Accidents NHPP intensity \(\lambda(u)\); each worker remains absent with cdf \(F\). Number still out of work at time \(t\):
+\[
+X(t)\sim \Pois\!\left(\int_0^t \lambda(u)\barF(t-u)\,du\right).
+\]
+
+\sub{Spatial Poisson} 2D PPP intensity \(\lambda\) per unit area; distance \(R\) to nearest point:
+\[
+\PP(R>t)=e^{-\lambda\pi t^2},\qquad \E[R]=\frac{1}{2\sqrt{\lambda}}.
+\]
+Also \(\pi R_i^2-\pi R_{i-1}^2\stackrel{iid}{\sim}\Exp(\lambda)\).
+
+\sub{Random shifts} \(N^*(t)=N(t+\tau)-N(\tau)\), \(\tau\perp N\). If \(N\) is HPP, \(N^*\) is again HPP. For NHPP, random shift usually destroys independent increments.
+
+\sub{Busy period as branching} In M/G/1, offspring = arrivals during one service time. If \(\rho=\lambda\E[Y]<1\),
+\[
+\E[C]=\frac{1}{1-\rho},\qquad
+\Var(C)=\frac{\rho+\lambda^2\Var(Y)}{(1-\rho)^3}.
+\]
+
+\sub{Mixed Poisson diagnostics} Conditional order-stat property does \emph{not} imply Poisson. A Cox process has it, yet increments are dependent.
+
+\sub{Gamma-mixed posterior rate} With prior \(\Lambda\sim\Gamma(m,\alpha)\),
+\[
+\Lambda\mid N(t)=n\sim \Gamma(m+n,\alpha+t),\qquad
+\E[\Lambda\mid N(t)=n]=\frac{m+n}{\alpha+t}.
+\]
+
+\section*{Renewal Problems}
+\sub{Convert count statements fast} Always translate via \(N(t)\ge n \iff S_n\le t\), \(N(t)<n \iff S_n>t\); also \(N(t)\le n \iff S_{n+1}>t\).
+
+\sub{Defective renewal} If \(F(\infty)=q<1\), total number of renewals is geometric-type:
+\[
+\PP(N(\infty)=k)=(1-q)q^k,\qquad \E[N(\infty)+1]=\frac{1}{1-q}.
+\]
+
+\sub{Inspection paradox} \(X_{N(t)+1}\) is the interval covering \(t\), hence length-biased. In steady state
+\[
+\E[X_{N(t)+1}]\to \frac{\E[X^2]}{\E[X]}.
+\]
+
+\sub{Renewal equation} If asked for \(m(t)\), condition on first renewal:
+\[
+m(t)=F(t)+\int_0^t m(t-x)\,dF(x).
+\]
+Transforms give \(\tilde m(s)=\tilde F(s)/(1-\tilde F(s))\).
+
+\sub{Characterize Poisson from residual life} If residual life after time \(t\), given \(N(t)=n\), has same law as \(X_1\) and is independent of past, then \(F\) is memoryless \(\Rightarrow\) exponential \(\Rightarrow\) renewal process is Poisson.
+
+\sub{Uniform interarrivals} If \(X_i\sim U(0,1)\), then for \(0\le t\le1\),
+\[
+m(t)=e^t-1.
+\]
+Hence expected number of uniforms needed for sum to exceed 1 equals \(m(1)+1=e\).
+
+\sub{Exchangeability} Conditional on \(N(t)=n\), the interarrivals seen before \(t\) are exchangeable:
+\[
+\E\!\left[\frac{X_1+\cdots+X_{N(t)}}{N(t)}\Bigm|N(t)=n\right]=\E[X_1\mid N(t)=n].
+\]
+
+\sub{M/G/1/1 loss model} Potential arrivals Poisson \(\lambda\), service \(S\), \(\rho=\lambda\E[S]\):
+\[
+P_{\text{block}}=\frac{\rho}{1+\rho},\qquad
+P_{\text{enter}}=\frac{1}{1+\rho},\qquad
+P_{\text{busy}}=\frac{\rho}{1+\rho}.
+\]
+
+\sub{Independent stopping index} If \(N\perp\{X_i\}\), use Wald directly:
+\[
+\E\Big[\sum_{i=1}^N X_i\Big]=\E[N]\E[X_1].
+\]
+For door/trial problems: identify \(N\) as geometric, then \(T=\sum_{i=1}^N X_i\).
+
+\sub{Blackwell} If problem asks asymptotic increment or count in \((t,t+a]\):
+\[
+\E[N(t+a)-N(t)]\to \frac{a}{\mu}
+\]
+for nonlattice finite-mean renewals.
+
+\sub{Cyclic process state fraction} If a cycle visits state \(i\) for mean \(\mu_i\),
+\[
+\PP(X(t)=i)\to \frac{\mu_i}{\sum_j \mu_j}.
+\]
+
+\sub{Age/excess events} \(\{A(t)>x\}\) means no renewal in \((t-x,t]\); \(\{Y(t)>x\}\) means no renewal in \((t,t+x]\). For Poisson, both are Exp(\(\lambda\)).
+
+\sub{Residual life given age} If current age is \(s\),
+\[
+\PP(Y>x\mid A=s)=\frac{\barF(s+x)}{\barF(s)}.
+\]
+This is the first thing to use whenever age is observed.
+
+\sub{Equilibrium excess mean} In steady state,
+\[
+\E[Y_\infty]=\frac{\E[X^2]}{2\E[X]}.
+\]
+Gamma\((n,\lambda)\) interarrivals give \((n+1)/(2\lambda)\).
+
+\sub{General renewal equation} If \(g=h+g*F\), solve by renewal measure:
+\[
+g(t)=h(t)+\int_0^t h(t-x)\,dm(x).
+\]
+Then KRT gives \(g(t)\to \int_0^\infty h/\mu\).
+
+\sub{Accepted/departure process after losses} For renewal arrivals with general \(F\), accepted-entry or departure process in M/G/1/1 is usually delayed renewal, not ordinary renewal. Exponential arrivals restore memoryless/Poisson structure.
+
+\sub{Pattern/run questions} Convert to finite-state automaton or run-length Markov chain; solve linear hitting-time equations. This covers pattern waiting times, Penney-type problems, first run of \(k\), repeated block questions, etc.
+
+\sub{Delayed renewal} If first interarrival cdf \(G\),
+\[
+m_D(t)=G(t)+\int_0^t m(t-x)\,dG(x).
+\]
+Use this whenever the process starts mid-cycle or with a special first cycle.
+
+\sub{Window reward} For renewal reward, expected reward in \((t,t+a)\):
+\[
+\E[\text{reward in }(t,t+a)]\to a\frac{\E[\text{reward/cycle}]}{\E[X]}.
+\]
+
+\sub{Next-cycle reward seen at time \(t\)} Under nonlattice conditions,
+\[
+\E[R_{N(t)+1}]\to \frac{\E[RX]}{\E[X]}.
+\]
+Special case \(R=X\):
+\[
+\E[X_{N(t)+1}]\to \frac{\E[X^2]}{\E[X]}.
+\]
+
+\sub{Threshold dispatch/replacement} If policy uses threshold \(N^*\), age \(T\), or replacement rule, almost always optimize
+\[
+\frac{\E[\text{cost per cycle}]}{\E[\text{cycle length}]}
+\]
+over the decision parameter.
+
+\sub{Alternating-renewal availability} If system is up for \(U\), down for \(D\),
+\[
+P_{\text{up}}=\frac{\E[U]}{\E[U]+\E[D]}.
+\]
+For independent subsystems, combine availability algebraically.
+
+\sub{Busy period} In M/G/1, treat idle/busy as alternating renewal:
+\[
+P_0=1-\rho,\qquad
+\E[B]=\frac{\E[S]}{1-\rho},\qquad
+\E[C_{\text{busy}}]=\frac{1}{1-\rho}.
+\]
+
+\sub{Workload identity} If \(V\) is average work and \(W_q\) mean waiting in queue,
+\[
+V=\lambda \E[Y]W_q+\frac{\lambda \E[Y^2]}{2}.
+\]
+This is the starting point for many queueing-renewal problems.
+
+\sub{Regenerative state fraction} If \(X(t)\) regenerates each truck/bus/visit,
+\[
+\pi_i=\frac{\E[\text{time in state }i\text{ per cycle}]}{\E[\text{cycle length}]}.
+\]
+
+\sub{Reward rate from state rewards} If reward rate in state \(j\) is \(r(j)\),
+\[
+\frac{1}{t}\int_0^t r(X(s))\,ds\to \sum_j \pi_j r(j)\quad \text{a.s.}
+\]
+
+\sub{Exam flow} If you see ``count by time'' think Poisson/NHPP; ``iid cycle lengths'' think renewal equation; ``long-run average'' think reward theorem; ``age/excess/random observer'' think equilibrium law + inspection paradox; ``special first cycle'' think delayed renewal; ``runs/patterns'' think finite-state Markov chain.
+
+\sub{Method map} Hitting probability \(\Rightarrow\) first-step equations; mean hitting/absorption time \(\Rightarrow\) first-step \(+1\); stationary law \(\Rightarrow\) solve \(\pi=\pi P\) or \(pR=0\); birth-death \(\Rightarrow\) local balance; long-run average/cost \(\Rightarrow\) renewal reward; random observer \(\Rightarrow\) equilibrium law + size bias; Poisson arrival observer \(\Rightarrow\) PASTA; departure epoch \(\Rightarrow\) embedded chain/Burke; finite buffer/loss \(\Rightarrow\) admitted rate; transient CTMC \(\Rightarrow\) uniformization; runs/patterns \(\Rightarrow\) finite-state Markov chain; network \(\Rightarrow\) traffic equations; branching/extinction \(\Rightarrow\) pgf fixed point.
+
+\sub{Setup templates} Hitting \(h_i=\sum_j P_{ij}h_j\) off target, \(h_i=1\) on target; mean hit \(m_i=1+\sum_jP_{ij}m_j\) off target, \(m_i=0\) on target. Absorbing DTMC: \(N=(I-Q)^{-1},\ t=N\mathbf1,\ B=NR\). DTMC detailed balance: \(\pi_iP_{ij}=\pi_jP_{ji}\). CTMC balance: \(p_jv_j=\sum_i p_iq_{ij}\); reversible CTMC: \(p_iq_{ij}=p_jq_{ji}\). Birth-death: \(p_{n+1}/p_n=\lambda_n/\mu_{n+1}\). Jackson: \(\lambda_j=r_j+\sum_i\lambda_iP_{ij}\). Renewal: \(m=F+m*F,\ g=h+g*F\). Blackwell/KRT: take \(h=\1_{[0,a]}\). Wald at fixed horizon: use \(N(t)+1\), not \(N(t)\).
+
+\sub{Pitfalls} \(N(t)\) is not a stopping time. PASTA only for Poisson arrivals. Mixed Poisson/Cox has stationary but dependent increments. Batch arrivals: customer rate is \(\lambda\E[N]\), not batch rate \(\lambda\). In loss/finite-buffer models use admitted rate \(\lambda_s=\lambda(1-P_{\rm block})\) in Little's law. Arbitrary time, arrival epoch, and departure epoch usually have different laws. Random observer sees a size-biased interval. Embedded DTMC positive recurrence alone does not guarantee CTMC positive recurrence. Conditional order-stat property alone does not prove Poisson. Always write boundary conditions explicitly.
+
+\sub{Transform table} Bernoulli\((p)\): \(G(z)=1-p+pz\). Bin\((n,p)\): \(G(z)=(1-p+pz)^n\). Geom on \(\{0,1,\dots\}\): \(G(z)=\frac{p}{1-(1-p)z}\), \(\E[N]=(1-p)/p\). Pois\((\lambda)\): \(G(z)=e^{\lambda(z-1)}\), \(M(s)=e^{\lambda(e^s-1)}\). Exp\((\lambda)\): \(\barF(x)=e^{-\lambda x}\), \(\tilde F(s)=\frac{\lambda}{\lambda+s}\), \(M(s)=\frac{\lambda}{\lambda-s}\). Gamma/Erlang\((n,\lambda)\): \(\tilde F(s)=\left(\frac{\lambda}{\lambda+s}\right)^n\), \(M(s)=\left(\frac{\lambda}{\lambda-s}\right)^n\). Branching extinction: \(q=G_Z(q)\). Compound Poisson: \(M_{D(t)}(\theta)=\exp\{\lambda t(M_X(\theta)-1)\}\).
+
+\sub{Viewpoints/checks} Arbitrary time \(\Rightarrow\) stationary time-average law; arrival epoch \(\Rightarrow\) PASTA if Poisson; departure epoch \(\Rightarrow\) embedded chain/Burke/product form. Units: \(L,Q,L_s\) are customers, \(w,d\) are time, \(V\) is workload. As \(\rho\to0\), delays should go to \(0\); as \(\rho\uparrow1\), M/M/1 and M/G/1 means blow up. Probabilities must lie in \([0,1]\) and stationary masses sum to \(1\). Blocking should increase with load and decrease with capacity.
+
+\section*{Probable Questions}
+\sub{Proof/derivation style}
+\probq{Show Blackwell's theorem from the key renewal theorem.}{Take \(h=\1_{[0,a]}\). Then \(m(t)-m(t-a)=\int_0^t h(t-x)\,dm(x)\to \mu^{-1}\int_0^\infty h=\frac{a}{\mu}\).}
+\probq{If \(Z_i\) are iid with mean \(0\), variance \(\sigma^2\), and \(M\) is a finite stopping time, prove \(\Var(T_M)=\sigma^2\E[M]\).}{\(\E[T_M]=0\). Also \(\E[T_M^2]=\E[\sum_{i=1}^M Z_i^2]+2\E[\sum_{i<j\le M}Z_iZ_j]=\sigma^2\E[M]\); cross terms vanish by stopping-time conditioning.}
+\probq{Show that the total time spent in a transient CTMC state \(i\) is exponential.}{If \(f_{ii}<1\), number of visits is \(G+1\) with \(G\sim\Geom(1-f_{ii})-1\), each sojourn \(\Exp(v_i)\). LST \(=\frac{(1-f_{ii})v_i}{s+(1-f_{ii})v_i}\), so total time \(\sim \Exp((1-f_{ii})v_i)\).}
+\probq{Show that the product of independent reversible CTMCs is reversible.}{For state \(i=(i_1,\dots,i_m)\), \(\pi(i)=\prod_r \pi_r(i_r)\). If \(j\) differs only in coordinate \(r\), then \(\pi(i)q_{ij}=\prod_{k\ne r}\pi_k(i_k)\pi_r(i_r)q_{i_rj_r}^{(r)}=\pi(j)q_{ji}\).}
+\probq{For an ordinary renewal process, prove \(\E[S_{N(t)+k}]=\mu(m(t)+k)\), \(k\ge1\).}{\(S_{N(t)+k}=\sum_{i=1}^{N(t)+k}X_i\), and \(N(t)+k\) is a stopping time. Wald gives \(\E[S_{N(t)+k}]=\mu(\E[N(t)]+k)=\mu(m(t)+k)\).}
+\probq{Give a counterexample showing \(\E[S_{N(t)}]\neq \mu m(t)\) in general.}{Take \(X_1\in\{1,2\}\) with prob.\ \(1/2\) each and \(t=1\). Then \(N(1)=\1\{X_1\le1\}\), so \(\E[S_{N(1)}]=1/2\), but \(\mu m(1)=(3/2)(1/2)=3/4\).}
+\probq{Show that a renewal process whose residual life has the same law as \(X_1\) at every \(t\) must be Poisson.}{This implies \(\PP(X>s+t\mid X>s)=\PP(X>t)\), so \(\barF(s+t)=\barF(s)\barF(t)\). Hence \(F(x)=1-e^{-\lambda x}\), so the renewal process is Poisson.}
+\probq{Show that a mixed Poisson process has stationary but not independent increments.}{Given \(\Lambda\), increments are independent Poisson; unconditionally \(\Cov(N(s),N(t+s)-N(s))=st\,\Var(\Lambda)>0\) if \(\Var(\Lambda)>0\). Counts over length \(u\) still depend only on \(u\).}
+
+\sub{Poisson/renewal conditioning}
+\probq{Buses are Poisson(\(\lambda\)), customers are Poisson(\(\mu\)); find PMF of customers on the \(m\)th bus.}{If \(Y_m\) is the load, \(\PP(Y_m=k)=\int_0^\infty e^{-\mu x}(\mu x)^k/k!\,\lambda e^{-\lambda x}dx=\frac{\lambda\mu^k}{(\lambda+\mu)^{k+1}}\).}
+\probq{Find the PMF of customers waiting at a fixed time in the above bus model.}{Backward recurrence for Poisson is again \(\Exp(\lambda)\), so the same PMF holds: \(\PP(Y=k)=\frac{\lambda\mu^k}{(\lambda+\mu)^{k+1}}\).}
+\probq{Find the PMF of customers boarding the next bus after a fixed observation time.}{Past and future contributions are independent with the above PMF, so \(\PP(Y=k)=\frac{\lambda^2\mu^k(k+1)}{(\lambda+\mu)^{k+2}}\).}
+\probq{At bus departure time \(t\), let \(X=\) total waiting time of all passengers; find \(\Var(X)\).}{\(\E[X\mid N(t)=n]=nt/2,\ \Var(X\mid N(t)=n)=nt^2/12\). Hence \(\Var(X)=\Var(N(t)t/2)+\E[N(t)t^2/12]=\lambda t^3/3\).}
+\probq{Jobs are reset by Poisson shocks while being processed; find the long-run job completion rate.}{One cycle ends at completion or shock. Reward \(=1\) iff completion occurs first, so rate \(=\frac{\int_0^\infty e^{-\lambda y}\,dF(y)}{\int_0^\infty \barF(x)e^{-\lambda x}\,dx}\).}
+\probq{Packages arrive Poisson, trucks arrive as a nonlattice renewal process and clear all waiting packages; find \(\lim_{t\to\infty}\PP(X(t)=i)\).}{\(\displaystyle \pi_i=\frac{\int_0^\infty e^{-\lambda u}(\lambda u)^i/i!\,\barF(u)\,du}{\int_0^\infty \barF(u)\,du}\).}
+\probq{Find \(\E[\)busy period\(]\) in an \(M/G/\infty\) or \(M/G/1\)-type model.}{\(M/G/\infty:\ \E[B]=\lambda^{-1}(e^{\lambda\E[S]}-1)\). \(M/G/1:\ \E[B]=\E[S]/(1-\rho)\), \(\rho=\lambda\E[S]\).}
+\probq{Door locks for \(t\) units after each admitted arrival; lost arrival costs \(c\), busy-server rejection costs \(K\); find long-run average cost.}{One door cycle has mean \(t+1/\lambda\). Locked losses contribute \(c\lambda t\) per cycle. Busy at next pass with prob.\ \(p=\E[e^{-\mu(t+E_\lambda)}]=\frac{\lambda e^{-\mu t}}{\lambda+\mu}\). Cost rate \(=\frac{c\lambda t+Kp}{t+1/\lambda}\).}
+\probq{For a dead-time counter, find \(\PP(R(t)\ge n)\).}{\(\displaystyle \PP(R(t)\ge n)=\PP(E_n+(n-1)h\le t)=1-e^{-\lambda(t-(n-1)h)}\sum_{j=0}^{n-1}\frac{[\lambda(t-(n-1)h)]^j}{j!}\), \(t\ge(n-1)h\).}
+\probq{Cars arrive as Poisson; find expected waiting time until a gap of length \(T\).}{\(\displaystyle \E[W]=\frac{e^{\lambda T}-1}{\lambda}\).}
+\probq{With NHPP accidents and random injury durations, find the number still absent at time \(t\).}{\(\displaystyle X(t)\sim\Pois\!\left(\int_0^t \lambda(u)\barF(t-u)\,du\right)\), so mean = variance = that integral.}
+\probq{Find the number of cars in a road segment when entry process is Poisson and speeds are iid.}{\(\displaystyle N_{(a,b)}\sim\Pois\!\big(\lambda(b-a)\E[1/V]\big)\).}
+
+\sub{Renewal/reward/inspection}
+\probq{Use renewal reward to optimize a threshold dispatch or replacement rule.}{For policy parameter \(\theta\), optimize \(\displaystyle g(\theta)=\frac{\E[C_\theta]}{\E[T_\theta]}\); compare neighboring integer thresholds or differentiate in continuous models.}
+\probq{Find limiting age/excess or expected residual life at a random time.}{\(\displaystyle \PP(Y_\infty>x)=\frac1\mu\int_x^\infty \barF(u)\,du,\quad \E[Y_\infty]=\frac{\E[X^2]}{2\E[X]}\).}
+\probq{Show why inspection paradox makes the observed interval longer than an ordinary interarrival.}{Observed interval has size-biased law \(f_{X^*}(x)=xf(x)/\E[X]\), hence \(\E[X^*]=\E[X^2]/\E[X]\ge \E[X]\).}
+\probq{Find the long-run up probability of an alternating-renewal system.}{\(\displaystyle P_{\rm up}=\frac{\E[U]}{\E[U]+\E[D]}\).}
+\probq{A cyclic semi-Markov system spends mean \(\mu_i\) in state \(i\) per cycle; find time fractions.}{\(\displaystyle p_i=\frac{\mu_i}{\sum_j\mu_j}\).}
+\probq{For an irreducible semi-Markov process with embedded stationary law \(\pi\) and mean holding times \(\mu_i\), find time fractions.}{\(\displaystyle P_i=\frac{\pi_i\mu_i}{\sum_k\pi_k\mu_k}\). CTMC special case: \(\mu_i=1/v_i\).}
+\probq{Find the limiting average reward rate \(\lim_{t\to\infty}t^{-1}\int_0^t r(X(s))ds\).}{\(\displaystyle \sum_j \pi_j r(j)=\frac{\E[\text{reward/cycle}]}{\E[\text{cycle length}]}\).}
+
+\sub{DTMC/CTMC/queueing style}
+\probq{Given a small DTMC matrix, find stationary distribution.}{Solve \(\pi=\pi P\). For the 3-state midsem matrix, \(\pi=(21,23,18)/62\).}
+\probq{For the random walk with jumps \(+2\) w.p.\ \(p\) and \(-1\) w.p.\ \(1-p\), determine recurrence/transience.}{Return to \(0\) only at times \(3m\), with \(P_{00}^{(3m)}=\binom{3m}{m}p^m(1-p)^{2m}\). The return series diverges only at \(p=1/3\); hence recurrent iff \(p=1/3\), transient otherwise.}
+\probq{Find fractions of children that are \(j\)th born / have \(l\) younger siblings.}{Joint fraction \(=\alpha_{j+l}/\E[\nu]\). Marginals: \(P(J=j)=\sum_{l\ge0}\alpha_{j+l}/\E[\nu]\), \(P(L=l)=\sum_{j\ge1}\alpha_{j+l}/\E[\nu]\).}
+\probq{Find \(P(N\le 8)\) and \(P(N=8)\) for the first run of 3 heads.}{Using the run-length DTMC, \(P(N\le8)=107/256\) and \(P(N=8)=13/256\).}
+\probq{Find the stationary law of an \(M/M/2\) with unequal servers and routing to the faster server when empty.}{Let states be \(0,1_f,1_s,n\ge2\). For \(n\ge2\), \(p_n=p_2\rho^{n-2}\), \(\rho=\lambda/(\mu_1+\mu_2)\). Also \(p_{1_s}=\frac{\mu_1}{\lambda+\mu_2}p_2,\ p_{1_f}=\frac{\mu_2(\lambda+\mu_1+\mu_2)}{\lambda(\lambda+\mu_2)}p_2\); normalize.}
+\probq{A repairperson gives preemptive priority to machine 1; what fraction of time is machine 2 down?}{Use states \(UU,DU,UD,DD\). Relative masses: \(p_{DU}=p_{UU}\frac{\lambda_1}{\mu_1+\lambda_2}\), \(p_{UD}=p_{UU}\frac{\lambda_2(\mu_1+\lambda_1+\lambda_2)}{\mu_2(\mu_1+\lambda_2)}\), \(p_{DD}=p_{UU}\frac{\lambda_1\lambda_2(\mu_1+\mu_2+\lambda_1+\lambda_2)}{\mu_1\mu_2(\mu_1+\lambda_2)}\). Fraction down \(=p_{UD}+p_{DD}\).}
+\probq{For the 3-station Jackson network from Quiz 3, find average number in system and average time in system.}{Traffic rates: \(\lambda_1=5,\ \lambda_2=40,\ \lambda_3=170/3\). Then \(L=\sum_j \rho_j/(1-\rho_j)=82/13\), and \(W=L/(5+10+15)=41/195\).}
+\probq{A CTMC is obtained by truncating a larger reversible CTMC; find shutdown probability or average components under repair.}{Start from the independent product-form reversible chain, then renormalize on the truncated state space \(A\): \(p_i^{(A)}=p_i/\sum_{k\in A}p_k\). Compute shutdown probability/mean repairs under this truncated law.}
+\probq{Find stationary distribution of an \(M/G/1\) embedded chain.}{\(\displaystyle \pi(z)=\frac{(1-\rho)(z-1)A(z)}{z-A(z)},\quad \pi_0=1-\rho,\quad \rho=\lambda\E[S]<1.\)}
+\probq{Find stationary distribution of a \(G/M/1\) embedded chain.}{\(\pi_k=(1-\beta)\beta^k\), where \(\beta\in(0,1)\) solves \(\displaystyle \beta=\int_0^\infty e^{-\mu(1-\beta)t}\,dG(t)\).}
+\probq{For a branching process, find extinction probability and moments.}{\(\E[X_n]=\mu^n\), \(\Var(X_n)=\sigma^2\mu^{n-1}(1-\mu^n)/(1-\mu)\) for \(\mu\neq1\), \(=n\sigma^2\) for \(\mu=1\). Extinction \(q\) is the smallest root of \(q=\sum_j P_j q^j\), and \(q=1\iff \mu\le1\).}
+
+\sub{More CTMC-heavy endsem}
+\probq{Given the stationary law \(\pi\) of an embedded DTMC and exit rates \(v_i\), find the CTMC stationary law.}{\(\displaystyle p_i=\frac{\pi_i/v_i}{\sum_j \pi_j/v_j}\); equivalently solve \(pR=0\) with \(\sum_i p_i=1\).}
+\probq{Use local balance to find the stationary law of a birth-death CTMC.}{\(\displaystyle p_{n+1}=p_n\frac{\lambda_n}{\mu_{n+1}}\), so \(p_n=p_0\prod_{k=0}^{n-1}\lambda_k/\mu_{k+1}\); normalize if \(\sum_n p_n<\infty\).}
+\probq{Find CTMC transient probabilities using uniformization.}{Choose \(v\ge \sup_i v_i\), set \(P^*_{ij}=q_{ij}/v\) for \(i\ne j\), \(P^*_{ii}=1-v_i/v\), then \(\displaystyle P_{ij}(t)=\sum_{n\ge0}(P^{*n})_{ij}e^{-vt}\frac{(vt)^n}{n!}\).}
+\probq{For a two-state CTMC \(0\xrightleftharpoons[\mu]{\lambda}1\), find transient and limiting probabilities.}{\(\displaystyle P_{00}(t)=\frac{\mu}{\lambda+\mu}+\frac{\lambda}{\lambda+\mu}e^{-(\lambda+\mu)t}\), \(\displaystyle P_{11}(t)=\frac{\lambda}{\lambda+\mu}+\frac{\mu}{\lambda+\mu}e^{-(\lambda+\mu)t}\), and \(p=(\mu,\lambda)/(\lambda+\mu)\).}
+\probq{For a Yule process starting with \(i\), find \(P_{ij}(t)\) and \(\E[X(t)]\).}{\(\displaystyle P_{ij}(t)=\binom{j-1}{i-1}e^{-i\lambda t}(1-e^{-\lambda t})^{j-i}\) for \(j\ge i\), and \(\E[X(t)]=ie^{\lambda t}\).}
+\probq{For the simple epidemic CTMC with infection rate \(n(m-n)\alpha\), find mean time until all \(m\) are infected.}{\(\displaystyle \E[T]=\sum_{i=1}^{m-1}\frac{1}{i(m-i)\alpha}\).}
+
+\sub{More queueing-heavy endsem}
+\probq{Show that the stationary \(M/M/1\) waiting time is exponential.}{By PASTA, \(N_a\sim(1-\rho)\rho^n\). Given \(N_a=n\), \(W\sim\) Erlang\((n+1,\mu)\); summing the mixture gives \(W\sim \Exp(\mu-\lambda)\).}
+\probq{Find blocking probability and effective throughput in \(M/M/1/N\).}{\(\displaystyle p_n=\frac{(1-\rho)\rho^n}{1-\rho^{N+1}},\quad P_{\rm block}=p_N,\quad \lambda_s=\lambda(1-p_N)\).}
+\probq{Find delay and waiting probability in \(M/M/m\).}{Use Erlang C: \(\displaystyle p_0=\Big[\sum_{n=0}^{m-1}\frac{(m\rho)^n}{n!}+\frac{(m\rho)^m}{m!(1-\rho)}\Big]^{-1}\), \(\displaystyle P_Q=\frac{(m\rho)^m}{m!(1-\rho)}p_0\), \(d=\frac{P_Q}{m\mu-\lambda}\), \(w=d+\frac1\mu\).}
+\probq{For a 2-class nonpreemptive priority \(M/G/1\), find \(d_1,d_2\).}{\(\displaystyle d_1=\frac{\lambda_1\E[S_1^2]+\lambda_2\E[S_2^2]}{2(1-\rho_1)},\qquad d_2=\frac{\lambda_1\E[S_1^2]+\lambda_2\E[S_2^2]}{2(1-\rho_1)(1-\rho_1-\rho_2)}.\)}
+\probq{Find blocking probability in the \(M/M/m/m\) loss system.}{\(\displaystyle P_{\rm block}=\frac{(\lambda/\mu)^m/m!}{\sum_{k=0}^m(\lambda/\mu)^k/k!}\) (Erlang B).}
+\probq{Use Burke's theorem in a tandem \(M/M/1\) network.}{Stationary departures from queue 1 are Poisson(\(\lambda\)) and independent of \(N_1\), so \(\PP(N_1=n_1,N_2=n_2)=(1-\rho_1)\rho_1^{n_1}(1-\rho_2)\rho_2^{n_2}\).}
+\probq{Solve an open Jackson network quickly.}{First solve \(\lambda_j=r_j+\sum_i \lambda_iP_{ij}\). Then node \(j\) behaves like an independent \(M/M/1\) with \(p_j(n)=(1-\rho_j)\rho_j^n\), so \(L=\sum_j \rho_j/(1-\rho_j)\) and \(W=L/\sum_j r_j\).}
+\probq{For the open CPU-I-O feedback network, find \(L\) or \(w\).}{\(\displaystyle \lambda_1=\lambda/p_1,\ \lambda_2=\lambda p_2/p_1,\ \rho_j=\lambda_j/\mu_j,\ L=\sum_{j=1}^2\frac{\rho_j}{1-\rho_j},\ w=L/\lambda.\) Also \(S_1=1/(\mu_1p_1),\ S_2=p_2/(\mu_2p_1)\), so \(w=\frac{1}{S_1^{-1}-\lambda}+\frac{1}{S_2^{-1}-\lambda}\).}
+\probq{For the closed 2-node CPU-I-O network with \(M\) jobs, find occupancy law or CPU utilization.}{\(\displaystyle \rho_1=1,\ \rho_2=p_2\mu_1/\mu_2,\ P(M-n,n)=\rho_2^n/G(M),\ G(M)=\sum_{n=0}^M\rho_2^n,\ U_{\rm CPU}(M)=G(M-1)/G(M).\)}
+\probq{Use Pollaczek-Khintchine to compare service-time variability in \(M/G/1\).}{\(\displaystyle d=\frac{\lambda\E[S^2]}{2(1-\rho)}\), so for fixed \(\E[S]\), larger \(\Var(S)\) makes \(d,Q,w,L\) larger since \(\E[S^2]=\Var(S)+(\E[S])^2\).}
+\probq{Find mean delay in an \(M/G/1\) with batch arrivals.}{\(\displaystyle d=\frac{\E[S](\E[N^2]-\E[N])/(2\E[N])+\lambda \E[N]\E[S^2]/2}{1-\lambda \E[N]\E[S]}\), then \(Q=\lambda\E[N]d,\ w=d+\E[S]\).}
+\probq{In an \(M/G/\infty\) queue, find the steady-state idle probability.}{\(\displaystyle N(\infty)\sim\Pois(\lambda\E[S])\), so \(\PP(\text{idle})=e^{-\lambda\E[S]}\).}
+
+\sub{More direct asks}
+\probq{Find absorption probabilities and mean absorption times in a finite absorbing DTMC.}{\(\displaystyle N=(I-Q)^{-1},\quad B=NR,\quad t=N\mathbf1.\)}
+\probq{For a CTMC and target set \(A\), find hit probability and mean hit time.}{\(\displaystyle h_i=1\) on \(A\), \(\sum_j q_{ij}h_j=0\) on \(A^c\); \(\displaystyle m_i=0\) on \(A\), \(\sum_j q_{ij}m_j=-1\) on \(A^c\).}
+\probq{Find waiting-time and queue-delay tails in stationary \(M/M/1\).}{\(\displaystyle \PP(W>t)=e^{-(\mu-\lambda)t},\qquad \PP(D>t)=\rho e^{-(\mu-\lambda)t}.\)}
+\probq{Find queue-delay tail in stationary \(M/M/m\).}{\(\displaystyle \PP(D>t)=P_Q e^{-(m\mu-\lambda)t}.\)}
+\probq{Find occupancy law of an \(M/M/\infty\) or steady \(M/G/\infty\) system.}{\(\displaystyle M/M/\infty:\ p_n=e^{-\rho}\rho^n/n!,\ \rho=\lambda/\mu;\quad M/G/\infty:\ N(\infty)\sim\Pois(\lambda\E[S]).\)}
+\probq{Starting empty, find \(N(t)\) in an \(M/G/\infty\) queue.}{\(\displaystyle N(t)\sim\Pois\!\left(\lambda\int_0^t \bar G(u)\,du\right).\)}
+\probq{Find blocking, entry, and busy probabilities in an \(M/G/1/1\) loss system.}{\(\displaystyle P_{\rm block}=P_{\rm busy}=\frac{\rho}{1+\rho},\quad P_{\rm enter}=\frac{1}{1+\rho},\quad \rho=\lambda\E[S].\)}
+\probq{For a branching process, find the pgf of the \(n\)th generation and the expected total progeny.}{If offspring pgf is \(G\), \(G_{X_n}(s)=G^{\circ n}(s)\); if \(\mu<1\), \(\E[T]=1/(1-\mu)\).}
+\probq{For a 2D Poisson point process, find nearest-neighbor distance law and mean.}{\(\displaystyle \PP(R>t)=e^{-\lambda\pi t^2},\qquad \E[R]=\frac{1}{2\sqrt{\lambda}}.\)}
+\probq{For an NHPP, find the density of the second arrival time.}{\(\displaystyle f_{S_2}(s)=\lambda(s)e^{-m(s)}m(s).\)}
+\probq{With gamma prior on a mixed Poisson rate, estimate the rate after observing \(N(t)=n\).}{\(\displaystyle \Lambda\mid N(t)=n\sim\Gamma(m+n,\alpha+t),\qquad \E[\Lambda\mid N(t)=n]=\frac{m+n}{\alpha+t}.\)}
+
+\sub{Extra quick hitters}
+\probq{Given a stationary DTMC with law \(\pi\), find the reversed chain.}{\(\displaystyle P^*_{ij}=\pi_jP_{ji}/\pi_i\). It is reversible iff \(P^*=P\), i.e.\ \(\pi_iP_{ij}=\pi_jP_{ji}\).}
+\probq{Given a stationary CTMC with law \(p\), find reverse rates and holding rates.}{\(\displaystyle q^*_{ij}=p_jq_{ji}/p_i\) for \(i\ne j\), and \(v_i^*=v_i\).}
+\probq{For a finite-state CTMC with generator \(R\), how do you get \(P(t)\)?}{Solve \(P'(t)=RP(t)\), \(P(0)=I\), so \(\displaystyle P(t)=e^{Rt}=\sum_{n\ge0}(Rt)^n/n!\).}
+\probq{Give a standard nonregular CTMC example.}{Take \(P_{i,i+1}=1,\ v_i=i^2\). Explosion time is \(\sum_{i\ge1}\tau_i\), \(\tau_i\sim\Exp(i^2)\), and \(\sum_i\E[\tau_i]=\sum_i1/i^2<\infty\), so explosion has positive probability.}
+\probq{If the interarrival between buses \(m-1\) and \(m\) is \(x\), find the conditional bus-load law.}{\(\displaystyle Y_m\mid X_m=x\sim\Pois(\mu x)\).}
+\probq{If no bus arrives for \(a\) time units after the last one, express the next-bus load law.}{Write \(Y=N_0+N_1\) with \(N_0\sim\Pois(\mu a)\) and independent \(N_1\) having \(\PP(N_1=k)=\frac{\lambda\mu^k}{(\lambda+\mu)^{k+1}}\).}
+\probq{In Poisson batch arrivals with batch pmf \(\alpha_j\), what batch size does a random customer see?}{\(\displaystyle \PP(N^*=j)=\frac{j\alpha_j}{\E[N]}\).}
+\probq{For M/G/1 with batch arrivals, what is the mean number of same-batch customers ahead of a random customer?}{\(\displaystyle \frac{\E[N^2]-\E[N]}{2\E[N]}\).}
+\probq{If \(T\sim\Exp(\mu)\) is independent of a rate-\(\lambda\) Poisson process, find \(N(T)\).}{\(\displaystyle \PP(N(T)=n)=\frac{\mu}{\lambda+\mu}\Big(\frac{\lambda}{\lambda+\mu}\Big)^n,\quad n\ge0.\)}
+\probq{How do you recognize when PASTA is invalid?}{If arrivals are not Poisson, arrival-seen state need not equal time average; use renewal/Palm arguments instead.}
+\probq{In M/G/1 busy period viewed as branching, find variance of the number served.}{\(\displaystyle \Var(C)=\frac{\rho+\lambda^2\Var(S)}{(1-\rho)^3}\), since offspring count has variance \(\rho+\lambda^2\Var(S)\).}
+\probq{For an open Jackson network, is each node's total arrival process Poisson?}{Not in general. Jackson gives product-form stationary occupancies, but internal arrival processes can be dependent/bursty under routing or feedback.}
+\probq{Why is \(N(t)+1\) a stopping time for renewals but \(N(t)\) is not?}{\(\{N(t)+1\le n\}=\{S_n>t\}\in\sigma(X_1,\dots,X_n)\), but \(\{N(t)\le n\}=\{S_{n+1}>t\}\) depends on \(X_{n+1}\).}
+\probq{In an absorbing DTMC, what does \(N=(I-Q)^{-1}\) mean entrywise?}{\(N_{ij}\) is the expected number of visits to transient state \(j\) before absorption, starting from transient state \(i\).}
+\probq{Which rate goes into Little's law in a finite-buffer or loss system?}{Use admitted throughput \(\lambda_s=\lambda(1-P_{\rm block})\), not the offered rate \(\lambda\).}
+\probq{State the Erlang-B recursion for fast blocking calculations.}{\(\displaystyle B(0,a)=1,\qquad B(m,a)=\frac{a\,B(m-1,a)}{m+a\,B(m-1,a)},\quad a=\lambda/\mu.\)}
+\probq{For \(M/E_k/1\) with \(\rho=\lambda/\mu\), what is \(L\)?}{\(\displaystyle L=\rho+\frac{\rho^2(k+1)}{2k(1-\rho)}\). As \(k\uparrow\infty\), variability drops and delay decreases.}
+\probq{Why can an arbitrary-time observer and an arrival observer see different distributions?}{An arbitrary observer sees a size-biased interval; a Poisson arrival sees the time-average law only because of PASTA.}
+\probq{Why do Burke and Jackson results fit so well together?}{Burke gives Poisson departures from stationary \(M/M/m\); Jackson then uses the resulting effective rates to obtain nodewise product form.}
+\probq{What is the fastest shortcut for a birth-death stationary law?}{Use local balance: \(p_{n+1}/p_n=\lambda_n/\mu_{n+1}\) for CTMCs, or \(=\ p_n/q_{n+1}\) for DTMCs.}
+
+\section*{How To Approach}
+\sub{Classify first} ``Count by time'' \(\Rightarrow\) Poisson/NHPP; ``iid cycles/reset after events'' \(\Rightarrow\) renewal/reward; transition matrix / steps \(\Rightarrow\) DTMC; rates/generator \(\Rightarrow\) CTMC; waiting / blocking / servers \(\Rightarrow\) queueing.
+
+\sub{Write the first equation} Poisson: condition on \(N(t)\) or first arrival; renewal: condition on first renewal and use \(N(t)\ge n\iff S_n\le t\); DTMC/CTMC: write hitting/balance equations with boundary conditions first; queueing: identify model, compute \(\rho\), then use Little/PASTA/Burke/P-K/Erlang as needed.
+
+\sub{Translate the wording} ``At a random time'' \(\Rightarrow\) stationary / equilibrium law; ``seen by an arrival'' \(\Rightarrow\) PASTA only if arrivals are Poisson; ``until first hit / absorption'' \(\Rightarrow\) first-step recursion; ``long-run average'' \(\Rightarrow\) renewal reward or stationary average; ``find pmf/pdf'' \(\Rightarrow\) condition on a natural hidden variable first.
+
+\sub{Pick the right observer} Arbitrary time \(\neq\) arrival epoch \(\neq\) departure epoch. Poisson arrivals give PASTA; random-time observers create size bias / inspection paradox; departure questions often want Burke or an embedded chain.
+
+\sub{Proof questions} Start by naming the theorem you want: Wald, KRT, Blackwell, detailed balance, uniformization, P-K, Burke. Then verify its assumptions explicitly: independence, stopping time, nonlattice, finite mean, \(\rho<1\), irreducible/aperiodic, etc. Most proofs here are 3 steps: set up recursion/transform, apply the theorem, simplify.
+
+\sub{Queueing path} First identify the exact model: M/M/1, M/M/\(m\), M/M/\(m\)/\(m\), M/G/1, batch, priority, Jackson, closed net. Then compute offered rates \(\lambda_j\), utilizations \(\rho_j\), and only after that convert to \(L,Q,w,d\). If there is blocking, replace \(\lambda\) by admitted rate \(\lambda_s\) in Little's law.
+
+\sub{If stuck} Condition on the first event: first arrival, first jump, first renewal, first service completion, or first shock. This usually gives the recursion/integral equation directly.
+
+\sub{Fallback moves} Try one of these immediately: use pgf/mgf/LST; switch from counts to arrival times; embed at arrivals/departures/jumps; use local balance for birth-death; normalize at the end; for NHPP replace \(\lambda t\) by \(m(t)\); for compound Poisson write the transform first.
+
+\sub{Micro-checklist} Write down the state, the target quantity, the conditioning variable, the theorem you plan to use, and the boundary conditions. In many EE621 questions, that 5-line setup is already \(70\%\) of the solution.
+
+\sub{Final checks} Use admitted rate in loss systems, not offered rate. Check units: \(L,Q\) are customers, \(w,d\) are time. As load \(\rho\uparrow1\), delays should blow up; probabilities must lie in \([0,1]\).
+
+\end{multicols}
+\end{document}

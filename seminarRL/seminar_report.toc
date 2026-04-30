@@ -1,0 +1,28 @@
+\contentsline {section}{\numberline {1}Introduction \& Motivation}{3}{section.1}%
+\contentsline {section}{\numberline {2}Reinforcement Learning Fundamentals}{3}{section.2}%
+\contentsline {subsection}{\numberline {2.1}The Core Idea}{3}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Q-Learning and Deep Q-Networks}{3}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Policy Gradient Methods}{4}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Proximal Policy Optimisation (PPO)}{4}{subsection.2.4}%
+\contentsline {section}{\numberline {3}Portfolio Optimisation --- Classical Approach}{4}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Return and Risk}{4}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Markowitz Mean-Variance Optimisation}{4}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Performance Metrics}{4}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Why Classical Methods Fall Short}{5}{subsection.3.4}%
+\contentsline {section}{\numberline {4}Literature Review: Jiang et al.\ (2017)}{5}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Key Architecture: EIIE}{5}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}MDP Formulation}{5}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Results and Limitations}{6}{subsection.4.3}%
+\contentsline {section}{\numberline {5}Proposed Framework}{6}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Contribution 1: Risk-Aware Reward}{6}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Contribution 2: EMA-Filtered State}{7}{subsection.5.2}%
+\contentsline {section}{\numberline {6}The RL--Finance Feedback Loop}{7}{section.6}%
+\contentsline {section}{\numberline {7}Methodology \& Experimental Setup}{8}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Data}{8}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Baselines}{8}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Proposed Agents}{8}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}Evaluation Metrics}{8}{subsection.7.4}%
+\contentsline {subsection}{\numberline {7.5}Demo Code}{8}{subsection.7.5}%
+\contentsline {section}{\numberline {8}Expected Results \& Evaluation}{10}{section.8}%
+\contentsline {section}{\numberline {9}Challenges \& Limitations}{10}{section.9}%
+\contentsline {section}{\numberline {10}Conclusion}{11}{section.10}%

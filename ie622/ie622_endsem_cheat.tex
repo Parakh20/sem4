@@ -1,0 +1,655 @@
+\documentclass[8pt]{extarticle}
+\usepackage[T1]{fontenc}
+\usepackage[a4paper,margin=0.18in]{geometry}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage[protrusion=true,expansion=false]{microtype}
+\setlist[itemize]{leftmargin=*,itemsep=0pt,topsep=0pt,parsep=0pt}
+\setlist[enumerate]{leftmargin=*,itemsep=0pt,topsep=0pt,parsep=0pt}
+\titlespacing*{\section}{0pt}{0.3pt}{0.35em}
+\titleformat{\section}[runin]{\bfseries}{}{0em}{}[. ]
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\setlength{\columnsep}{3pt}
+\setlength{\multicolsep}{0pt}
+\setlength{\premulticols}{0pt}
+\setlength{\postmulticols}{0pt}
+\setlength{\abovedisplayskip}{0pt}
+\setlength{\belowdisplayskip}{0pt}
+\setlength{\abovedisplayshortskip}{0pt}
+\setlength{\belowdisplayshortskip}{0pt}
+\setlength{\jot}{0pt}
+\renewcommand{\baselinestretch}{0.86}
+\allowdisplaybreaks
+\raggedcolumns
+
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\1}{\mathbf{1}}
+\newcommand{\cF}{\mathcal{F}}
+
+\begin{document}
+\tiny
+
+\begin{multicols*}{3}
+
+{\bfseries IE 622 Endsem Cheat Sheet}\hfill DTMCs, CTMCs/queues, martingales, core IE622 tools.\par
+
+\section*{A. Probability + Conditional Expectation}
+\textbf{Continuity of probability:}
+\[
+A_n\uparrow A \Rightarrow \PP(A_n)\uparrow \PP(A),\qquad
+A_n\downarrow A,\ \PP(A_1)<\infty \Rightarrow \PP(A_n)\downarrow \PP(A).
+\]
+If $F$ is continuous CDF and $X\sim F$, then $F(X)\sim U(0,1)$.
+
+\textbf{Convolution:} for independent integer-valued $X,Y$,
+\[
+\PP(X+Y=n)=\sum_k \PP(X=k)\PP(Y=n-k).
+\]
+Poi$(\lambda)+$Poi$(\mu)=$Poi$(\lambda+\mu)$, Bin$(n,p)+$Bin$(m,p)=$Bin$(n+m,p)$.
+
+\textbf{Conditional expectation:} $Z=\E[X\mid\mathcal G]$ iff $Z$ is $\mathcal G$-measurable and
+\[
+\E[X\1_A]=\E[Z\1_A]\qquad \forall A\in\mathcal G.
+\]
+If $\mathcal G=\sigma(B_i)$ for a partition with $\PP(B_i)>0$,
+\[
+\E[X\mid\mathcal G]=\frac{\E[X\1_{B_i}]}{\PP(B_i)}\quad \text{on }B_i.
+\]
+Key rules:
+\[
+\E[\alpha X+\beta Y\mid\mathcal G]=\alpha\E[X\mid\mathcal G]+\beta\E[Y\mid\mathcal G],
+\]
+\[
+\E[\E[X\mid\mathcal H]\mid\mathcal G]=\E[X\mid\mathcal G]\ \ (\mathcal G\subseteq\mathcal H),
+\]
+\[
+Y\in\mathcal G \Rightarrow \E[XY\mid\mathcal G]=Y\E[X\mid\mathcal G],\quad
+X\perp \mathcal G \Rightarrow \E[X\mid\mathcal G]=\E[X].
+\]
+Jensen:
+\[
+\phi\ \text{convex}\Rightarrow \phi(\E[X\mid\mathcal G])\le \E[\phi(X)\mid\mathcal G].
+\]
+
+\section*{B. DTMC Core Setup}
+Markov chain on countable $S$:
+\[
+\PP(X_{n+1}=j\mid X_n=i,\text{past})=p_{ij},\qquad P=[p_{ij}].
+\]
+\[
+p_{ij}^{(n)}=\PP(X_n=j\mid X_0=i),\qquad P^{(n)}=P^n,
+\]
+\[
+p_{ij}^{(n+m)}=\sum_k p_{ik}^{(n)}p_{kj}^{(m)}.
+\]
+If initial law is row vector $\lambda$, then $\lambda^{(n)}=\lambda P^n$.
+
+\textbf{Finite path probability:}
+\[
+\PP(X_0=i_0,\dots,X_m=i_m)=\lambda_{i_0}\prod_{r=0}^{m-1}p_{i_ri_{r+1}}.
+\]
+
+\textbf{Stopping times:}
+\[
+\tau\ \text{stopping}\iff \{\tau\le n\}\in\cF_n.
+\]
+Examples: constants, hitting times $H_A=\inf\{n\ge0:X_n\in A\}$, $\min(S,T)$, $T+1$.
+Usually \emph{not} stopping: last visit time.
+
+\textbf{Strong Markov:} for stopping time $\tau$,
+\[
+\PP(X_{\tau+n}=j\mid \cF_\tau)=p_{X_\tau j}^{(n)}.
+\]
+
+\section*{C. Classes, Hitting, First-Step Analysis}
+\textbf{Communication:} $i\to j$ iff $\exists n\ge1$ with $p_{ij}^{(n)}>0$.
+$i\leftrightarrow j$ iff $i\to j$ and $j\to i$.
+Communication is an equivalence relation; classes partition $S$.
+
+\textbf{Closed class:} $i\in C,\ i\to j \Rightarrow j\in C$.
+Finite chain has at least one closed class. Every open class is transient.
+
+\textbf{Hitting times:}
+\[
+T_j=\inf\{n\ge1:X_n=j\},\qquad
+h_j^i=\PP_i(T_j<\infty),\qquad m_j^i=\E_i[T_j].
+\]
+First-step equations ($i\neq j$):
+\[
+h_j^i=p_{ij}+\sum_{k\neq j}p_{ik}h_j^k,\qquad h_j^j=1,
+\]
+\[
+m_j^i=1+\sum_{k\neq j}p_{ik}m_j^k,\qquad m_j^j=0.
+\]
+For set $A$,
+\[
+h_i^A=
+\begin{cases}
+1,& i\in A,\\
+\sum_j p_{ij}h_j^A,& i\notin A,
+\end{cases}
+\]
+and $h^A$ is the minimal nonnegative solution.
+
+\textbf{Gambler's ruin} on $\{0,\dots,N\}$, $p+q=1$:
+\[
+h_i=\PP_i(\text{hit }N\text{ before }0)=
+\begin{cases}
+\frac{i}{N},& p=q=\frac12,\\[4pt]
+\frac{1-(q/p)^i}{1-(q/p)^N},& p\neq q.
+\end{cases}
+\]
+For SSRW with barriers $-a,b$ and $\tau=\inf\{n:X_n\in\{-a,b\}\}$:
+\[
+\PP(X_\tau=-a)=\frac{b}{a+b},\qquad \E[\tau]=ab.
+\]
+
+\section*{D. Harmonic Functions + Drift Tricks}
+For DTMC generator / drift operator
+\[
+(\mathcal L f)(x)=\sum_y p_{xy}\bigl(f(y)-f(x)\bigr)=\E[f(X_{n+1})-f(X_n)\mid X_n=x].
+\]
+If $\mathcal L f=0$ (harmonic), then $f(X_n)$ is a martingale.
+If $\mathcal L f\le0$, then $f(X_n)$ is a supermartingale.
+
+\textbf{Dynkin martingale:}
+\[
+M_n=f(X_n)-f(X_0)-\sum_{k=0}^{n-1}\mathcal L f(X_k)
+\]
+is a martingale.
+
+Exam move:
+\begin{itemize}
+\item hitting probability $\Rightarrow$ solve $\mathcal L f=0$ with boundary values,
+\item expected hitting time $\Rightarrow$ solve $\mathcal L g=-1$ with boundary $g=0$.
+\end{itemize}
+
+\textbf{Foster--Lyapunov:} if $\exists V\to\infty$ and finite $A$ with
+\[
+\Delta V(i):=\E[V(X_{n+1})-V(X_n)\mid X_n=i]\le0 \quad (i\notin A),
+\]
+then recurrence. If $\Delta V(i)\le-\varepsilon$ outside finite $A$, then positive recurrence.
+Negative drift alone need not imply positive recurrence unless uniformly bounded away from $0$.
+
+\section*{E. Recurrence, Stationarity, Convergence}
+\textbf{Recurrence / transience:}
+\[
+f_{ii}:=\PP_i(T_i<\infty),\quad
+i\text{ recurrent}\iff f_{ii}=1,\quad
+i\text{ transient}\iff f_{ii}<1.
+\]
+Criterion:
+\[
+i\text{ recurrent}\iff \sum_{n\ge0}p_{ii}^{(n)}=\infty,
+\qquad
+i\text{ transient}\iff \sum_{n\ge0}p_{ii}^{(n)}<\infty.
+\]
+Recurrence/transience is a class property.
+Every recurrent class is closed. Finite closed class $\Rightarrow$ positive recurrent.
+
+\textbf{Expected visits:}
+\[
+N_j:=\sum_{n\ge0}\1\{X_n=j\},\qquad
+\E_i[N_j]=\frac{f_{ij}}{1-f_{jj}}.
+\]
+
+\textbf{Positive/null recurrence:}
+\[
+m_i:=\E_i[T_i],\quad
+i\text{ positive recurrent}\iff m_i<\infty,\quad
+i\text{ null recurrent}\iff m_i=\infty.
+\]
+
+\textbf{Stationary distribution:}
+\[
+\pi P=\pi,\qquad \pi_i\ge0,\qquad \sum_i\pi_i=1.
+\]
+Two-state chain
+\[
+P=\begin{bmatrix}1-a&a\\ b&1-b\end{bmatrix}
+\Rightarrow
+\pi=\left(\frac{b}{a+b},\frac{a}{a+b}\right).
+\]
+Irreducible DTMC:
+\[
+\exists\ \text{stationary }\pi \iff \text{positive recurrent},
+\qquad \pi_i=\frac{1}{m_i}.
+\]
+Finite irreducible chain $\Rightarrow$ unique stationary distribution.
+
+\textbf{Period:}
+\[
+d(i)=\gcd\{n\ge1:p_{ii}^{(n)}>0\}.
+\]
+Period is a class property. Aperiodic if $d(i)=1$.
+Irreducible + aperiodic + positive recurrent:
+\[
+p_{ij}^{(n)}\to \pi_j.
+\]
+Without aperiodicity, Cesaro average still converges:
+\[
+\frac1n\sum_{k=1}^n p_{ij}^{(k)}\to \pi_j.
+\]
+
+\section*{F. Reversibility, Borel--Cantelli, Ergodic}
+\textbf{Detailed balance (DBE):}
+\[
+\pi_i p_{ij}=\pi_j p_{ji}\ \forall i,j
+\Rightarrow \pi P=\pi.
+\]
+If DBE hold, chain is reversible.
+
+\textbf{Graph random walk:} on undirected graph,
+\[
+p_{ij}=\frac{1}{d_i}\ \text{on neighbors}\Rightarrow
+\pi_i=\frac{d_i}{2|E|}.
+\]
+
+\textbf{Kolmogorov criterion:} reversible iff every loop has equal forward/reverse product:
+\[
+p_{i_0i_1}\cdots p_{i_ki_0}=p_{i_0i_k}\cdots p_{i_1i_0}.
+\]
+
+\textbf{Borel--Cantelli:}
+\[
+\sum_n \PP(A_n)<\infty \Rightarrow \PP(A_n\ \text{i.o.})=0.
+\]
+If $(A_n)$ independent and $\sum_n\PP(A_n)=\infty$, then $\PP(A_n\ \text{i.o.})=1$.
+
+\textbf{Ergodic theorem for irreducible DTMC:}
+\[
+\frac{1}{n}\sum_{k=0}^{n-1}\1\{X_k=i\}\xrightarrow{a.s.}\frac{1}{m_i}
+\]
+($1/\infty:=0$). In positive recurrent case, for bounded $f$,
+\[
+\frac1n\sum_{k=0}^{n-1}f(X_k)\xrightarrow{a.s.}\sum_i \pi_i f(i).
+\]
+
+\section*{G. CTMC Basics + Poisson Process}
+CTMC:
+\[
+\PP(X_{t+s}=j\mid X_t=i,\text{past})=\PP(X_{t+s}=j\mid X_t=i).
+\]
+Right-continuous paths; no periodicity notion.
+
+\textbf{Exponential facts:}
+\[
+T\sim\mathrm{Exp}(\lambda)\iff \PP(T>t)=e^{-\lambda t},
+\]
+\[
+\PP(T>t+s\mid T>s)=\PP(T>t).
+\]
+If $S_r\sim \mathrm{Exp}(\lambda_r)$ independent:
+\[
+\min_r S_r\sim \mathrm{Exp}\Bigl(\sum_r\lambda_r\Bigr),\qquad
+\PP(S_i=\min)=\frac{\lambda_i}{\sum_r\lambda_r}.
+\]
+
+\textbf{Poisson process $N_t\sim \mathrm{PP}(\lambda)$:}
+\begin{itemize}
+\item $N_0=0$, stationary independent increments,
+\item $N_t\sim \mathrm{Poi}(\lambda t)$,
+\item $\PP(N_{t+h}-N_t=1)=\lambda h+o(h)$,
+\item $\PP(N_{t+h}-N_t=0)=1-\lambda h+o(h)$.
+\end{itemize}
+FDD for $0<t_1<\cdots<t_n$ and $0\le x_1\le\cdots\le x_n$:
+\[
+\PP(N_{t_1}=x_1,\dots,N_{t_n}=x_n)
+=\prod_{r=1}^n e^{-\lambda(t_r-t_{r-1})}
+\frac{(\lambda(t_r-t_{r-1}))^{x_r-x_{r-1}}}{(x_r-x_{r-1})!}.
+\]
+Also
+\[
+\Var(N_t)=\lambda t,\qquad \mathrm{Cov}(N_s,N_t)=\lambda\min(s,t).
+\]
+
+\textbf{Superposition / thinning:}
+\[
+N_1\sim \mathrm{PP}(\lambda_1),\ N_2\sim \mathrm{PP}(\lambda_2)\ \text{indep.}
+\Rightarrow N_1+N_2\sim \mathrm{PP}(\lambda_1+\lambda_2).
+\]
+Thinning with type-1 probability $p$:
+\[
+N^{(1)}\sim \mathrm{PP}(\lambda p),\quad N^{(2)}\sim \mathrm{PP}(\lambda(1-p)),
+\]
+and the thinned processes are independent.
+
+\section*{H. Generators, Stationarity, CTMC Convergence}
+Generator / $Q$-matrix:
+\[
+q_{ij}\ge0\ (i\neq j),\qquad q_{ii}=-\sum_{j\neq i}q_{ij},\qquad q_i:=-q_{ii}.
+\]
+Small-$h$ approximation:
+\[
+p_{ij}(h)=
+\begin{cases}
+q_{ij}h+o(h),&i\neq j,\\
+1-q_i h+o(h),&i=j.
+\end{cases}
+\]
+\[
+P(t+h)=P(h)P(t),\qquad P'(t)=QP(t)=P(t)Q,\qquad P(t)=e^{Qt}.
+\]
+
+\textbf{Stationary distribution for CTMC:}
+\[
+\pi Q=0,\qquad \sum_i\pi_i=1.
+\]
+Componentwise global balance:
+\[
+\pi_j q_j=\sum_{i\neq j}\pi_i q_{ij}.
+\]
+If detailed balance holds,
+\[
+\pi_i q_{ij}=\pi_j q_{ji},
+\]
+then CTMC is reversible and $\pi Q=0$.
+
+\textbf{Embedded chain:}
+\[
+p_{ij}=\frac{q_{ij}}{q_i}\quad (i\neq j),\qquad
+\mu_i:=\pi_i q_i.
+\]
+\[
+\pi Q=0 \iff \mu P=\mu.
+\]
+Irreducible CTMC:
+\[
+\exists\ \text{stationary }\pi \iff \text{non-explosive and positive recurrent},
+\qquad
+\pi_i=\frac{1}{m_i q_i}.
+\]
+If irreducible and stationary $\pi$ exists, then
+\[
+p_{ij}(t)\to \pi_j\qquad (t\to\infty).
+\]
+
+\textbf{Explosion time:}
+\[
+\zeta=\sum_{n\ge0}S_n,\qquad S_n\sim \mathrm{Exp}(q_{Y_n}).
+\]
+If $\zeta<\infty$ with positive probability, the minimal process explodes.
+
+\section*{I. Birth--Death Chains and Queues}
+\textbf{Birth--death CTMC:}
+\[
+q_{i,i+1}=\lambda_i,\qquad q_{i,i-1}=\mu_i,\qquad q_{ii}=-(\lambda_i+\mu_i).
+\]
+Detailed balance:
+\[
+\pi_i\lambda_i=\pi_{i+1}\mu_{i+1}
+\Rightarrow
+\pi_n=\pi_0\prod_{k=0}^{n-1}\frac{\lambda_k}{\mu_{k+1}}.
+\]
+Normalize if $\sum_n\pi_n<\infty$.
+
+\textbf{M/M/1:} birth rate $\lambda$, death rate $\mu$, $\rho=\lambda/\mu$.
+\[
+\pi_n=(1-\rho)\rho^n,\quad n\ge0,\qquad \text{iff }\rho<1.
+\]
+Performance (stationary):
+\[
+L=\E[X]=\frac{\rho}{1-\rho},\qquad
+L_q=\frac{\rho^2}{1-\rho},
+\]
+\[
+W=\frac{1}{\mu-\lambda},\qquad
+W_q=\frac{\rho}{\mu-\lambda},
+\]
+with Little:
+\[
+L=\lambda W,\qquad L_q=\lambda W_q.
+\]
+M/M/1 is reversible; by Burke,
+\[
+\text{departure process is PP}(\lambda),
+\]
+and is independent of the queue length in stationarity.
+
+\textbf{M/M/$\infty$:}
+\[
+q_{n,n+1}=\lambda,\qquad q_{n,n-1}=n\mu,\qquad
+\pi_n=e^{-\lambda/\mu}\frac{(\lambda/\mu)^n}{n!}.
+\]
+
+\textbf{Tandem M/M/1:} if $\lambda<\mu_1,\mu_2$,
+\[
+\pi(n_1,n_2)=(1-\rho_1)\rho_1^{n_1}(1-\rho_2)\rho_2^{n_2},\qquad
+\rho_k=\lambda/\mu_k.
+\]
+
+\section*{J. Jackson Networks}
+Open Jackson network with external rates $d_i$, service rates $\mu_i$, routing $p_{ij}$.
+
+\textbf{Traffic equations:}
+\[
+\beta_i=d_i+\sum_j \beta_j p_{ji},\qquad
+\boldsymbol{\beta}=\mathbf d+\boldsymbol{\beta}P.
+\]
+If spectral radius $r(P)<1$,
+\[
+\boldsymbol{\beta}=\mathbf d(I-P)^{-1}
+=\mathbf d+\mathbf dP+\mathbf dP^2+\cdots.
+\]
+Load:
+\[
+\rho_i=\beta_i/\mu_i.
+\]
+Stability:
+\[
+\rho_i<1\ \forall i.
+\]
+Jackson product form:
+\[
+\pi(n_1,\dots,n_K)=\prod_{i=1}^K (1-\rho_i)\rho_i^{n_i}.
+\]
+Interpretation: in equilibrium each node behaves like an independent M/M/1 with effective arrival rate $\beta_i$.
+
+\section*{K. Martingale Basics}
+Filtration:
+\[
+\cF_0\subseteq \cF_1\subseteq \cdots,\qquad
+X_n\ \text{adapted} \iff X_n\in\cF_n.
+\]
+Martingale / submartingale / supermartingale:
+\[
+\E[M_{n+1}\mid \cF_n]=M_n,\quad
+\ge M_n,\quad
+\le M_n.
+\]
+If $(M_n)$ martingale then $\E[M_n]=\E[M_0]$.
+Stopped process:
+\[
+M_{\tau\wedge n}\ \text{is a martingale if }\tau\text{ is a stopping time}.
+\]
+
+\textbf{Standard examples:}
+\begin{itemize}
+\item SSRW $S_n=\sum_{k=1}^n X_k$ with $\E[X_k]=0$: $(S_n)$ martingale.
+\item For SSRW: $(S_n^2-n)$ martingale.
+\item Exponential martingale:
+\[
+\frac{e^{\theta S_n}}{(\E[e^{\theta X_1}])^n}
+\]
+martingale; for $\pm1$ walk denominator is $(\cosh\theta)^n$.
+\item Doob martingale: $M_n=\E[Z\mid \cF_n]$.
+\item If $M_n$ martingale and $\phi$ convex, then $\phi(M_n)$ is a submartingale.
+\item If $X_n$ is a submartingale and $\phi$ is convex \emph{nondecreasing}, then $\phi(X_n)$ is a submartingale.
+\end{itemize}
+
+\section*{L. Optional Stopping + Wald}
+\textbf{Optional Stopping Theorem:} $E[M_\tau]=E[M_0]$ if one of the following holds:
+\begin{itemize}
+\item $\tau\le N$ a.s. for some $N$,
+\item $(M_n)$ uniformly integrable and $\tau<\infty$ a.s.,
+\item $\E[\tau]<\infty$ and $|M_{n+1}-M_n|\le c$ a.s.
+\end{itemize}
+
+\textbf{Classic OST choices:}
+\[
+M_n=S_n,\qquad M_n=S_n^2-n,\qquad M_n=\frac{e^{\theta S_n}}{(\cosh\theta)^n}.
+\]
+Use $S_n$ for hitting probabilities, $S_n^2-n$ for expected hitting times.
+
+\textbf{Wald's identity:} if $X_i$ i.i.d., $\mu=\E[X_1]$, $\tau$ stopping time, $\E[\tau]<\infty$,
+\[
+\E\Bigl[\sum_{k=1}^{\tau}X_k\Bigr]=\mu\,\E[\tau].
+\]
+Equivalently, with $S_n=\sum_{k=1}^n X_k$,
+\[
+\E[S_\tau]=\mu \E[\tau].
+\]
+It may fail if $\tau$ is not a stopping time or if $\E[\tau]=\infty$.
+
+\section*{M. Martingale Convergence + Branching + Urns}
+\textbf{Martingale convergence:}
+\[
+\sup_n \E[|M_n|]<\infty \Rightarrow M_n\to M_\infty \ \text{a.s.}
+\]
+$L^1$ convergence holds iff $(M_n)$ is uniformly integrable.
+
+\textbf{Galton--Watson branching process:}
+\[
+Z_{n+1}=\sum_{r=1}^{Z_n}L_{n,r},\qquad \mu=\E[L].
+\]
+Normalized process
+\[
+M_n=\frac{Z_n}{\mu^n}
+\]
+is a nonnegative martingale. Extinction probability $q$ is the smallest root of
+\[
+q=\phi(q),\qquad \phi(s)=\E[s^L].
+\]
+Under the standard nondegenerate assumptions,
+\[
+q=1 \iff \mu\le1,\qquad q<1 \iff \mu>1.
+\]
+Critical but nondegenerate case ($\mu=1$, not a.s. one child) $\Rightarrow$ extinction a.s.
+
+\textbf{P\'olya's urn:} if $R_n$ = red balls after $n$ draws and each draw returns the ball plus one of same color, then
+\[
+Y_n=\frac{R_n}{n+r+b}
+\]
+is a martingale.
+
+\textbf{Harmonic hitting-probability trick:}
+If $g(i)=\PP_i(\tau_N^+<\infty)$ and $g(i)=\sum_j p_{ij}g(j)$, then $(g(X_n))$ is a martingale.
+
+\section*{N. Azuma--Hoeffding + Exam Moves}
+\textbf{Azuma--Hoeffding:} if $(M_n)$ martingale with bounded increments
+\[
+|M_k-M_{k-1}|\le c_k,
+\]
+then
+\[
+\PP(M_n-M_0\ge t)\le \exp\!\left(-\frac{t^2}{2\sum_{k=1}^n c_k^2}\right),
+\]
+\[
+\PP(|M_n-M_0|\ge t)\le 2\exp\!\left(-\frac{t^2}{2\sum_{k=1}^n c_k^2}\right).
+\]
+McDiarmid for $f(X_1,\dots,X_n)$ with coordinate sensitivities $c_i$:
+\[
+\PP(|f-\E f|\ge t)\le 2\exp\!\left(-\frac{2t^2}{\sum_i c_i^2}\right).
+\]
+
+\textbf{Exam workflow:}
+\begin{itemize}
+\item DTMC hitting / ruin: condition on first step or solve $\mathcal L f=0$.
+\item Expected hitting time: solve $\mathcal L g=-1$ or use $S_n^2-n$ with OST.
+\item Stationary law: first try DBE (birth-death, graphs, reversible chains, M/M/1).
+\item CTMC: write $Q$, use $\pi Q=0$ or detailed balance.
+\item Poisson questions: use stationary independent increments, thinning, superposition.
+\item Queue networks: find $\beta$ from traffic equations, then product form.
+\item Martingale questions: verify measurability + one-step conditional expectation; if stuck, try Doob/Dynkin construction.
+\end{itemize}
+
+\section*{O. Solved DTMC Patterns}
+\begin{itemize}
+\item \textbf{PS4 gambler ($p=.4,q=.6$, start 3, target 8).} Timid:
+$\PP_3(\tau_8<\tau_0)=\frac{1-1.5^3}{1-1.5^8}\approx0.0964$. Bold: $B_4=.4$, $B_6=.4+.6B_4=.64$, $B_3=.4B_6=.256$. Hence bold $>$ timid.
+\item \textbf{Pattern waits.} $\E[T_{\mathrm{HTH}}]=10$, $\E[T_{\mathrm{HHH}}]=14$, $\E[T_{\mathrm{THTH}}]=20$.
+\item \textbf{Umbrellas.} With $N$ umbrellas and rain prob.\ $p$:
+$\pi_0=\frac{1-p}{N+1-p}$, $\pi_i=\frac1{N+1-p}$ for $1\le i\le N$, wet prob. $=p\pi_0=\frac{p(1-p)}{N+1-p}$.
+\item \textbf{Knight walk.} $\pi(v)=\deg(v)/336$; center degree-8 squares have mass $1/42$, corners degree-2 have mass $1/168$.
+\item \textbf{Elevator chain.} If jump from $0$ to height $K$ with law $q_k$ then descend deterministically, $\E_0[T_0^+]=1+\sum_{k\ge1}kq_k$, so positive recurrence iff $\sum kq_k<\infty$ and $\pi_0=\bigl(1+\sum kq_k\bigr)^{-1}$.
+\item \textbf{Durrett 1.74 chain.} For $p_{i,i+1}=q_i$, $p_{i,0}=1-q_i$, let $a_n=\prod_{k=0}^{n-1}q_k$. Then recurrence iff $\prod_{k\ge0}q_k=0$, positive recurrence iff $\sum_{n\ge0}a_n<\infty$, and $\pi_i=\pi_0a_i$.
+\item \textbf{Negative drift but null recurrent.} In PS6 Q2, $\Delta V(i)=-(q-p)<0$ for $i\ge1$, yet $\E_0[T_0^+]=1+\frac{\alpha}{q-p}\sum_{i\ge1}\frac1i=\infty$; recurrence need not mean positive recurrence.
+\item \textbf{Reversibility test.} On the 3-state cycle matrix $\bigl[\begin{smallmatrix}0&p&1-p\\1-p&0&p\\p&1-p&0\end{smallmatrix}\bigr]$, Kolmogorov gives reversibility iff $p^3=(1-p)^3$, i.e.\ $p=\frac12$.
+\item \textbf{Infinite monkeys.} Disjoint BANANA-block events have probability $26^{-6}$ and are independent; Borel--Cantelli II gives infinitely many appearances a.s.
+\item \textbf{Online-dating Borel--Cantelli heuristic.} If daily meeting probability is of order $1/n$, then infinitely many meetings a.s.; if of order $1/n^2$, then only finitely many a.s.
+\end{itemize}
+
+\section*{P. Solved Poisson/CTMC/Queue Patterns}
+\begin{itemize}
+\item \textbf{Poisson conditionals.} For rate-2 PP: $\PP(N_3=4\mid N_1=1)=\PP(N_3-N_1=3)=e^{-4}4^3/3!$; given $N_3=4$, $N_1\sim\mathrm{Bin}(4,1/3)$ so $\PP(N_1=1\mid N_3=4)=32/81$.
+\item \textbf{First jump of PP.} With $p_0(t)=\PP(N_t=0)$, $p_0(t+h)=p_0(t)(1-\lambda h+o(h))$, so $p_0'(t)=-\lambda p_0(t)$, $p_0(0)=1$, hence $p_0(t)=e^{-\lambda t}$ and $J_1\sim\mathrm{Exp}(\lambda)$.
+\item \textbf{PP finite-dimensional law.} For $0=t_0<t_1<\cdots<t_n$ and $0\le x_1\le\cdots\le x_n$,
+\[
+\PP(N_{t_1}=x_1,\dots,N_{t_n}=x_n)=e^{-\lambda t_n}\prod_{i=1}^n
+\frac{(\lambda(t_i-t_{i-1}))^{x_i-x_{i-1}}}{(x_i-x_{i-1})!}.
+\]
+\item \textbf{PP covariance + LLN.} $\mathrm{Cov}(N_t,N_s)=\lambda\min\{t,s\}$. Also $N_t/t\to\lambda$ a.s. by SLLN on unit increments and squeezing between $N_{\lfloor t\rfloor}$ and $N_{\lfloor t\rfloor+1}$.
+\item \textbf{Splitting.} If each PP($\lambda$) arrival is type 1 with prob.\ $p$, then $N^{(1)}_t\sim\mathrm{Poi}(p\lambda t)$, $N^{(2)}_t\sim\mathrm{Poi}((1-p)\lambda t)$, and they are independent.
+\item \textbf{Dependent superposition trap.} If $N_t^{(1)}=N_t^{(2)}=X_t$ for one PP($\lambda$), then $N_t^{(1)}+N_t^{(2)}=2X_t$ takes only even values, so it is not Poisson.
+\item \textbf{Independent superposition state-hit question.} For two independent PP's of rates $\lambda_1,\lambda_2$, the probability the 2D counting process ever hits $(i,j)$ is
+\[
+\binom{i+j}{i}\Bigl(\frac{\lambda_1}{\lambda_1+\lambda_2}\Bigr)^i
+\Bigl(\frac{\lambda_2}{\lambda_1+\lambda_2}\Bigr)^j.
+\]
+\item \textbf{PP traps.} Even arrivals are not Poisson; their gaps are Gamma$(2,\lambda)$. Arrival locations in $[s,t]$ are uniform only \emph{conditioned} on the number of arrivals.
+\item \textbf{Shock question.} If $U=\min(T_1,T_3)$, $V=\min(T_2,T_3)$ for independent exponentials, then
+\[
+\PP(U>s,V>t)=e^{-\lambda_1 s-\lambda_2 t-\lambda_3\max(s,t)},
+\]
+so $U\sim\mathrm{Exp}(\lambda_1+\lambda_3)$, $V\sim\mathrm{Exp}(\lambda_2+\lambda_3)$, but $U,V$ are not independent when $\lambda_3>0$.
+\item \textbf{M/M/1/K.} $\pi_i=\pi_0\rho^i$ with $\rho=\lambda/\mu$ and
+$\pi_0=\frac{1-\rho}{1-\rho^{K+1}}$ for $\rho\neq1$; if $\rho=1$, $\pi_0=1/(K+1)$. Server-free fraction $=\pi_0$.
+\item \textbf{M/M/1 stability.} Detailed balance gives $\pi_i=\rho^i\pi_0$, $\rho=\lambda/\mu$. Normalization works iff $\rho<1$, so positive recurrence iff $\lambda<\mu$.
+\item \textbf{$N$-component repair system.} From state $i$, rates are $i\lambda$ down and $N-i$ up; stationary law is $\mathrm{Bin}\!\left(N,\frac1{1+\lambda}\right)$.
+\item \textbf{Explosion pure-birth criterion.} If jumps are $i\to i+1$ at rate $\lambda(i)$, explosion time $\zeta=\sum_i S_i$ satisfies $\PP(\zeta<\infty)=1\iff \sum_i1/\lambda(i)<\infty$.
+\item \textbf{Impatient queue.} If abandonment rate per waiting customer is $\delta=\mu$, then departure-from-state-$n$ rate becomes $n\mu$, so stationary law is Poisson with mean $\rho=\lambda/\mu$: $\pi_n=e^{-\rho}\rho^n/n!$.
+\item \textbf{M/M/$\infty$.} $q_{n,n+1}=\lambda$, $q_{n,n-1}=n\mu$, stationary law is $\mathrm{Poi}(\lambda/\mu)$, and in stationarity output is Poisson($\lambda$).
+\item \textbf{Stationary M/M/1 output.} If $\rho=\lambda/\mu<1$, departure rate is $\mu\1_{\{X_t\ge1\}}$ with mean $\mu(1-\pi_0)=\lambda$. In stationarity the departure process is Poisson($\lambda$) by Burke/time reversal.
+\item \textbf{Tandem with routing $p$.} Output of queue 1 is Poisson($\lambda$), thinning by $p$ gives queue-2 arrivals Poisson($p\lambda$); if $\rho_1=\lambda/\mu_1$, $\rho_2=p\lambda/\mu_2$, then $\pi(n_1,n_2)=(1-\rho_1)\rho_1^{n_1}(1-\rho_2)\rho_2^{n_2}$.
+\item \textbf{Jackson network.} Traffic equation solution $\beta=(I-P^\top)^{-1}\lambda$; if $\rho_i=\beta_i/\mu_i<1$, then $\pi(\mathbf n)=\prod_i(1-\rho_i)\rho_i^{n_i}$.
+\item \textbf{Restricted reversible CTMC.} If a reversible CTMC with stationary $\pi$ is restricted to $A$, then $\nu(x)=\pi(x)/\sum_{y\in A}\pi(y)$ on $A$ is stationary by detailed balance.
+\item \textbf{Sampled CTMC.} For $Z_n=X_{nh}$, irreducible CTMC $\Rightarrow$ irreducible sampled chain, and $P_h(i,i)>0$ for every $i,h>0$, so sampled chain is automatically aperiodic.
+\item \textbf{Two-salesman CTMC modelling.} Use states $\{0,1,2,12\}$ for who is on phone; arrivals add an occupied line, service completions clear it. Typical exam ask is just to write the $Q$-matrix from these four states.
+\item \textbf{CTMC discrepancy examples.} A CTMC may be positive recurrent while the embedded chain is null recurrent (fast holding times), or embedded positive recurrent while CTMC null recurrent (very slow holding times).
+\end{itemize}
+
+\section*{Q. Solved Martingale Patterns}
+\begin{itemize}
+\item \textbf{Conditional expectation on partition.} If $\mathcal G=\sigma(B_i)$, then $\E[X\mid\mathcal G]=\sum_i\frac{\E[X\1_{B_i}]}{\PP(B_i)}\1_{B_i}$.
+\item \textbf{Generator martingale.} $Y_n=f(X_n)-f(X_0)-\sum_{i=0}^{n-1}(\mathcal Lf)(X_i)$ is a martingale.
+\item \textbf{Galton--Watson martingale.} $\mu^{-n}X_n$ is a martingale; if $\mu=1$ and $\PP(Z=1)<1$, extinction probability is $1$.
+\item \textbf{P\'olya urn.} $Y_n=R_n/(n+r+b)$ is a martingale. For $r=b=1$ and $T=$ first blue draw, OST gives $\E[(T+2)^{-1}]=1/4$.
+\item \textbf{SSRW hitting.} For $T=\inf\{n:X_n\in\{-a,b\}\}$, OST on $X_n$ gives $\PP(X_T=-a)=b/(a+b)$; OST on $X_n^2-n$ gives $\E[T]=ab$.
+\item \textbf{Wald random-sum formulas.} If $X=\sum_{i=1}^N Y_i$ with i.i.d.\ $Y_i$ of mean $\mu$, variance $\sigma^2$, then $\E[X]=\mu\E[N]$ and $\Var(X)=\sigma^2\E[N]+\mu^2\Var(N)$.
+\item \textbf{Wald counterexample.} If $X_i$ are Rademacher and $N=1$ when $X_2=1$, $N=2$ when $X_2=-1$, then $\E[\sum_{i=1}^N X_i]=-1/2\neq0=\E[N]\E[X_1]$ since $N$ is not a stopping time.
+\item \textbf{Harmonic hitting probability.} If $g(i)=\PP_i(\tau_N^+<\infty)$, then first-step analysis gives $g(i)=\sum_jp_{ij}g(j)$, hence $g(X_n)$ martingale.
+\item \textbf{Poisson branching process.} If $X_n\mid X_{n-1}=k\sim\mathrm{Poi}(k)$, then this is critical Galton--Watson with Poi$(1)$ offspring; $X_n\to0$ a.s.\ although $\E[X_n]=1$ for all $n$.
+\item \textbf{Convex bound.} If $-a\le X\le b$ and $\E[X]=0$, then
+$\E[f(X)]\le\frac{bf(-a)+af(b)}{a+b}$ for convex $f$.
+\item \textbf{McDiarmid/Hamming.} If $D=f(X_1,\dots,X_n)$ changes by at most 1 per coordinate, then
+$\PP(D-\E D\ge t)\le\exp(-2t^2/n)$.
+\end{itemize}
+
+\section*{R. Quiz Traps}
+\begin{itemize}
+\item Even arrivals of a PP are \emph{not} Poisson: inter-arrival times are Gamma$(2,\lambda)$.
+\item Arrival locations in $[s,t]$ are uniform only \emph{conditioned} on the number of arrivals there.
+\item Any irreducible two-state CTMC is reversible; a 3-cycle $1\to2\to3\to1$ with no backward rates is irreducible but not reversible.
+\item If $X_n$ is a submartingale and $\phi$ convex but decreasing/non-monotone, $\phi(X_n)$ need not be a submartingale.
+\item $\sup_n\E|X_n|<\infty$ does \emph{not} imply $L^1$ convergence of a martingale; uniform integrability is the missing condition.
+\item For embedded M/M/1 chain, from state 1 the next jump is to 2 with probability $\lambda/(\lambda+\mu)$.
+\end{itemize}
+
+\end{multicols*}
+\end{document}

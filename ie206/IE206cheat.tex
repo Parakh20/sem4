@@ -1,0 +1,2345 @@
+\documentclass[8pt,fleqn]{extarticle}
+
+\usepackage[T1]{fontenc}
+\usepackage[a4paper,margin=0.6cm]{geometry}
+\usepackage{multicol}
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage[protrusion=true,expansion=false]{microtype}
+
+% ---- EXTREME COMPRESSION v2 ----
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\setlength{\columnsep}{1.5pt}
+\setlength{\multicolsep}{0pt}
+\setlength{\premulticols}{0pt}
+\setlength{\postmulticols}{0pt}
+\setlength{\mathindent}{0pt}
+
+\setlength{\abovedisplayskip}{0pt}
+\setlength{\belowdisplayskip}{0pt}
+\setlength{\abovedisplayshortskip}{0pt}
+\setlength{\belowdisplayshortskip}{0pt}
+
+\setlength{\topsep}{0pt}
+\setlength{\partopsep}{0pt}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+
+\renewcommand{\baselinestretch}{0.9}
+\emergencystretch=0.8em
+
+\titlespacing*{\section}{0pt}{0.2pt}{0.25em}
+\titleformat{\section}[runin]{\bfseries}{}{0em}{}[.\enspace]
+\raggedcolumns
+
+
+\begin{document}
+\tiny
+\begin{multicols}{3}
+
+% =========================
+% GROUP 1: REGRESSION
+% =========================
+\section*{Linear Regression}
+Model: $y=X\beta+\epsilon$, $\epsilon\sim\mathcal N(0,\sigma^2)$ i.i.d.
+Loss: $J=\frac1{2n}\|y-X\beta\|^2$.
+Closed form: $\hat\beta=(X^TX)^{-1}X^Ty$ (requires $X^TX$ invertible).
+Grad: $\nabla J=-\frac1nX^T(y-X\beta)=0\Rightarrow$ normal equations $X^TX\beta=X^Ty$.
+MLE $\equiv$ OLS under Gaussian noise.
+Predictions: $\hat y=H y$, $H=X(X^TX)^{-1}X^T$ (hat matrix), $\text{tr}(H)=p$.
+
+% =========================
+\section*{Simple Regression Closed Form}
+
+$\hat\beta_1=\frac{\sum(x_i-\bar x)(y_i-\bar y)}{\sum(x_i-\bar x)^2}$,\quad $\hat\beta_0=\bar y-\hat\beta_1\bar x$.
+
+Correlation: $r=\frac{\sum(x_i-\bar x)(y_i-\bar y)}{\sqrt{\sum(x_i-\bar x)^2\sum(y_i-\bar y)^2}}$.
+
+OLS: minimum residual sum of squares.
+
+
+% =========================
+\section*{Logistic Regression}
+$\sigma(z)=\frac1{1+e^{-z}}$, $\sigma'=\sigma(1-\sigma)$, $z=w^Tx$.
+$P(y=1|x)=\sigma(w^Tx)$; decision boundary: $w^Tx=0$ (linear).
+Loss (NLL): $J=-\frac1n\sum[y\log p+(1-y)\log(1-p)]$, $p_i=\sigma(w^Tx_i)$.
+Grad: $\nabla J=\frac1nX^T(p-y)$. Hessian: $X^TWX\succeq0$ $\Rightarrow$ convex.
+$W=\text{diag}(p_i(1-p_i))$. No closed form; use GD/Newton's method.
+Logit: $\log\frac{p}{1-p}=w^Tx$ (log-odds linear in features).
+
+% =========================
+\section*{Logistic: Hessian \& Convexity}
+
+Log-loss: $\ell(\beta)=\sum_i[\log(1+e^{z_i})-y_iz_i]$, $z_i=x_i^T\beta$.
+
+Gradient: $\nabla\ell=X^T(p-y)$, $p_i=\sigma(z_i)$.
+
+Hessian: $\nabla^2\ell=X^TWX$, $W=\text{diag}(p_i(1-p_i))$.
+
+$p_i(1-p_i)\ge0$ $\Rightarrow$ $\nabla^2\ell\succeq0$ $\Rightarrow$ convex.
+
+Boundary: $\sigma(\beta^Tx)=0.5\iff\beta^Tx=0$ (linear).
+
+Logit: $\log\frac{p}{1-p}=x^T\beta$.
+
+
+% =========================
+\section*{Bias-Variance}
+$\mathbb E[(y-\hat f)^2]=\underbrace{(\mathbb E[\hat f]-f)^2}_{\text{Bias}^2}+\underbrace{\mathbb E[(\hat f-\mathbb E[\hat f])^2]}_{\text{Var}}+\sigma^2$.
+Bias: error from wrong assumptions (underfitting). Var: sensitivity to training data (overfitting). $\sigma^2$: irreducible noise. High $\lambda$ $\Rightarrow$ high bias, low var. Low $\lambda$ $\Rightarrow$ low bias, high var.
+
+% =========================
+\section*{SST/SSM/SSE (Complete)}
+
+$SST=\sum(y_i-\bar y)^2$, $SSE=\sum(y_i-\hat y_i)^2$, $SSM=\sum(\hat y_i-\bar y)^2$.
+
+$SST=SSM+SSE$.
+
+$R^2=\frac{SSM}{SST}=1-\frac{SSE}{SST}$.
+
+$R^2=1$: perfect fit. $R^2=0$: no better than mean.
+
+Correlation: $r=\hat\beta_1\frac{\sigma_x}{\sigma_y}$, $R^2=r^2$ (simple).
+
+
+% =========================
+\section*{Confusion Matrix + Metrics}
+
+Binary classification:
+
+$\begin{array}{c|cc}
+ & \text{Pred +} & \text{Pred -} \\
+\hline
+\text{Actual +} & TP & FN \\
+\text{Actual -} & FP & TN
+\end{array}$
+
+Accuracy: $\frac{TP+TN}{TP+TN+FP+FN}$.
+
+Precision: $\frac{TP}{TP+FP}$.
+
+Recall: $\frac{TP}{TP+FN}$.
+
+$F1=\frac{2PR}{P+R}=\frac{2TP}{2TP+FP+FN}$.
+
+\textbf{$R^2$:}
+$SST=\sum (y_i-\bar y)^2$,
+$SSE=\sum (y_i-\hat y_i)^2$.
+
+$R^2=1-\frac{SSE}{SST}=\frac{SST-SSE}{SST}$.
+
+% =========================
+\section*{Ridge (Complete)}
+
+$\hat\beta=(X^TX+\lambda I)^{-1}X^Ty$.
+
+$\lambda>0$: $X^TX+\lambda I\succ0$ always invertible.
+
+Handles collinearity; shrinks coeff.; not sparse.
+
+MAP: Gaussian prior $\beta\sim\mathcal N(0,\tau^2 I)\Rightarrow$ Ridge.
+
+$\lambda\to0$: converges to min-norm OLS $X^+y$.
+
+
+% =========================
+\section*{LASSO (Complete)}
+
+$\hat\beta=\arg\min\|y-X\beta\|^2+\lambda\|\beta\|_1$.
+
+Sparse (feature selection); no closed form.
+
+MAP: Laplace prior $\beta_j\sim\text{Lap}(0,1/\lambda)\Rightarrow$ LASSO.
+
+Ridge vs LASSO: Ridge shrinks all, LASSO zeros some.
+
+
+% =========================
+\section*{Collinearity}
+
+If $x_{\cdot,2}=cx_{\cdot,1}$: $X^TX$ singular.
+
+$\forall v\in\text{null}(X)$: $J(\beta+v)=J(\beta)$.
+
+$\Rightarrow$ infinitely many OLS solutions.
+
+Ridge adds $\lambda I$: unique solution for any $\lambda>0$.
+
+
+% =========================
+\section*{Robust Regression}
+
+$r_i=y_i-x_i^T\beta$.
+
+L2: $\rho=r^2$. Gaussian MLE. Sensitive to outliers.
+
+L1/LAD: $\rho=|r|$. Laplace MLE. Robust.
+
+Huber ($k>0$):
+$\rho_k(r)=\begin{cases}\frac12r^2,&|r|\le k,\\k(|r|-\frac{k}{2}),&|r|>k.\end{cases}$
+
+Quadratic near 0, linear in tails.
+
+Gaussian noise $\Rightarrow$ L2. Laplace noise $\Rightarrow$ L1.
+
+
+% =========================
+\section*{Cross-Validation}
+
+Holdout: 80/20 split. Fast, high-variance estimate.
+
+$k$-fold CV: $k$ folds; each fold = test once.
+$\text{CV}=\frac1k\sum_{j=1}^k\text{err}_j$. Default $k=5,10$.
+
+LOOCV ($k=n$): $\text{CV}=\frac1n\sum\!\left(\frac{e_i}{1-h_{ii}}\right)^2$.
+
+Select hyperparameter by CV error, NOT train error.
+
+
+% =========================
+\section*{Hat Matrix Properties}
+
+$H=X(X^TX)^{-1}X^T$.
+
+$\text{tr}(H)=\text{tr}((X^TX)^{-1}X^TX)=\text{tr}(I_p)=p$.
+
+$0\le h_{ii}\le1$.
+
+Large $h_{ii}$: point $i$ strongly controls its own fit (high leverage).
+
+LOOCV: $e_i^{(-i)}=\frac{e_i}{1-h_{ii}}$.
+
+
+% =========================
+\section*{Feature Engineering}
+
+Polynomial: $\phi(x)=(1,x,x^2,\dots,x^p)$.
+$\Rightarrow$ linear in $\phi$-space, nonlinear in $x$.
+
+Standardization: $\tilde x=\frac{x-\bar x}{\sigma}$.
+Equalizes scale; improves SGD/perceptron convergence.
+
+XOR: not separable in $\mathbb R^2$; separable with $(x_1,x_2,x_1x_2)$.
+
+
+% =========================
+\section*{Cost-Sensitive Threshold}
+
+$\eta(x)=P(Y=1|x)$.
+
+Cost(predict 1): $C_{FP}(1-\eta)$.
+Cost(predict 0): $C_{FN}\eta$.
+
+Predict $1$ iff $\eta\ge\dfrac{C_{FP}}{C_{FP}+C_{FN}}$.
+
+Default 0.5 $\iff$ $C_{FP}=C_{FN}$.
+
+High $C_{FP}$ (expensive FP): raise threshold.
+High $C_{FN}$ (expensive FN): lower threshold.
+
+
+% =========================
+% GROUP 2: PROBABILISTIC
+% =========================
+\section*{Bayes Classifier}
+
+\textbf{Bayes Theorem:}
+$P(Y|X)=\frac{P(X|Y)P(Y)}{P(X)}$.
+
+\textbf{Optimal Bayes Rule:}
+
+$h^*(x)=\arg\max_{y\in\mathcal Y} P(Y=y|X=x)$.
+
+Binary case ($Y=\{0,1\}$):
+
+$\eta(x)=P(Y=1|x)$,
+
+$h^*(x)=\mathbf{1}[\eta(x)>0.5]$.
+
+\textbf{Why Optimal?}
+
+Conditional risk at $x$:
+$R(h|x)=1-P(h(x)|x)$.
+
+Choosing class with largest posterior
+minimizes $R(h|x)$ for every $x$.
+
+Thus for any classifier $g$:
+$R(h^*)\le R(g)$.
+
+\textbf{Bayes Risk:}
+
+Minimum achievable error:
+
+$R^*=\mathbb E_X[1-\max_k P(Y=k|X)]$.
+
+Represents irreducible error due to class overlap.
+
+\textbf{Key Intuition:}
+• Uses full distribution knowledge.
+• Always chooses most probable label.
+• No classifier can do better pointwise.
+
+
+% =========================
+\section*{Naive Bayes}
+
+\textbf{Definition:}
+Generative classifier using independence assumption.
+
+Assumption:
+$X_1,\dots,X_n$ conditionally independent given $Y$.
+
+Posterior:
+
+$P(Y|X_1,\dots,X_n)
+\propto
+P(Y)\prod_{i=1}^n P(X_i|Y)$.
+
+Prediction:
+
+$h(x)=\arg\max_y P(Y=y)\prod_i P(x_i|Y=y)$.
+
+\textbf{Why "Naive"?} Assumes features independent given class (often violated, yet works well).
+
+\textbf{Gaussian NB}: $P(x_j|y)=\mathcal N(\mu_{jy},\sigma_{jy}^2)$; estimate $\mu_{jy},\sigma_{jy}^2$ from class samples.
+
+\textbf{Categorical NB}: $P(x_j=v|y)=\frac{\#(x_j=v,y)+\alpha}{\#y+\alpha|\mathcal V|}$ (Laplace smoothing $\alpha>0$ avoids zero probs).
+
+Use log-space: $\log P(y)+\sum_j\log P(x_j|y)$ to avoid underflow.
+
+\textbf{Pros}: $O(nd)$ training, handles high-$d$, missing features, small data.
+
+
+% =========================
+\section*{Generative vs Discriminative}
+
+\textbf{Generative Methods:}
+Model joint distribution $P(X,Y)$.
+Can generate data.
+Example: Naive Bayes.
+
+\textbf{Discriminative Methods:}
+Model conditional $P(Y|X)$
+or decision boundary directly.
+Example: SVM.
+
+\textbf{Key Difference:}
+
+Generative:
+learn data distribution.
+
+Discriminative:
+learn boundary between classes.
+
+Generative can simulate new samples.
+Discriminative often achieve lower classification error.
+
+
+% =========================
+\section*{Bayesian Linear Regression}
+
+Model: $y=Xw+\epsilon$, $\epsilon\sim\mathcal N(0,\sigma^2 I)$.
+
+Likelihood: $p(y|X,w)=\mathcal N(Xw,\sigma^2 I)$.
+
+Prior: $p(w)=\mathcal N(m_0,S_0)$.
+
+\textbf{Posterior} (Gaussian conjugacy):
+$S_N=\!\left(S_0^{-1}+\sigma^{-2}X^TX\right)^{-1}$,\quad $m_N=S_N\!\left(S_0^{-1}m_0+\sigma^{-2}X^Ty\right)$.
+
+\textbf{Special case} ($m_0=0$, $S_0=\alpha^{-1}I$):
+$m_N=(X^TX+\alpha\sigma^2 I)^{-1}X^Ty$ $\Rightarrow$ \textbf{Ridge}!
+
+\textbf{Posterior predictive} (at $x^*$):
+$p(y^*|x^*,X,y)=\mathcal N(\mu^*,(\sigma^*)^2)$,
+$\mu^*=x^{*T}m_N$, $(\sigma^*)^2=\sigma^2+x^{*T}S_N x^*$.
+
+$(\sigma^*)^2$: aleatoric ($\sigma^2$) + epistemic ($x^{*T}S_Nx^*$).
+
+Large $\alpha$ (strong prior, small variance) $\Rightarrow$ more regularization.
+
+MAP estimate $= m_N$ (matches Ridge/LASSO depending on prior).
+
+
+% =========================
+% GROUP 3: KNN
+% =========================
+\section*{K-Nearest Neighbours (KNN)}
+
+\textbf{Motivation:}
+• Works well when data is large and complex to model.
+• Simple, intuitive, non-parametric.
+• No assumption on underlying distribution.
+• Works for classification and regression.
+
+\textbf{Algorithm:}
+Given training set $S=\{(x_i,y_i)\}_{i=1}^m$.
+
+For new input $x$:
+1) Compute distance $d(x,x_i)$ for all $i$.
+2) Select $K$ nearest neighbours.
+3) Classification: majority vote.
+4) Regression: average of neighbours.
+
+Prediction:
+$h(x)=\arg\max_y \sum_{i\in N_K(x)} \mathbf{1}[y_i=y]$.
+
+\textbf{Distance Measures:}
+
+Manhattan:
+$d(x,y)=\|x-y\|_1=\sum_{i=1}^n |x_i-y_i|$.
+
+Euclidean:
+$d(x,y)=\|x-y\|_2=\sqrt{\sum (x_i-y_i)^2}$.
+
+Minkowski:
+$d(x,y)=\|x-y\|_p=(\sum |x_i-y_i|^p)^{1/p}$.
+
+$p=1 \Rightarrow$ Manhattan,
+$p=2 \Rightarrow$ Euclidean.
+
+\textbf{Properties:}
+• Lazy learner (no explicit training phase).
+• Decision boundary can be highly non-linear.
+• As $n\to\infty$, 1-NN error $\le 2R^*$.
+
+\textbf{Limitations:}
+• Curse of dimensionality.
+• Slow for large datasets (distance to all points).
+• Sensitive to noise.
+• Memory intensive.
+
+
+% =========================
+\section*{Feature Scaling in KNN}
+
+Without scaling, large-magnitude features dominate Euclidean distance.
+
+Min-Max: $x'_j=\frac{x_j-x_{j,\min}}{x_{j,\max}-x_{j,\min}}\in[0,1]$.
+
+Z-score: $x'_j=\frac{x_j-\mu_j}{\sigma_j}$ (zero mean, unit var).
+
+Scaling equalizes feature influence $\Rightarrow$ NN assignments change.
+Must scale \textbf{before} computing distances; fit scaler on train set only.
+
+
+% =========================
+\section*{Bayes vs KNN}
+
+Bayes:
+• Optimal if true distribution known.
+• Requires estimating $P(Y|X)$.
+
+KNN:
+• Distribution-free.
+• Approximates Bayes decision boundary
+as sample size grows.
+
+1-NN error bound:
+$R_{1NN}\le 2R^*$.
+
+% =========================
+\section*{1NN vs Bayes}
+
+Asked: show $R_{1NN}\le 2R^*$ as $n\to\infty$.
+
+Let $\eta(x)=P(Y=1|x)$.
+
+Bayes classifier predicts $1$ if $\eta\ge 1/2$.
+
+Bayes error at $x$:
+$R^*(x)=\min(\eta,1-\eta)$.
+
+As $n\to\infty$, nearest neighbor $X_{(1)}\to x$.
+Hence $Y_{(1)}\sim Bern(\eta(x))$ and is independent of $Y$ given $x$.
+
+1NN predicts $Y_{(1)}$.
+
+\[
+R_{1NN}(x)=P(Y\neq Y_{(1)}|x)
+\]
+
+\[
+=\eta(1-\eta)+(1-\eta)\eta
+=2\eta(1-\eta)
+\]
+
+If $\eta\le1/2$, then $R^*(x)=\eta$.
+
+\[
+R_{1NN}(x)=2R^*(1-R^*)\le2R^*(x)
+\]
+
+Taking expectation over $x$:
+
+\[
+R_{1NN}\le 2R^*
+\]
+
+
+% =========================
+\section*{Curse of Dimensionality}
+
+$X,Y\sim\text{Unif}([0,1]^d)$. By LLN:
+
+$\frac{\|X-Y\|^2}{d}\to\frac16$.
+
+Distances concentrate around $\sqrt{d/6}$.
+
+$\frac{D_{\max}-D_{\min}}{D_{\min}}\to0$ as $d\to\infty$.
+
+NN becomes unreliable (all points equidistant).
+
+Need $\sim N^d$ samples to cover $[0,1]^d$.
+
+
+% =========================
+% GROUP 4: LINEAR CLASSIFIERS
+% =========================
+\section*{Linear Separability}
+
+Training set: $S=\{(x_i,y_i)\}_{i=1}^m$, $x_i\in\mathbb{R}^d$, $y_i\in\{-1,+1\}$.
+
+Data is linearly separable if $\exists (w,b)$ such that:
+
+$y_i(\langle w,x_i\rangle+b) > 0 \quad \forall i$.
+
+Decision rule:
+$\hat y=\text{sign}(\langle w,x\rangle+b)$.
+
+% =========================
+\section*{Margin}
+
+Margin of hyperplane $(w,b)$:
+
+$\gamma = \min_i \frac{| \langle w,x_i\rangle + b |}{\|w\|}$.
+
+If $\|w\|=1$:
+
+Distance of $x$ to hyperplane = $|\langle w,x\rangle+b|$.
+
+Geometric margin:
+$\gamma = \min_i y_i(\langle w,x_i\rangle+b)$.
+
+Larger margin implies better generalization.
+
+% =========================
+\section*{Multiclass Perceptron}
+
+Assume $\exists w^*$ s.t.
+$\langle w^*,\Psi(x_i,y_i)\rangle \ge \langle w^*,\Psi(x_i,y)\rangle+1$.
+
+Update:
+$w^{t+1}=w^t+\Psi(x_i,y_i)-\Psi(x_i,y)$.
+
+Progress:
+$\langle w^*,w^{t+1}\rangle
+=\langle w^*,w^t\rangle
++\langle w^*,\Psi(x_i,y_i)-\Psi(x_i,y)\rangle
+\ge \langle w^*,w^t\rangle+1$.
+
+After $T$: $\langle w^*,w^T\rangle\ge T$.
+
+Norm growth:
+$||w^{t+1}||^2
+\le ||w^t||^2+R^2$.
+
+Thus $||w^T||^2\le TR^2$.
+
+Combine:
+$T \le ||w^*||\,||w^T||
+\le ||w^*||\sqrt{TR^2}$.
+
+$T\le R^2||w^*||^2$.
+
+% =========================
+\section*{Perceptron as Subgradient}
+
+Let $S=\{(x_i,y_i)\}_{i=1}^m$, $y_i\in\{\pm1\}$.
+Assume $\exists w$ s.t. $y_i\langle w,x_i\rangle \ge 1$ for all $i$.
+
+Define
+$f(w)=\max_{i\in[m]}(1-y_i\langle w,x_i\rangle)$.
+
+Then $f(w)\ge0$ and $f(w)=0$ iff $y_i\langle w,x_i\rangle\ge1$ $\forall i$.
+Thus $\min_{\|w\|\le\|w^*\|} f(w)=0$.
+
+If $f(w)<1$, then
+$1-y_i\langle w,x_i\rangle<1$
+$\Rightarrow y_i\langle w,x_i\rangle>0$,
+so $w$ separates the data.
+
+Subgradient:
+Let $i^*=\arg\max_i (1-y_i\langle w,x_i\rangle)$.
+If $f(w)>0$ (constraint violated),
+
+$\partial f(w)= -y_{i^*}x_{i^*}$
+
+since $f$ is max of affine functions.
+
+Subgradient descent with step $\eta$:
+
+$w^{t+1}=w^t-\eta(-y_{i^*}x_{i^*})
+= w^t+\eta y_{i^*}x_{i^*}$.
+
+This is exactly the Perceptron update
+(applied when $y_i\langle w,x_i\rangle \le 0$).
+
+Thus Perceptron = subgradient descent on $f$.
+
+
+% =========================
+\section*{Margin Bound (Perceptron)}
+
+Assume:
+Data linearly separable with margin $\gamma$.
+$\exists w^*$ s.t. $y_i\langle w^*,x_i\rangle \ge \gamma$.
+Also $||x_i||\le\rho$.
+
+Perceptron update:
+$w^{t+1}=w^t+y_ix_i$ (on mistake).
+
+1) Progress toward $w^*$:
+
+$\langle w^*,w^{t+1}\rangle
+=\langle w^*,w^t\rangle
++y_i\langle w^*,x_i\rangle
+\ge
+\langle w^*,w^t\rangle+\gamma$.
+
+After $T$ mistakes:
+
+$\langle w^*,w^T\rangle \ge T\gamma$.
+
+2) Norm growth:
+
+$||w^{t+1}||^2
+=||w^t||^2+||x_i||^2
++2y_i\langle w^t,x_i\rangle$.
+
+Since mistake:
+$y_i\langle w^t,x_i\rangle \le 0$.
+
+Thus
+
+$||w^{t+1}||^2 \le ||w^t||^2+\rho^2$.
+
+After $T$ updates:
+
+$||w^T||^2 \le T\rho^2$.
+
+Now by Cauchy--Schwarz:
+
+$T\gamma
+\le
+\langle w^*,w^T\rangle
+\le
+||w^*||\,||w^T||
+\le
+||w^*||\sqrt{T\rho^2}$.
+
+Divide by $\sqrt{T}$:
+
+$\sqrt{T}\gamma \le ||w^*||\rho$.
+
+Thus
+
+$T \le (\rho/\gamma)^2$.
+
+Finite mistake bound proved.
+
+
+% =========================
+\section*{Hard-SVM Rule}
+
+Goal: find separator with largest margin.
+
+\[
+\max_{w,b} \min_i y_i(\langle w,x_i\rangle+b)
+\]
+
+Equivalent constrained form:
+
+\[
+\min_{w,b} \frac12\|w\|^2
+\quad \text{s.t. } y_i(\langle w,x_i\rangle+b)\ge1
+\]
+
+Maximizing margin iff minimizing $\|w\|$.
+
+% =========================
+\section*{Hard-SVM Lemma}
+
+Let $(w^*,b^*)$ achieve margin $\gamma^*$.
+
+Then scaling:
+
+$\left(\frac{w^*}{\gamma^*},\frac{b^*}{\gamma^*}\right)$
+
+satisfies constraints $y_i(\langle w,x_i\rangle+b)\ge1$.
+
+Thus:
+
+$\|w_0\|\le \frac1{\gamma^*}$.
+
+Final normalized solution:
+
+$\hat w=\frac{w_0}{\|w_0\|}$.
+
+Hence solves original margin maximization.
+
+% =========================
+\section*{Homogeneous Case}
+
+If $b=0$:
+
+\[
+\min_w \frac12\|w\|^2
+\quad \text{s.t. } y_i\langle w,x_i\rangle\ge1
+\]
+
+Separating hyperplanes pass through origin.
+
+% =========================
+\section*{Hard-Margin SVM}
+
+Asked: find $(w,b)$, support vectors, effect of removing $(5,5)$.
+
+Data separable by line $x_1+x_2=5$.
+
+Let $w=(a,a)$, $b=-5a$.
+
+Margin condition:
+For support vectors,
+$y_i(w^Tx_i+b)=1$.
+
+For $(4,2)$:
+$a(6)-5a=a=1 \Rightarrow a=1/2$.
+
+Hence:
+$w=(\tfrac12,\tfrac12)$,
+$b=-\tfrac52$.
+
+Support vectors satisfy equality:
+$(4,2),(2,4),(1,2),(2,1)$.
+
+For $(5,5)$:
+$5+5-5=5>1$,
+strict inequality $\to$ not SV.
+
+Removing it does not change solution.
+
+
+% =========================
+\section*{Fritz John Optimality Insight}
+
+If $w^*$ minimizes $f(w)$ under constraints $g_i(w)\le0$:
+
+$\nabla f(w^*) + \sum_{i\in I}\alpha_i\nabla g_i(w^*)=0$,
+
+$I=\{i: g_i(w^*)=0\}$.
+
+Applying to Hard-SVM yields:
+
+$w=\sum_i \alpha_i y_i x_i$.
+
+% =========================
+\section*{Dual of Hard-SVM}
+
+From optimality condition:
+
+$w=\sum_i \alpha_i y_i x_i$.
+
+Substitute into primal:
+
+\[
+\max_{\alpha\ge0}
+\sum_i \alpha_i
+-
+\frac12\sum_{i,j}
+\alpha_i\alpha_j y_i y_j
+\langle x_i,x_j\rangle
+\]
+
+Dual depends only on inner products.
+
+Enables kernel methods.
+
+% =========================
+\section*{Kernel Trick (SVM Dual)}
+
+Dual SVM depends only on inner products:
+
+\[
+\sum_{i,j}\alpha_i\alpha_j y_i y_j
+\langle x_i,x_j\rangle
+\]
+
+Replace:
+
+\[
+\langle x_i,x_j\rangle
+\rightarrow
+K(x_i,x_j)
+\]
+
+Common kernels:
+
+Linear:
+$K(x,z)=\langle x,z\rangle$
+
+Polynomial:
+$(\langle x,z\rangle+c)^p$
+
+RBF:
+$e^{-\gamma\|x-z\|^2}$
+
+Enables nonlinear decision boundaries.
+
+
+% =========================
+\section*{Soft-SVM (Slack Variables)}
+
+For non-separable data introduce $\xi_i\ge0$:
+
+\[
+y_i(\langle w,x_i\rangle+b)\ge1-\xi_i
+\]
+
+Optimization:
+
+\[
+\min_{w,b,\xi}
+\lambda\|w\|^2+\frac1m\sum_i \xi_i
+\]
+
+Trade-off controlled by $\lambda$.
+
+Large $\lambda$ $\to$ behaves like hard SVM.
+
+% =========================
+\section*{Hinge Loss Formulation}
+
+Hinge loss:
+
+$\ell_{hinge}((w,b),(x,y))=\max(0,1-y(\langle w,x\rangle+b))$.
+
+Soft-SVM:
+
+\[
+\min_{w,b}
+\lambda\|w\|^2
++
+\frac1m\sum_i
+\max(0,1-y_i f(x_i))
+\]
+
+Convex optimization problem.
+
+% =========================
+\section*{Support Vectors}
+
+At optimum (Hard SVM):
+
+$w_0 = \sum_{i\in I} \alpha_i x_i$
+
+where $I=\{i: y_i(\langle w_0,x_i\rangle+b_0)=1\}$.
+
+Only points exactly at margin contribute.
+
+These are called support vectors.
+
+They lie in linear span of training examples.
+
+% =========================
+\section*{Hard vs Soft SVM}
+
+Hard-SVM:
+
+$\min_{w,b} ||w||^2$
+s.t. $y_i(w^Tx_i+b)\ge1$.
+
+Soft-SVM:
+
+$\min_{w,b,\xi}
+||w||^2+\lambda\sum_i\xi_i$
+s.t. $y_i(w^Tx_i+b)\ge1-\xi_i$,
+$\xi_i\ge0$.
+
+Claim:
+$\exists\lambda>0$ s.t. for all separable datasets,
+hard and soft return same $w$.
+
+Refutation:
+
+Even if data separable,
+finite $\lambda$ trades margin size vs slack penalty.
+
+For different datasets,
+required $\lambda$ to force $\xi_i=0$ differs.
+
+Example:
+Two separable datasets with very different margins.
+Same fixed $\lambda$ cannot simultaneously enforce zero slack
+for both while preserving identical solution.
+
+Only in limit $\lambda\to\infty$
+does soft-SVM reduce to hard-SVM.
+
+Hence no universal $\lambda$ works.
+Claim false.
+
+% =========================
+\section*{Soft-Margin SVM (1D)}
+
+Asked: number of SV when $C=0$ and $C\to\infty$.
+
+Data separable.
+
+If $C\to\infty$:
+No slack allowed $\to$ hard margin solution.
+
+Closest opposite points: $-1$ and $1$.
+
+Decision boundary at midpoint $0$.
+
+$w=1$, $b=0$.
+
+Support vectors: $-1$ and $1$ (2 SV).
+
+If $C=0$:
+Objective reduces to minimizing $\frac12||w||^2$.
+
+Minimum at $w=0$.
+
+All constraints violated $\to$ all 5 points are support vectors.
+
+
+% =========================
+\section*{Why $\alpha_i=C$}
+
+Asked: show $\alpha_i=C \implies$ inside margin or misclassified.
+
+KKT conditions:
+
+$\alpha_i(1-y_if(x_i)-\xi_i)=0$,
+
+$\beta_i\xi_i=0$,
+
+$\alpha_i+\beta_i=C$.
+
+If $\alpha_i=C$,
+then $\beta_i=0$.
+
+From complementarity:
+
+$y_if(x_i)=1-\xi_i$.
+
+If $\xi_i=0$:
+$y_if=1$ (on margin).
+
+If $\xi_i>0$:
+$y_if<1$ (inside margin).
+
+If $\xi_i>1$:
+$y_if<0$ (misclassified).
+
+Hence $\alpha_i=C$ implies on/inside margin or misclassified.
+
+
+% =========================
+\section*{Convexity + Non-Differentiability}
+
+Asked:
+(a) prove convexity of $\ell(w)=|y-\max(0,w^Tx)|$,
+(b) find non-diff points.
+
+Let $f(w)=\max(0,w^Tx)$.
+
+Since $w^Tx$ is affine and max of affine functions is convex,
+$f(w)$ is convex.
+
+Define $g(w)=y-f(w)$.
+
+Affine minus convex $\to$ convex.
+
+Since $|z|=\max(z,-z)$ (max of convex functions),
+$\ell(w)$ is convex.
+
+Non-differentiability:
+
+ReLU kink at $w^Tx=0$.
+
+Absolute value kink when $y-f(w)=0$.
+
+Thus non-diff when:
+$w^Tx=0$ or $y=\max(0,w^Tx)$.
+
+
+% =========================
+\section*{Weak Duality}
+
+Claim:
+$\min_{x\in\mathcal X}\max_{y\in\mathcal Y} f(x,y)
+\ge
+\max_{y\in\mathcal Y}\min_{x\in\mathcal X} f(x,y)$.
+
+Proof:
+
+For any fixed $(x,y)$:
+
+$\min_{x'} f(x',y) \le f(x,y) \le \max_{y'} f(x,y')$.
+
+Taking $\max_y$ on the left inequality:
+
+$\max_y \min_x f(x,y) \le \max_y f(x,y)$.
+
+Now take $\min_x$ on RHS:
+
+$\max_y \min_x f(x,y)
+\le
+\min_x \max_y f(x,y)$.
+
+Hence proved.
+
+No convexity assumptions required.
+
+
+% =========================
+\section*{Overfitting vs Regularization}
+
+High bias $\to$ underfitting.
+High variance $\to$ overfitting.
+
+Regularization effect:
+
+Increase $\lambda$ $\to$
+• increases bias
+• reduces variance
+• smoother model
+
+Trade-off controlled by $\lambda$.
+
+
+% =========================
+\section*{VC Dimension}
+
+$\text{VC}(\mathcal H)=$ max $m$ s.t. $\exists m$ points shattered.
+
+Linear classifiers in $\mathbb R^d$: $\text{VC}=d+1$.
+
+Decision trees depth $k$: $O(2^k\log d)$; unrestricted: $\infty$.
+
+SVM RBF (no reg.): $\text{VC}=\infty$.
+
+Generalization bound:
+$R(h)\le\hat R(h)+O\!\left(\!\sqrt{\frac{\text{VC}\log m}{m}}\right)$.
+
+
+% =========================
+\section*{Perceptron vs Logistic vs SVM}
+
+Perceptron: no convex obj.; converges only if separable; no margin guarantee; sensitive to outliers.
+
+Logistic: convex log-loss; probabilistic output; global optimum; no explicit margin.
+
+Hard-SVM: max margin; requires separability; unique; sensitive to noise.
+
+Soft-SVM: hinge loss; handles non-separable; controlled by $\lambda$.
+
+
+% =========================
+% GROUP 5: MULTICLASS
+% =========================
+\section*{One-vs-All (OvA)}
+
+Given $S=\{(x_t,y_t)\}_{t=1}^m$, label set $\mathcal Y=\{1,\dots,k\}$.
+
+For each class $i$:
+Construct binary dataset
+$S_i=\{(x_t, +1)$ if $y_t=i$, $(x_t,-1)$ otherwise$\}$.
+
+Train binary classifier $h_i$.
+
+Final predictor:
+$h(x)\in \arg\max_{i\in\mathcal Y} h_i(x)$.
+
+Issue:
+Each classifier sees highly imbalanced data.
+May output trivial all-negative classifier for rare class.
+
+
+% =========================
+\section*{All-Pairs (One-vs-One)}
+
+For each pair $i<j$:
+
+Construct
+$S_{i,j}=\{(x_t,+1)$ if $y_t=i$,
+$(x_t,-1)$ if $y_t=j\}$.
+
+Train $h_{i,j}$.
+
+Prediction by voting:
+
+$h(x)\in\arg\max_i \sum_{j\neq i} h_{i,j}(x)$.
+
+Requires $k(k-1)/2$ classifiers.
+
+Still may suffer inconsistency across pairwise decisions.
+
+
+% =========================
+\section*{Failure of Reduction}
+
+Example: 3 classes in $\mathbb R^2$ in disjoint balls.
+Probabilities: 40\%, 20\%, 40\%.
+
+OvA classifier for class 2 vs rest
+may choose all-negative solution
+$\to$ misclassifies all class-2 points.
+
+But joint linear predictor can perfectly separate.
+
+Conclusion:
+Reduction methods can fail
+even if perfect linear separator exists.
+
+
+% =========================
+\section*{Linear Multiclass Predictor}
+
+Single parameter vector:
+
+\[
+h(x)=\arg\max_{y\in\{1,\dots,k\}}
+\langle w,\Psi(x,y)\rangle
+\]
+
+$\Psi(x,y)$: class-sensitive feature map.
+
+Multi-vector construction:
+
+$\Psi(x,y)$ = concat of $k$ copies of $x$,
+only $y$-block nonzero.
+
+Then:
+\[
+\langle w,\Psi(x,y)\rangle=\langle w_y,x\rangle
+\]
+
+Each class has weight vector $w_y$.
+
+
+% =========================
+\section*{Multiclass Hinge Loss}
+
+For example $(x,y)$:
+
+\[
+\ell(w;x,y)
+=
+\max_{y'\neq y}
+\Big[
+\Delta(y',y)
++
+\langle w,
+\Psi(x,y')-\Psi(x,y)
+\rangle
+\Big]
+\]
+
+$\Delta$ = cost (0--1 or cost-sensitive).
+
+Convex surrogate of 0--1 loss.
+
+
+% =========================
+\section*{Multiclass SVM}
+
+\[
+\min_w
+\lambda||w||^2
++
+\frac1m
+\sum_{i=1}^m
+\ell(w;x_i,y_i)
+\]
+
+Convex optimization problem.
+
+Handles cost-sensitive errors via $\Delta$.
+
+
+% =========================
+\section*{Multiclass SGD}
+
+Let
+
+\[
+y^*=
+\arg\max_{y'}
+\Big[
+\Delta(y',y)
++
+\langle w,
+\Psi(x,y')-\Psi(x,y)
+\rangle
+\Big]
+\]
+
+Subgradient:
+\[
+g=\Psi(x,y^*)-\Psi(x,y)
+\]
+
+Update:
+\[
+w_{t+1}=w_t-\eta_t g
+\]
+
+Scales to large datasets.
+Has generalization guarantees.
+
+
+% =========================
+\section*{Advantages of Joint Multiclass}
+
+• Single model captures class relations
+• Avoids inconsistencies of reductions
+• Supports cost-sensitive learning
+
+If realizable:
+use linear programming or perceptron.
+
+If non-realizable:
+use hinge loss + convex optimization.
+
+
+% =========================
+\section*{Ranking}
+
+Goal: order items by relevance (search, fraud detection).
+
+Linear model: score $s_j=\langle w,x_j\rangle$; sort by score descending.
+
+\textbf{Losses}: Kendall-Tau = pairwise disagreements (0--1, NP-hard); use surrogate pairwise hinge. NDCG = normalized discounted cumulative gain (emphasizes top positions). Learn $w$ via surrogate loss + SGD.
+
+
+% =========================
+% GROUP 6: OPTIMIZATION
+% =========================
+\section*{Gradient Descent (GD)}
+
+Goal: minimize risk $L_D(w)=\mathbb E_{z\sim D}[\ell(w,z)]$.
+
+Gradient:
+$\nabla f(w)=\left(\frac{\partial f}{\partial w_1},\dots,\frac{\partial f}{\partial w_d}\right)$.
+
+Update rule:
+$w^{(t+1)}=w^{(t)}-\eta\nabla f(w^{(t)})$.
+
+$\eta>0$ is learning rate.
+
+\textbf{Taylor view:}
+$f(u)\approx f(w)+\langle u-w,\nabla f(w)\rangle$.
+
+For convex $f$:
+$f(u)\ge f(w)+\langle u-w,\nabla f(w)\rangle$.
+
+Equivalent proximal view:
+
+$w^{(t+1)}=
+\arg\min_w
+\left[\frac12\|w-w^{(t)}\|^2
++\eta\langle w-w^{(t)},\nabla f(w^{(t)})\rangle\right]$.
+
+
+% =========================
+\section*{Subgradients}
+
+GD requires differentiability.
+Extend to convex non-differentiable functions.
+
+Definition:
+$v\in\partial f(w)$ if
+$\forall u,\;
+f(u)\ge f(w)+\langle u-w,v\rangle$.
+
+$\partial f(w)$ = subdifferential set.
+
+If $f$ differentiable:
+$\partial f(w)=\{\nabla f(w)\}$.
+
+Example:
+$f(x)=|x|$.
+
+$\partial f(x)=
+\begin{cases}
+\{1\}, & x>0 \\
+\{-1\}, & x<0 \\
+[-1,1], & x=0
+\end{cases}$.
+
+\textbf{Subgradient of max:}
+
+If $g(w)=\max_i g_i(w)$ and $j\in\arg\max_i g_i(w)$,
+then $\nabla g_j(w)\in\partial g(w)$.
+
+\textbf{Hinge loss:}
+
+$\ell(w)=\max(0,1-y\langle w,x\rangle)$.
+
+Subgradient:
+$v=
+\begin{cases}
+0, & 1-y\langle w,x\rangle\le0 \\
+-yx, & 1-y\langle w,x\rangle>0
+\end{cases}$.
+
+
+% =========================
+\section*{Lipschitz Convex Functions}
+
+$f$ is $\rho$-Lipschitz iff
+$\|v\|\le\rho$ for all $v\in\partial f(w)$.
+
+Controls gradient magnitude.
+
+
+% =========================
+\section*{Stochastic Gradient Descent (SGD)}
+
+We cannot compute $\nabla L_D(w)$ (unknown $D$).
+
+SGD uses random direction $v_t$ s.t.
+
+$\mathbb E[v_t|w^{(t)}]\in\partial f(w^{(t)})$.
+
+Update:
+$w^{(t+1)}=w^{(t)}-\eta v_t$.
+
+Output average:
+$\bar w=\frac1T\sum_{t=1}^T w^{(t)}$.
+
+Key idea:
+Unbiased estimate of gradient.
+
+GD: exact gradient.
+SGD: noisy but cheaper.
+
+
+% =========================
+\section*{SGD Algorithm}
+
+Init $w^{(1)}=0$. For $t=1,\dots,T$: pick random $v_t$ with $\mathbb E[v_t|w^{(t)}]\in\partial f(w^{(t)})$; update $w^{(t+1)}=w^{(t)}-\eta_t v_t$. Return $\bar w=\frac1T\sum_t w^{(t)}$.
+
+Variable step: $\eta_t=\frac{B}{\rho\sqrt{t}}$ (decaying) or fixed $\eta=\sqrt{B^2/(\rho^2 T)}$.
+
+\textbf{Convergence}: $\mathbb E[f(\bar w)]-f(w^*)\le\frac{B\rho}{\sqrt{T}}$. Need $T\ge B^2\rho^2/\epsilon^2$ for $\epsilon$-suboptimality.
+
+% =========================
+\section*{Strongly Convex SGD}
+
+$f$ is $\lambda$-strongly convex: $f(u)\ge f(w)+\langle v,u-w\rangle+\frac\lambda2\|u-w\|^2$.
+
+Use $\eta_t=\frac1{\lambda t}$. Convergence: $O(\rho^2/(\lambda T))$ (faster than general case).
+
+Projection step: $w^{(t+1)}=\Pi_{\mathcal H}(w^{(t)}-\eta_t v_t)$ where $\Pi_{\mathcal H}(w)=\arg\min_{u\in\mathcal H}\|u-w\|$.
+
+
+% =========================
+\section*{Projected SGD}
+
+Feasible set:
+$\mathcal H=\{w:\|w\|\le B\}$.
+
+Step 1:
+$w^{(t+\frac12)}=w^{(t)}-\eta v_t$.
+
+Step 2 (projection):
+$w^{(t+1)}=\arg\min_{w\in\mathcal H}
+\|w-w^{(t+\frac12)}\|$.
+
+Projection lemma:
+For projection $v$ of $w$ onto convex $\mathcal H$:
+
+$\|v-u\|^2\le\|w-u\|^2$
+for all $u\in\mathcal H$.
+
+Ensures distance to optimum does not increase.
+
+
+% =========================
+\section*{Convex-Lipschitz-Bounded Case}
+
+Assume:
+• $\|w\|\le B$
+• $\|v\|\le\rho$
+
+If
+
+$T\ge \frac{B^2\rho^2}{\epsilon^2}$
+
+and
+
+$\eta=\sqrt{\frac{B^2}{\rho^2 T}}$,
+
+then
+
+$\mathbb E[L_D(\bar w)]
+\le
+\min_{w\in\mathcal H}L_D(w)+\epsilon$.
+
+Sample complexity matches
+regularized ERM order.
+
+
+% =========================
+\section*{GD vs SGD}
+
+GD:
+• Uses full gradient.
+• Expensive for large datasets.
+
+SGD:
+• Uses single random example.
+• Faster per iteration.
+• Converges in expectation.
+
+SGD average iterate stabilizes noise.
+
+% =========================
+\section*{Empirical Risk Minimization (ERM)}
+
+True risk:
+\[
+L_D(w)=\mathbb E_{(x,y)\sim D}[\ell(w,(x,y))]
+\]
+
+Empirical risk:
+\[
+L_S(w)=\frac1m\sum_{i=1}^m \ell(w,(x_i,y_i))
+\]
+
+ERM:
+\[
+\hat w=\arg\min_w L_S(w)
+\]
+
+Regularized ERM:
+\[
+\hat w=\arg\min_w L_S(w)+\lambda R(w)
+\]
+
+Used in SVM, Logistic, Ridge.
+
+
+% =========================
+\section*{0--1 vs Surrogate Loss}
+
+0--1 loss:
+\[
+\ell_{0-1}(w,(x,y))
+=
+\mathbf 1\{y f(x)\le0\}
+\]
+
+Non-convex $\to$ hard to optimize.
+
+Use convex upper bounds:
+
+Hinge:
+\[
+\max(0,1-yf(x))
+\]
+
+Logistic:
+\[
+\log(1+e^{-y f(x)})
+\]
+
+Surrogates enable convex optimization.
+
+
+% =========================
+\section*{Logistic Margin Loss}
+
+Binary logistic model:
+
+\[
+P(y=1|x)=\sigma(\langle w,x\rangle)
+\]
+
+Loss:
+\[
+\ell(w,(x,y))
+=
+\log(1+e^{-y\langle w,x\rangle})
+\]
+
+Convex and smooth surrogate of 0--1.
+
+
+% =========================
+\section*{Sherman-Morrison + LOOCV}
+
+Asked:
+1) prove inverse identity,
+2) derive LOOCV formula.
+
+Sherman-Morrison:
+
+\[
+(A-uu^T)^{-1}
+=
+A^{-1}
++
+\frac{A^{-1}uu^TA^{-1}}
+{1-u^TA^{-1}u}
+\]
+
+Verify by multiplying RHS with $(A-uu^T)$ to obtain identity.
+
+OLS:
+
+$\hat\beta=(X^TX)^{-1}X^Ty$.
+
+Hat matrix:
+$H=X(X^TX)^{-1}X^T$.
+
+Predictions:
+$\hat y=Hy$.
+
+Residual:
+$e_i=y_i-\hat y_i$.
+
+Leaving out $i$:
+Apply Sherman-Morrison to
+$X^TX-x_ix_i^T$.
+
+Result:
+
+$\hat y_i^{(-i)}
+=
+\hat y_i
+-
+\frac{h_i e_i}{1-h_i}$.
+
+Prediction error:
+
+$y_i-\hat y_i^{(-i)}
+=
+\frac{e_i}{1-h_i}$.
+
+LOOCV:
+
+$CV=\frac1n\sum
+\left(\frac{y_i-\hat y_i}{1-h_i}\right)^2$.
+
+Single model fit sufficient.
+
+% =========================
+% GROUP 7: ENSEMBLE METHODS
+% =========================
+\section*{Decision Trees}
+
+ID3 (greedy top-down): start at root; split on feature maximizing IG; recurse; stop if pure/max-depth/min-samples; leaf = majority class.
+
+\textbf{Impurity} (binary $p$ = fraction positive):
+Entropy: $H(p)=-p\log p-(1-p)\log(1-p)$.
+Gini: $G(p)=2p(1-p)$.
+
+\textbf{Multiclass entropy} ($K$ classes, $p_k$=class fraction):
+$H(Y)=-\sum_{k=1}^K p_k\log p_k$.
+
+$IG(Y,X)=H(Y)-H(Y|X)$,\quad $H(Y|X)=\sum_v P(X{=}v)H(Y|X{=}v)$.
+
+Real features: split at midpoints between adjacent values; $O(dm\log m)$ per level.
+
+\textbf{Regularization}: max-depth, min-samples-split, min-impurity-decrease; or post-pruning (reduce-error pruning on val set).
+
+VC: unrestricted trees $=\infty$; depth-$k$ tree VC $=O(2^k\log d)$.
+
+Regression trees: minimize MSE within leaves; leaf value $=$ mean.
+
+
+% =========================
+\section*{Random Forest (Bagging)}
+
+1) Bootstrap sample per tree.
+2) Random subset $p'\!\ll\!d$ features at each split.
+3) Predict: majority vote (classif.) / average (regr.).
+
+Variance ($\rho$=pairwise tree correlation, $\sigma_f^2$=individual var.):
+$\text{Var}(\bar f_M)=\rho\sigma_f^2+\frac{1-\rho}{M}\sigma_f^2$.
+
+$M\!\to\!\infty$: variance $\to\rho\sigma_f^2$.
+
+Small $p'$ $\Rightarrow$ lower $\rho$ $\Rightarrow$ lower ensemble variance.
+
+\textbf{Key}: Bagging reduces variance NOT bias.
+
+
+% =========================
+\section*{AdaBoost}
+
+Weak learner: $h_t\in\mathcal H$ with $\varepsilon_t<\tfrac12$ (better than random).
+
+Init: $D_1(i)=1/m$. At round $t$:
+1. Weighted err: $\varepsilon_t=\sum_{i:h_t(x_i)\ne y_i}D_t(i)$.
+2. Weight: $\alpha_t=\tfrac12\log\frac{1-\varepsilon_t}{\varepsilon_t}$ ($>0$ since $\varepsilon_t<\tfrac12$).
+3. Update: $D_{t+1}(i)=\frac{D_t(i)\exp(-\alpha_t y_i h_t(x_i))}{Z_t}$, $Z_t$ = normalizer.
+   Misclassified points get higher weight; correctly classified lower.
+
+Final: $H(x)=\text{sign}\!\left(\sum_t\alpha_t h_t(x)\right)$.
+
+\textbf{Training error bound} ($\gamma_t=\tfrac12-\varepsilon_t>0$ = edge):
+$\frac1m\sum_i\mathbf{1}[H(x_i)\ne y_i]\le\prod_t Z_t=e^{-2\sum_t\gamma_t^2}$.
+
+Exponential loss connection: AdaBoost minimizes $\frac1m\sum_i e^{-y_i F(x_i)}$, $F=\sum_t\alpha_t h_t$.
+
+Training error $\to0$ exponentially; generalization depends on margin.
+
+
+% =========================
+% GROUP 8: UNSUPERVISED
+% =========================
+\section*{PCA}
+
+\textbf{Setup}: $X_c\in\mathbb R^{n\times d}$ (centered: subtract col-means).
+
+Covariance: $S=\tfrac1n X_c^TX_c\in\mathbb R^{d\times d}$ (or $\tfrac1n XX^T$ with $X$ feature-row form).
+
+Eigen-decomp: $S=V\Lambda V^T$, $\lambda_1\ge\lambda_2\ge\cdots\ge\lambda_d\ge0$.
+
+PC scores: $Z=X_c V$ (project onto eigenvectors).
+
+\textbf{EVR}: $\text{EVR}_j=\lambda_j/\sum_k\lambda_k$; $\text{CumEVR}_r=\sum_{j=1}^r\lambda_j/\sum_k\lambda_k$.
+
+Pick $r$: CumEVR$\ge0.95$ or elbow in scree plot.
+
+\textbf{Eckart-Young}: best rank-$r$ approx minimizes Frobenius error; reconstruction error $=\sum_{j>r}\lambda_j$.
+
+\textbf{SVD link}: $X_c=U\Sigma V^T$ $\Rightarrow$ $\lambda_j=\sigma_j^2/n$.
+
+\textbf{Whitening}: $\tilde z_j=z_j/\sqrt{\lambda_j}$ (unit variance per PC).
+
+\textbf{Reconstruction}: $\hat x^i=Z_r V_r^T+\mathbf{1}\mu^T$ (add back means).
+
+\textbf{Traps}: (1) must center first; (2) $n$ vs $n-1$; (3) EVR$\ne$eigenvalue; (4) SVD$\Sigma^2/n$ = eigenvalues; (5) $V$ cols not rows = PCs.
+
+
+% =========================
+\section*{Clustering (K-Means)}
+
+\textbf{Objective}: $\min_{C_1,\ldots,C_K}\sum_{k=1}^K\sum_{x\in C_k}\|x-\mu_k\|^2$ (WCSS/SSD).
+
+\textbf{Algorithm}: init $\mu_k$ $\to$ assign $x^i$ to nearest $\mu_k$ $\to$ recompute $\mu_k=\text{mean}(C_k)$ $\to$ repeat until stable.
+
+WCSS non-increasing per iteration; terminates (finite partitions); finds local minimum.
+
+\textbf{K-means++}: choose 1st centroid uniformly; each next $\propto d_i^2$ (min sq.\ dist.\ to nearest chosen). Gives $O(\log K)\times$OPT bound.
+
+\textbf{TSS $=$ WCSS $+$ BCSS}: total $=$ within $+$ between cluster variance.
+
+\textbf{Choosing $K$}:
+
+\textit{Elbow}: plot WCSS vs $K$; pick knee point (diminishing returns).
+
+\textit{Silhouette}: $a_i=$ mean intra-cluster dist; $b_i=$ min mean inter-cluster dist.
+$s_i=\frac{b_i-a_i}{\max(a_i,b_i)}\in[-1,1]$; $s_D=\frac1n\sum_i s_i$. Higher = better.
+
+\textit{Calinski-Harabasz}: $\text{CH}(K)=\frac{\text{BCSS}/(K-1)}{\text{WCSS}/(n-K)}$. Higher = better.
+
+\textit{Davies-Bouldin}: $\text{DB}=\frac1K\sum_j\max_{k\ne j}\frac{s_j+s_k}{d_{jk}}$ ($s_j$=intra-scatter, $d_{jk}$=centroid dist). Lower = better.
+
+
+% =========================
+% GROUP 9: NEURAL NETWORKS
+% =========================
+\section*{MLP / Neural Networks}
+
+\textbf{Architecture}: $L$ layers; $L_0$=input ($d$ units), $L_1,\ldots,L_{L-1}$=hidden, $L_L$=output.
+
+Neuron: $z_j^\ell=\sum_k w_{jk}^\ell a_k^{\ell-1}$, $a_j^\ell=\phi(z_j^\ell)$.
+
+Activations: sigmoid $\phi(z)=\tfrac{1}{1+e^{-z}}$, $\phi'=\phi(1-\phi)$; ReLU $\phi(z)=\max(0,z)$.
+
+Motivation: XOR not linearly sep.; hidden layer maps to sep.\ space.
+
+\textbf{Forward pass} (binary, 1 output):
+$\hat y=\phi(W^L\phi(W^{L-1}\cdots\phi(W^1 x)\cdots))$.
+
+Loss (MSE): $E=\sum_s({\hat y}^s-y^s)^2$.
+
+\textbf{Backpropagation} (chain rule):
+$\nabla_{W^\ell}e=\text{Diag}(\phi'^\ell)\,\delta^\ell\,(a^{\ell-1})^T$,
+
+where $\delta^L=\frac{\partial e}{\partial a^L}$ and $\delta^\ell=V^{\ell+1}\cdots V^L\delta^L$,\quad $V^{\ell+1}=(W^{\ell+1})^T\text{Diag}(\phi'^{\ell+1})$.
+
+Example: $\nabla_{w_{11}^3}e=\frac{\partial e}{\partial y}\phi'(z_1^3)a_1^2$.
+
+\textbf{Optimization}: GD, SGD ($w^{k+1}\leftarrow w^k-\gamma_k\nabla_w e^{i_k}$), mini-batch SGD. Asymptotic convergence under $\sum\gamma_k^2<\infty$, $\sum\gamma_k=\infty$.
+
+
+% =========================
+\section*{MLP Multiclass}
+
+Output layer: $C$ neurons; apply \textbf{softmax}:
+$q_j=\frac{\exp(a_j^L)}{\sum_{r=1}^C\exp(a_r^L)}$,\quad $j=1,\ldots,C$.
+
+$q=(q_1,\ldots,q_C)$ is a prob.\ distribution.
+
+\textbf{One-hot encoding}: $y=c$ $\mapsto$ $y^{\text{oh}}\in\{0,1\}^C$ with $1$ at position $c$.
+
+\textbf{KL divergence}: $KL(p\|q)=\sum_j p_j\log\frac{p_j}{q_j}=NE(p)+CE(p,q)$.
+
+Since $NE(p)$ is constant, \textbf{minimizing KL $\equiv$ minimizing CE}.
+
+\textbf{Cross-entropy loss}: $CE(p,q)=-\sum_j p_j\log q_j$.
+
+With one-hot: $CE=-\log q_c$ (only true class contributes).
+
+\textbf{Training}: forward pass $\to$ CE loss $\to$ backprop $\to$ SGD update.
+
+Predict: $\hat y=\arg\max_j q_j$.
+
+Backprop gradient: $\nabla_{W^\ell}e=\text{Diag}(\phi'^\ell)\delta^\ell(a^{\ell-1})^T$; $\delta^L=\partial e/\partial a^L$ differs for CE vs MSE.
+
+
+% =========================
+% GROUP 10: EXAM PREP
+% =========================
+\section*{Likely New Proof Questions}
+
+\textbf{P1. K-means WCSS non-increasing.}
+\textit{Assignment}: reassigning $x$ to nearest $\mu_k$ cannot increase $\|x-\mu_k\|^2$, so WCSS $\downarrow$ or stays.
+\textit{Update}: $\min_\mu\sum_{x\in C_k}\|x-\mu\|^2$ $\Rightarrow$ $\partial/\partial\mu=0$ $\Rightarrow$ $\mu_k=\text{mean}(C_k)$; any other choice gives larger WCSS. Hence WCSS non-increasing per iteration.
+
+\textbf{P2. TSS = WCSS + BCSS.}
+$\text{TSS}=\sum_i\|x_i-\mu\|^2$. Write $x_i-\mu=(x_i-\mu_k)+(\mu_k-\mu)$; expand squared norm; cross term $\sum_{x\in C_k}\langle x_i-\mu_k,\mu_k-\mu\rangle=\langle\sum x_i-|C_k|\mu_k,\mu_k-\mu\rangle=0$ (since $\mu_k=\text{mean}$). Sum: $\text{TSS}=\text{WCSS}+\sum_k|C_k|\|\mu_k-\mu\|^2=\text{WCSS}+\text{BCSS}$.
+
+\textbf{P3. PCA: PC1 = top eigenvector (Rayleigh quotient).}
+$\max_{\|v\|=1}v^TSv$. Lagrangian: $Sv=\lambda v$, so $v$ is eigenvector. Objective $=v^TSv=\lambda$. Maximized by eigenvector with largest $\lambda$. \textit{Orthogonality}: subsequent PCs maximize variance subject to orthogonality to previous PCs $\Rightarrow$ $j$-th eigenvector.
+
+\textbf{P4. Ridge = MAP with Gaussian prior.}
+Prior: $p(w)\propto\exp(-\frac{\alpha}{2}\|w\|^2)$. Likelihood (Gaussian): $p(y|X,w)\propto\exp(-\frac{1}{2\sigma^2}\|y-Xw\|^2)$. MAP: $\arg\max_w[\log p(y|X,w)+\log p(w)]=\arg\min_w[\|y-Xw\|^2+\alpha\sigma^2\|w\|^2]$. Set $\lambda=\alpha\sigma^2$ $\Rightarrow$ Ridge.
+
+\textbf{P5. LASSO = MAP with Laplace prior.}
+Prior: $p(w_j)\propto\exp(-\lambda|w_j|)$, so $\log p(w)=-\lambda\|w\|_1$+const. MAP: $\arg\min_w[\|y-Xw\|^2+2\sigma^2\lambda\|w\|_1]$ $\Rightarrow$ LASSO. L1 penalty corners of L1 ball hit constraint surface at axes $\Rightarrow$ sparse solution.
+
+\textbf{P6. Softmax sums to 1 and $q_j>0$.}
+$q_j=\exp(a_j^L)/Z$, $Z=\sum_r\exp(a_r^L)>0$. Clearly $q_j>0$ (exp always positive). $\sum_jq_j=\sum_j\exp(a_j)/Z=Z/Z=1$. Hence valid probability distribution.
+
+\textbf{P7. KL divergence non-negative.}
+$KL(p\|q)=\sum_jp_j\log(p_j/q_j)\ge0$ by Jensen's inequality: $-KL=-\sum p_j\log(q_j/p_j)\ge-\log(\sum p_j\cdot q_j/p_j)=-\log 1=0$ ($\log$ concave). Equality iff $p=q$.
+
+\textbf{P8. Bagging variance formula.}
+Let $f_1,\ldots,f_M$ be trees with $\text{Var}(f_i)=\sigma_f^2$ and pairwise correlation $\rho$. $\text{Var}(\bar f_M)=\text{Var}(\frac1M\sum f_i)=\frac1{M^2}[M\sigma_f^2+M(M-1)\rho\sigma_f^2]=\frac{\sigma_f^2(1+(M-1)\rho)}{M}=\rho\sigma_f^2+\frac{(1-\rho)\sigma_f^2}{M}$. As $M\to\infty$: $\to\rho\sigma_f^2$ (irreducible if trees correlated).
+
+\textbf{P9. CE loss is convex in logits (softmax output layer).}
+For binary: $\ell(w)=-y\log\sigma(z)-(1-y)\log(1-\sigma(z))$. Second deriv $=\sigma(z)(1-\sigma(z))>0$ $\Rightarrow$ convex in $z=w^Tx$ $\Rightarrow$ convex in $w$ (affine composition). For multiclass CE with softmax: Hessian $H=\text{diag}(q)-qq^T\succeq0$ (Schur complement argument).
+
+\textbf{P10. Why L1 gives sparsity, L2 does not.}
+Ridge: constraint $\|w\|^2\le t$ (sphere); loss contours ellipsoidal; intersection generically at non-axis point $\Rightarrow$ no sparsity. LASSO: constraint $\|w\|_1\le t$ (diamond); corners lie on coordinate axes; loss contours likely touch corner first $\Rightarrow$ many $w_j=0$. In 2D: corners at $(t,0),(0,t),(-t,0),(0,-t)$.
+
+
+% =========================
+\section*{More Computation Questions}
+
+\textbf{Q: Perceptron convergence bound numeric.}
+Given $\|w^*\|=2$, $\rho=3$, $\gamma=0.5$: $T\le(\rho/\gamma)^2=(3/0.5)^2=36$. Also $T\le\rho^2\|w^*\|^2/\gamma^2=4\times9/0.25=144$ (multiclass version). Report bound from margin formula.
+
+\textbf{Q: Naive Bayes prediction.}
+Given class priors $P(y)$ and likelihoods $P(x_j|y)$: compute $\log P(y)+\sum_j\log P(x_j|y)$ for each class; predict class with max log-score. Apply Laplace smoothing if any count is zero: add $\alpha=1$ to numerator, $\alpha|\mathcal V|$ to denominator.
+
+\textbf{Q: Compute F1 from raw counts.}
+Given TP=50, FP=10, FN=20: Precision$=50/60\approx0.83$; Recall$=50/70\approx0.71$; $F1=2\times0.83\times0.71/(0.83+0.71)\approx0.77$. Note: F1 harmonic mean of P and R, not arithmetic.
+
+\textbf{Q: Random Forest variance reduction.}
+Single tree: $\sigma_f^2=4$. $M=100$ trees, pairwise correlation $\rho=0.1$. $\text{Var}(\bar f)=0.1\times4+\frac{0.9\times4}{100}=0.4+0.036=0.436$. Single tree variance = 4; RF reduces to 0.436 ($\approx10\times$ reduction). Floor is $\rho\sigma_f^2=0.4$.
+
+\textbf{Q: Softmax + CE by hand.}
+Logits $a=[2,1,0]$. $Z=e^2+e^1+e^0=7.389+2.718+1=11.107$. $q=[0.665,0.245,0.090]$. True class $c=1$: $CE=-\log(0.665)=0.408$. Gradient: $\nabla_{a}CE=q-e_c=[0.665-1,0.245,0.090]=[-0.335,0.245,0.090]$.
+
+
+% =========================
+\section*{More Proof Questions}
+
+\textbf{P11. AdaBoost training error exponentially decays.}
+Show $\frac1m\sum_i\mathbf1[H(x_i)\ne y_i]\le e^{-2\sum_t\gamma_t^2}$.
+Key: $\mathbf1[H(x_i)\ne y_i]\le e^{-y_iF(x_i)}$ (since $y_iF<0\Rightarrow e^{-y_iF}\ge1$). Sum: $\frac1m\sum_i e^{-y_iF(x_i)}$. Show inductively this equals $\prod_tZ_t$: at each round, $D_{t+1}$ is renormalized, and $Z_t=\sqrt{4\varepsilon_t(1-\varepsilon_t)}=\sqrt{1-4\gamma_t^2}\le e^{-2\gamma_t^2}$.
+
+\textbf{P12. K-means always terminates.}
+Number of distinct partitions of $n$ points into $K$ clusters is finite ($K^n$). Each iteration of K-means either decreases WCSS strictly or keeps it same (only if assignment unchanged). Since WCSS is bounded below by 0 and decreases between distinct partitions, algorithm must terminate at a fixed point.
+
+\textbf{P13. Entropy $H(p)$ maximized by uniform distribution.}
+Maximize $-\sum_{k=1}^K p_k\log p_k$ subject to $\sum p_k=1$, $p_k\ge0$. Lagrangian: $\partial/\partial p_k[{-p_k\log p_k-\lambda p_k}]=0\Rightarrow-\log p_k-1-\lambda=0\Rightarrow p_k=e^{-1-\lambda}=$ constant. Hence $p_k=1/K$ for all $k$; max entropy $=\log K$.
+
+\textbf{P14. Ridge always has unique solution.}
+$\hat\beta=(X^TX+\lambda I)^{-1}X^Ty$ for any $\lambda>0$. Show $X^TX+\lambda I\succ0$: for any $v\ne0$, $v^T(X^TX+\lambda I)v=\|Xv\|^2+\lambda\|v\|^2\ge\lambda\|v\|^2>0$. Hence positive definite $\Rightarrow$ invertible $\Rightarrow$ unique solution, even when $X^TX$ is singular (collinear features).
+
+\textbf{P15. VC dimension of linear classifiers in $\mathbb R^d$ is $d+1$.}
+\textit{Achievability}: $d+1$ points in general position (no $d+1$ on a hyperplane) are shattered by homogeneous halfspaces in $\mathbb R^{d+1}$. \textit{Upper bound}: any $d+2$ points are linearly dependent; any labeling cannot be realized. Formally, Radon's theorem: any $d+2$ points can be split into two sets with convex hulls intersecting $\Rightarrow$ no classifier separates all $2^{d+2}$ labelings.
+
+\section*{HIGH PROBABILITY QUESTIONS --- SOLUTIONS}
+
+\textbf{PAPER SET A SOLUTIONS.}
+
+\textbf{Short Answers.}
+\textbf{1. Bias-Variance.} Increase $\lambda\Rightarrow$ bias$\uparrow$, variance$\downarrow$, overfitting$\downarrow$, underfitting risk$\uparrow$.
+
+\textbf{2. Bayes classifier.} $h^*(x)=\mathbf{1}[\eta(x)>1/2]$, $\eta(x)=P(Y=1|x)$.
+
+\textbf{3. Support vectors.} Points with $y_i(w^Tx_i+b)=1$ (hard margin); they determine the boundary.
+
+\textbf{4. Generative vs Discriminative.} Generative: model $P(X,Y)$ / $P(X|Y),P(Y)$ (NB). Discriminative: model $P(Y|X)$ or boundary (Logistic, SVM).
+
+\textbf{5. Scaling in KNN.} Large-scale features dominate Euclidean distance.
+
+\textbf{6. Hinge loss.} $\max(0,1-yf(x))$; convex surrogate of $0$--$1$.
+
+\textbf{7. $h_{ii}$.} Leverage of point $i$; large $h_{ii}\Rightarrow$ influential.
+
+\textbf{8. Bagging vs Boosting.} Bagging reduces variance. Boosting reduces bias / builds strong learner.
+
+\textbf{9. PCA centering.} Need covariance about mean; otherwise PC1 is pulled toward mean vector.
+
+\textbf{10. Slack variables.} $\xi_i$ allow margin violations / misclassification.
+
+\textbf{Medium Answers.}
+\textbf{11. Logistic gradient.} $J=-\sum[y\log p+(1-y)\log(1-p)]$, $p=\sigma(Xw)$, $\nabla J=X^T(p-y)$.
+
+\textbf{12. Perceptron updates.} $w_0=(0,0)$. $x_1=(2,1),y=+1$ mistake $\Rightarrow w_1=(2,1)$. $x_2=(-1,-1),y=-1$: $y(w^Tx)=(-1)(-3)=3>0$ correct. Final $w=(2,1)$.
+
+\textbf{13. Ridge.} $\min \|y-X\beta\|^2+\lambda\|\beta\|^2$. Set grad $=0$:
+\[
+(X^TX+\lambda I)\beta=X^Ty,\qquad \hat\beta=(X^TX+\lambda I)^{-1}X^Ty.
+\]
+Invertible since $v^T(X^TX+\lambda I)v=\|Xv\|^2+\lambda\|v\|^2>0$ for $v\neq0$.
+
+\textbf{14. PCA.} $|S-\lambda I|=(4-\lambda)(3-\lambda)-4=\lambda^2-7\lambda+8=0$, so
+\[
+\lambda_{1,2}=\frac{7\pm\sqrt{17}}{2},\qquad \lambda_{\max}=\frac{7+\sqrt{17}}{2}.
+\]
+Eigenvector: $(4-\lambda)x+2y=0\Rightarrow y=\frac{\lambda-4}{2}x$, use any proportional vector.
+
+\textbf{15. K-means.} $C_1=\{(1,1),(2,1)\}\Rightarrow \mu_1=(1.5,1)$. $C_2=\{(8,8),(9,8)\}\Rightarrow \mu_2=(8.5,8)$.
+
+\textbf{Long Proof Skeletons.}
+\textbf{16. Bayes optimality.} At fixed $x$: $\mathrm{Err}(g|x)=1-P(g(x)|x)$. Minimize by choosing $\arg\max_y P(y|x)=h^*(x)$. Then average over $x$: $R(h^*)\le R(g)$.
+
+\textbf{17. Perceptron.} $\langle w^*,w_T\rangle\ge T\gamma$, $\|w_T\|^2\le T\rho^2$. By Cauchy:
+\[
+T\gamma\le \|w^*\|\|w_T\|\le \|w^*\|\rho\sqrt T
+\Rightarrow T\le \frac{\rho^2\|w^*\|^2}{\gamma^2}.
+\]
+If $\|w^*\|=1$, $T\le(\rho/\gamma)^2$.
+
+\textbf{18. Hard SVM dual.} Primal $\min \frac12\|w\|^2$ s.t. $y_i(w^Tx_i+b)\ge1$. Lagrangian
+\[
+L=\frac12\|w\|^2-\sum_i\alpha_i[y_i(w^Tx_i+b)-1].
+\]
+Stationarity:
+\[
+\partial_wL=0\Rightarrow w=\sum_i\alpha_i y_i x_i,\qquad
+\partial_bL=0\Rightarrow \sum_i\alpha_i y_i=0.
+\]
+Dual:
+\[
+\max_{\alpha\ge0}\sum_i\alpha_i-\frac12\sum_{i,j}\alpha_i\alpha_j y_iy_j x_i^Tx_j,
+\quad \sum_i\alpha_i y_i=0.
+\]
+
+\textbf{PAPER SET B SOLUTIONS.}
+
+\textbf{Short Answers.}
+\textbf{1. OLS vs Ridge vs LASSO.} OLS: no penalty. Ridge: $\lambda\|\beta\|^2$ shrinkage. LASSO: $\lambda\|\beta\|_1$ sparsity.
+
+\textbf{2. Precision/Recall/F1.}
+\[
+P=\frac{TP}{TP+FP},\quad R=\frac{TP}{TP+FN},\quad F1=\frac{2PR}{P+R}.
+\]
+
+\textbf{3. Logistic no closed form.} Normal equations become nonlinear due sigmoid.
+
+\textbf{4. Overfitting.} Low train error, high test error.
+
+\textbf{5. Trees overfit.} Deep splits can memorize noise.
+
+\textbf{6. Curse of dimensionality.} Distances concentrate; NN becomes unreliable.
+
+\textbf{7. Kernel trick.} Replace $x^Tz$ by $K(x,z)=\phi(x)^T\phi(z)$.
+
+\textbf{8. LOOCV.} Train $n$ times, leave one point out each time.
+
+\textbf{9. Bagging variance.} Averaging decorrelated learners lowers variance.
+
+\textbf{10. Softmax.}
+\[
+q_j=\frac{e^{a_j}}{\sum_k e^{a_k}}.
+\]
+
+\textbf{Medium.}
+\textbf{11. TP50 FP10 FN20.}
+\[
+P=\frac{50}{60}=0.833,\qquad R=\frac{50}{70}=0.714,\qquad
+F1\approx0.769.
+\]
+
+\textbf{12. Softmax$(2,1,0)$.}
+\[
+Z=e^2+e+1=11.107,\quad q=(0.665,0.245,0.090),
+\]
+CE for true class 1st/index 1:
+\[
+CE=-\log(0.665)=0.408.
+\]
+
+\textbf{13. LOOCV.}
+\[
+\hat y_i^{(-i)}=\hat y_i-\frac{h_{ii}e_i}{1-h_{ii}},\qquad
+e_i^{(-i)}=\frac{e_i}{1-h_{ii}},
+\]
+\[
+CV=\frac1n\sum_i\left(\frac{e_i}{1-h_{ii}}\right)^2.
+\]
+
+\textbf{14. Naive Bayes.}
+\[
+\text{score}(y)=\log P(y)+\sum_j\log P(x_j|y),\qquad \hat y=\arg\max_y \text{score}(y).
+\]
+
+\textbf{15. AdaBoost.}
+\[
+\epsilon_t=\sum_{i:\text{wrong}}D_t(i),\qquad
+\alpha_t=\frac12\log\frac{1-\epsilon_t}{\epsilon_t}.
+\]
+
+\textbf{Long.}
+\textbf{16. Hinge convex.} $\max\{0,1-yw^Tx\}$ is max of affine functions $\Rightarrow$ convex.
+
+\textbf{17. Logistic convex.}
+\[
+\ell(z)=\log(1+e^{-z}),\qquad
+\ell''(z)=\frac{e^z}{(1+e^z)^2}\ge0.
+\]
+
+\textbf{18. Ridge = MAP.} Gaussian prior $p(w)\propto e^{-\alpha\|w\|^2/2}$ + Gaussian likelihood $\Rightarrow$ MAP minimizes SSE$+\lambda\|w\|^2$.
+
+\textbf{19. LASSO = MAP.} Laplace prior $p(w_j)\propto e^{-\lambda|w_j|}$ $\Rightarrow$ MAP minimizes SSE$+\lambda\|w\|_1$.
+
+\textbf{20. 1NN.}
+\[
+R_{1NN}(x)=2\eta(x)(1-\eta(x))\le 2\min(\eta,1-\eta)=2R^*(x).
+\]
+Take expectation: $R_{1NN}\le2R^*$.
+
+\textbf{PAPER SET C SOLUTIONS.}
+
+\textbf{1. Representer.} Write $w=u+v$, $u\in\mathrm{span}\{x_i\}$, $v\perp \mathrm{span}\{x_i\}$. Loss depends only on $u$ since $v^Tx_i=0$. Norm: $\|w\|^2=\|u\|^2+\|v\|^2\ge\|u\|^2$. So optimum has $v=0$.
+
+\textbf{2. Strong convexity.} If $w_1\neq w_2$ are minimizers and $f$ strongly convex, midpoint satisfies
+\[
+f\Big(\frac{w_1+w_2}{2}\Big)<\frac{f(w_1)+f(w_2)}{2},
+\]
+contradicting minimality.
+
+\textbf{3. K-means monotonic.} Assignment step lowers WCSS by nearest-centroid choice. Update step lowers WCSS since mean minimizes within-cluster SSE. Therefore WCSS non-increasing.
+
+\textbf{4. TSS decomposition.}
+\[
+\sum\|x-\mu\|^2=\sum\|x-\mu_k\|^2+\sum n_k\|\mu_k-\mu\|^2
+\]
+since cross term vanishes by $\sum_{x\in C_k}(x-\mu_k)=0$.
+
+\textbf{5. PCA.}
+\[
+\max_{\|v\|=1}v^TSv
+\]
+gives Lagrangian condition $Sv=\lambda v$; largest $\lambda$ gives PC1.
+
+\textbf{6. Weak duality.} For all $x,y$,
+\[
+\min_x f(x,y)\le f(x,y)\le \max_y f(x,y).
+\]
+Then maximize left side over $y$, minimize right side over $x$:
+\[
+\max_y\min_x f(x,y)\le \min_x\max_y f(x,y).
+\]
+
+\textbf{7. Hinge upper-bounds $0$--$1$.} If $yf\le0$, then $1-yf\ge1$, so hinge $\ge1=\mathbf{1}[yf\le0]$. If $yf>0$, both nonnegative with hinge $\ge0$.
+
+\textbf{8. Logistic upper bound.} If $yf\le0$, then $-yf\ge0$ and
+\[
+\log(1+e^{-yf})\ge \log(1+1)=\log2.
+\]
+
+\textbf{9. Softmax valid.} $q_j>0$ since exponentials are positive and
+\[
+\sum_j q_j=\frac{\sum_j e^{a_j}}{\sum_k e^{a_k}}=1.
+\]
+
+\textbf{10. Bagging variance.}
+\[
+\mathrm{Var}(\bar f_M)=\rho\sigma^2+\frac{1-\rho}{M}\sigma^2.
+\]
+
+\textbf{LAST NIGHT NUMERICALS.}
+\[
+\hat\beta_{\text{ridge}}=(X^TX+\lambda I)^{-1}X^Ty,\qquad
+\nabla J_{\text{logistic}}=X^T(p-y),
+\]
+\[
+\gamma_{\text{SVM}}=\frac{1}{\|w\|},\qquad
+T_{\text{perc}}\le(\rho/\gamma)^2,
+\]
+\[
+LOOCV=\frac1n\sum_i\left(\frac{e_i}{1-h_{ii}}\right)^2,\qquad
+F1=\frac{2TP}{2TP+FP+FN},
+\]
+\[
+CE_{\text{softmax}}=-\log q_{\text{true}},\qquad
+\mathrm{EVR}_j=\frac{\lambda_j}{\sum_r\lambda_r}.
+\]
+
+\section*{MOST PROBABLE ENDSEM PROOF QUESTIONS (HIGH YIELD)}
+
+\textbf{TIER A : VERY HIGH PROBABILITY (Almost Certain).}
+
+\textbf{1. Bayes Optimality.}
+For any classifier $g$:
+\[
+R(h^*)\le R(g),\qquad h^*(x)=\arg\max_y P(Y=y|X=x).
+\]
+Proof: at fixed $x$,
+\[
+\mathrm{Err}(g|x)=1-P(g(x)|x).
+\]
+Bayes picks max posterior $\Rightarrow$ minimum conditional error. Then take expectation over $x$.
+
+\textbf{2. Perceptron Mistake Bound.}
+If separable with margin $\gamma$ and $\|x_i\|\le\rho$:
+\[
+T\le(\rho/\gamma)^2.
+\]
+Skeleton:
+\[
+\langle w^*,w_T\rangle\ge T\gamma,\qquad \|w_T\|^2\le T\rho^2.
+\]
+By Cauchy:
+\[
+T\gamma\le \|w^*\|\rho\sqrt T \Rightarrow T\le(\rho/\gamma)^2
+\]
+for normalized $\|w^*\|=1$.
+
+\textbf{3. Hard Margin SVM = Max Margin.}
+\[
+\max_{\|w\|=1,b}\min_i y_i(w^Tx_i+b)
+\]
+is equivalent to
+\[
+\min_{w,b}\frac12\|w\|^2\quad\text{s.t. }y_i(w^Tx_i+b)\ge1.
+\]
+Reason: separator is scale-invariant. Fix min functional margin $=1$. Then geometric margin $=1/\|w\|$, so maximizing margin $\Leftrightarrow$ minimizing $\|w\|$.
+
+\textbf{4. Dual of Hard SVM.}
+Primal:
+\[
+\min \frac12\|w\|^2 \quad \text{s.t. } y_i(w^Tx_i+b)\ge1.
+\]
+Lagrangian:
+\[
+L=\frac12\|w\|^2-\sum_i\alpha_i[y_i(w^Tx_i+b)-1].
+\]
+Stationarity:
+\[
+w=\sum_i\alpha_i y_i x_i,\qquad \sum_i\alpha_i y_i=0.
+\]
+Dual:
+\[
+\max_\alpha \sum_i\alpha_i-\frac12\sum_{i,j}\alpha_i\alpha_j y_i y_j x_i^Tx_j
+\]
+s.t. $\alpha_i\ge0$, $\sum_i\alpha_i y_i=0$.
+
+\textbf{5. Logistic Loss Convexity.}
+\[
+\ell(z)=\log(1+e^{-z}),\qquad \ell''(z)=\frac{e^z}{(1+e^z)^2}\ge0.
+\]
+Hence convex.
+
+\textbf{TIER B : HIGH PROBABILITY.}
+
+\textbf{6. Hinge Loss Convexity.}
+\[
+\ell(w)=\max(0,1-yw^Tx).
+\]
+Max of affine functions $\Rightarrow$ convex.
+
+\textbf{7. Ridge Always Unique.}
+For $\lambda>0$,
+\[
+v^T(X^TX+\lambda I)v=\|Xv\|^2+\lambda\|v\|^2>0 \quad (v\neq0).
+\]
+So $X^TX+\lambda I\succ0$, invertible, unique minimizer.
+
+\textbf{8. Bias Variance Decomposition.}
+\[
+\mathbb{E}[(y-\hat f)^2]=(\mathbb{E}[\hat f]-f)^2+\mathrm{Var}(\hat f)+\sigma^2.
+\]
+Use $y=f+\epsilon$, $\mathbb{E}[\epsilon]=0$, expand square, kill cross terms.
+
+\textbf{9. PCA First Principal Component.}
+\[
+\max_{\|v\|=1}v^TSv.
+\]
+Lagrangian:
+\[
+\mathcal L(v,\lambda)=v^TSv-\lambda(v^Tv-1).
+\]
+Stationarity gives
+\[
+Sv=\lambda v.
+\]
+Largest eigenvalue $\lambda$ gives PC1.
+
+\textbf{10. K-Means Objective Never Increases.}
+Assignment step: nearest centroid lowers WCSS. Update step: mean minimizes $\sum\|x-\mu\|^2$. Hence objective non-increasing each iteration.
+
+\textbf{TIER C : MODERATE BUT POSSIBLE.}
+
+\textbf{11. Representer Theorem (Linear).}
+For
+\[
+\min \lambda\|w\|^2+\sum_i \ell(y_i,w^Tx_i),
+\]
+show $w^*=\sum_i\alpha_i x_i$.
+Write $w=u+v$ with $u\in\mathrm{span}\{x_i\}$, $v\perp\mathrm{span}\{x_i\}$. Loss depends only on $u$ since $v^Tx_i=0$. Norm increases if $v\neq0$. Hence $v=0$.
+
+\textbf{12. Strong Convexity $\Rightarrow$ Unique Minimizer.}
+If $f$ is $\lambda$-strongly convex, two distinct minimizers $w_1,w_2$ impossible because midpoint gives strictly lower value.
+
+\textbf{13. Weak Duality.}
+\[
+\min_x\max_y f(x,y)\ge \max_y\min_x f(x,y).
+\]
+Since for all $x,y$:
+\[
+\min_x f(x,y)\le f(x,y)\le \max_y f(x,y).
+\]
+
+\textbf{14. Hinge Upper Bounds 0--1.}
+\[
+\mathbf{1}[yf\le0]\le \max(0,1-yf).
+\]
+
+\textbf{15. Logistic Upper Bounds 0--1.}
+\[
+\mathbf{1}[yf\le0]\le \log(1+e^{-yf})
+\]
+up to constant / $\log2$ scaling idea.
+
+\textbf{TIER D : If KNN/Bayes Asked.}
+
+\textbf{16. 1-NN Risk Bound.}
+\[
+R_{1NN}\le 2R^*.
+\]
+At fixed $x$, $\eta=P(Y=1|x)$,
+\[
+R_{1NN}(x)=2\eta(1-\eta)\le2\min(\eta,1-\eta)=2R^*(x).
+\]
+Take expectation.
+
+\textbf{ULTRA SHORT MEMORIZE ORDER (If no time).}
+1. Bayes optimality
+2. Perceptron bound
+3. Hard SVM primal-dual
+4. Logistic convexity
+5. Hinge convexity
+6. PCA eigenvector proof
+7. Kmeans monotonicity
+8. Ridge invertibility
+9. Bias-variance
+10. $1$NN $\le 2R^*$
+
+\textbf{EXAM STRATEGY.}
+If proof unknown:
+1. Write definitions
+2. Use convexity / Cauchy / Lagrangian / expectation
+3. Show final theorem statement
+4. Even partial derivation gets marks
+
+\textbf{VERY LIKELY NUMERICAL + PROOF MIXED.}
+\begin{itemize}
+\item Find support vectors then explain KKT.
+\item PCA eigenvalues then justify PC1.
+\item Kmeans one iteration then prove WCSS decreases.
+\item Ridge solution then prove invertibility.
+\item Logistic gradient then prove convexity.
+\end{itemize}
+
+\textbf{EXTRA PROOF-TYPE QUESTIONS + SOLNS.}
+
+\textbf{17. OLS normal equations.} Show minimizer of $\|y-X\beta\|^2$ satisfies $X^TX\beta=X^Ty$. Solution: $\nabla_\beta\|y-X\beta\|^2=-2X^T(y-X\beta)=0$.
+
+\textbf{18. Hat matrix symmetric/idempotent.} $H=X(X^TX)^{-1}X^T$. Then $H^T=H$ and $H^2=X(X^TX)^{-1}(X^TX)(X^TX)^{-1}X^T=H$.
+
+\textbf{19. Residuals orthogonal to column space.} $e=y-\hat y=(I-H)y$. Then $X^Te=X^Ty-X^TX\hat\beta=0$; also $He=H(I-H)y=0$.
+
+\textbf{20. Information gain nonnegative.} $IG(Y;X)=H(Y)-H(Y|X)=I(X;Y)\ge0$ since conditioning cannot increase entropy / KL$\ge0$.
+
+\textbf{21. Covariance matrix PSD.} For covariance $S$, $v^TSv=\mathrm{Var}(v^TX)\ge0$ for all $v$, hence $S\succeq0$.
+
+\textbf{22. PCA eigenvectors orthogonal.} If $Su=\lambda u$, $Sv=\mu v$, $\lambda\neq\mu$, then $u^TSv=\mu u^Tv=(Su)^Tv=\lambda u^Tv$, so $(\lambda-\mu)u^Tv=0$.
+
+\textbf{23. Softmax shift invariance.} $\displaystyle q_j(a+c\mathbf1)=\frac{e^{a_j+c}}{\sum_k e^{a_k+c}}=\frac{e^{a_j}}{\sum_k e^{a_k}}=q_j(a)$.
+
+\textbf{24. Cross-entropy minimized at truth.} $CE(p,q)=H(p)+KL(p\|q)$. Since $KL\ge0$, minimum occurs at $q=p$.
+
+\textbf{25. Bagging variance reduction.} $\mathrm{Var}(\bar f_M)=\rho\sigma^2+\frac{1-\rho}{M}\sigma^2\le\sigma^2$ for $\rho\le1$; strict drop if $\rho<1$ and $M>1$.
+
+\textbf{26. Tree training error non-increasing with depth.} A deeper tree can copy parent prediction by making no effective split; best split cannot worsen empirical impurity/error, so train error never increases.
+
+\textbf{27. LOOCV shortcut.} With hat matrix $H$, $e_i^{(-i)}=\frac{e_i}{1-h_{ii}}$. Follows from Sherman--Morrison update after deleting row $i$.
+
+\textbf{28. Projection non-expansive.} For convex set $C$, $\|\Pi_C(u)-\Pi_C(v)\|\le\|u-v\|$. Use projection optimality: $\langle u-\Pi_C(u),z-\Pi_C(u)\rangle\le0$ with $z=\Pi_C(v)$ and swap $u,v$.
+
+\textbf{29. Cluster mean minimizes SSE.} $\arg\min_\mu\sum_{i\in C}\|x_i-\mu\|^2$ satisfies $\partial/\partial\mu=-2\sum_{i\in C}(x_i-\mu)=0$, so $\mu=\frac1{|C|}\sum_{i\in C}x_i$.
+
+\textbf{30. TSS = WCSS + BCSS.} Write $x_i-\mu=(x_i-\mu_k)+(\mu_k-\mu)$; square and sum. Cross term vanishes since $\sum_{i\in C_k}(x_i-\mu_k)=0$.
+
+\textbf{31. PCs are uncorrelated.} If $Z=XV$ with $S=V\Lambda V^T$, then $\mathrm{Cov}(Z)=V^TSV=\Lambda$, diagonal. Hence PC coordinates are uncorrelated.
+
+\textbf{32. OLS unbiased.} With $y=X\beta+\epsilon$, $\mathbb E[\epsilon|X]=0$, $\hat\beta=(X^TX)^{-1}X^Ty=\beta+(X^TX)^{-1}X^T\epsilon$, so $\mathbb E[\hat\beta|X]=\beta$.
+
+\textbf{33. Ridge biased.} $\hat\beta_R=(X^TX+\lambda I)^{-1}X^Ty$, so $\mathbb E[\hat\beta_R|X]=(X^TX+\lambda I)^{-1}X^TX\beta\neq\beta$ for $\lambda>0$.
+
+\textbf{34. Ridge shrinks singular directions.} If $X=UDV^T$, then $\hat\beta_R=V(D^2+\lambda I)^{-1}DU^Ty$; coefficient on singular direction $j$ gets factor $\frac{d_j}{d_j^2+\lambda}$.
+
+\textbf{35. Bernoulli NB gives linear log-odds.} $\log\frac{P(y=1|x)}{P(y=0|x)}=\log\frac{\pi}{1-\pi}+\sum_j x_j\log\frac{\theta_{j1}(1-\theta_{j0})}{\theta_{j0}(1-\theta_{j1})}+\text{const}$, linear in $x$.
+
+\textbf{36. Gaussian equal covariance $\Rightarrow$ linear boundary.} Compare class discriminants $-\frac12(x-\mu_k)^T\Sigma^{-1}(x-\mu_k)+\log\pi_k$; quadratic $x^T\Sigma^{-1}x$ cancels when $\Sigma$ same for both classes.
+
+\textbf{37. Unequal covariance $\Rightarrow$ quadratic boundary.} If $\Sigma_1\neq\Sigma_0$, the $x^T\Sigma_k^{-1}x$ terms do not cancel, so decision boundary is quadratic.
+
+\textbf{38. Logistic Hessian PSD.} For binary logistic, $\nabla^2J=X^TWX$ with $W=\mathrm{diag}(p_i(1-p_i))\succeq0$; hence $v^T\nabla^2Jv=(Xv)^TW(Xv)\ge0$.
+
+\textbf{39. Valid kernel $\Rightarrow$ Gram PSD.} If $K(x,z)=\phi(x)^T\phi(z)$, then for any $c$, $c^TKc=\|\sum_i c_i\phi(x_i)\|^2\ge0$.
+
+\textbf{40. AdaBoost upweights mistakes.} $D_{t+1}(i)\propto D_t(i)e^{-\alpha_ty_ih_t(x_i)}$: wrong point has $y_ih_t=-1\Rightarrow e^{+\alpha_t}$; correct point has factor $e^{-\alpha_t}$.
+
+\textbf{41. AdaBoost $\alpha_t$ formula.} Minimize $Z_t(\alpha)=\epsilon_te^\alpha+(1-\epsilon_t)e^{-\alpha}$; set derivative $0$ to get $\alpha_t=\frac12\log\frac{1-\epsilon_t}{\epsilon_t}$.
+
+\textbf{42. Geometric margin scale-invariant.} $\gamma_i=\frac{y_i(w^Tx_i+b)}{\|w\|}$ is unchanged by $(w,b)\mapsto(cw,cb)$ for $c>0$, since numerator and denominator both scale by $c$.
+
+\textbf{43. Non-support points do not matter.} In dual, $w=\sum_i\alpha_i y_i x_i$; if $\alpha_i=0$ the point contributes nothing, so only support vectors determine $w$.
+
+\textbf{44. Soft-SVM: $\alpha_i=C$ means inside margin/violation.} Since $\alpha_i+\beta_i=C$, $\alpha_i=C\Rightarrow\beta_i=0$; KKT allows $\xi_i>0$, so point is on/inside wrong side of margin.
+
+\textbf{45. Hard-SVM support vectors lie on margin.} If $\alpha_i>0$, complementary slackness gives $\alpha_i[y_i(w^Tx_i+b)-1]=0$, so $y_i(w^Tx_i+b)=1$.
+
+\textbf{46. Trace of hat matrix.} $\mathrm{tr}(H)=\mathrm{tr}(X(X^TX)^{-1}X^T)=\mathrm{tr}((X^TX)^{-1}X^TX)=p$ for full-rank $X\in\mathbb R^{n\times p}$.
+
+\textbf{47. Residual sum zero with intercept.} If first column of $X$ is $\mathbf 1$, then $\mathbf1^Te=0$ since residuals are orthogonal to every column of $X$.
+
+\textbf{48. $R^2$ identity.} With intercept, $R^2=\frac{SSM}{SST}=1-\frac{SSE}{SST}$ because $SST=SSM+SSE$.
+
+\textbf{49. PCA needs centering.} Without centering, covariance gets contaminated by mean term $\mu\mu^T$; PC1 can point toward mean instead of variation.
+
+\textbf{50. Softmax-CE gradient.} For one-hot target $y$, $\nabla_a CE=q-y$. Differentiate $-\sum_j y_j\log q_j$ with $q_j=e^{a_j}/\sum_k e^{a_k}$.
+
+\textbf{51. Logistic decision boundary linear.} Predict class $1$ when $\sigma(w^Tx+b)>\frac12$, equivalent to $w^Tx+b>0$, a hyperplane.
+
+\textbf{52. Exponential upper-bounds $0$--$1$.} $\mathbf1[yf\le0]\le e^{-yf}$ since if $yf\le0$ then $e^{-yf}\ge1$, else RHS $>0$.
+
+\textbf{53. Exponential loss convex.} $e^{-z}$ has second derivative $e^{-z}>0$, so convex; composition with affine $z=yw^Tx$ stays convex.
+
+\textbf{54. AdaBoost train-error bound.} $\frac1m\sum_i\mathbf1[H(x_i)\neq y_i]\le\frac1m\sum_i e^{-y_iF(x_i)}=\prod_t Z_t$, and $Z_t\le e^{-2\gamma_t^2}$.
+
+\textbf{55. Entropy maximized at uniform.} Lagrangian for $-\sum_k p_k\log p_k$ under $\sum_k p_k=1$ gives all $p_k$ equal, so $p_k=1/K$.
+
+\textbf{56. Mutual information symmetric.} $I(X;Y)=H(X)-H(X|Y)=H(Y)-H(Y|X)=H(X)+H(Y)-H(X,Y)$.
+
+\textbf{57. One-hot CE = NLL.} If true class is $c$, $CE=-\sum_j y_j\log q_j=-\log q_c$, same as negative log-likelihood.
+
+\textbf{58. Random-forest variance limit.} As $M\to\infty$, $\mathrm{Var}(\bar f_M)\to\rho\sigma^2$; averaging removes only uncorrelated part.
+
+\textbf{59. LASSO KKT sparsity test.} At optimum, if $\beta_j=0$ then $|x_j^T(y-X\beta)|\le\lambda$; if $|\cdot|<\lambda$, coordinate stays exactly zero.
+
+\textbf{60. Orthogonal-design LASSO = soft threshold.} If $X^TX=I$, then $\hat\beta_j=\mathrm{sign}(z_j)(|z_j|-\lambda)_+$ with $z_j=x_j^Ty$.
+
+\textbf{61. K-means terminates finitely.} Finite number of assignments; each changed assignment lowers WCSS; bounded below by $0$, so algorithm stops at local optimum.
+
+\textbf{62. Conditional mean minimizes MSE.} Minimize $\mathbb E[(Y-a)^2|X=x]$; derivative $-2\mathbb E[Y-a|x]=0$ gives $a=\mathbb E[Y|X=x]$.
+
+\textbf{63. Conditional median minimizes MAE.} Minimize $\mathbb E[|Y-a||X=x]$; any median makes left/right subgradient probabilities balance.
+
+\textbf{64. Conditional mode minimizes $0$--$1$.} For classifier predicting label $a$, conditional risk is $1-P(Y=a|x)$, minimized by $a=\arg\max_y P(Y=y|x)$.
+
+\textbf{65. Cross-entropy lower bound.} $CE(p,q)=H(p)+KL(p\|q)\ge H(p)$.
+
+\textbf{66. KL zero iff equal distributions.} $KL(p\|q)\ge0$ with equality iff $p_j=q_j$ for all $j$ with $p_j>0$.
+
+\textbf{67. Bayes threshold with unequal costs.} Predict $1$ iff $C_{10}P(Y=0|x)\le C_{01}P(Y=1|x)$, i.e. $\eta(x)\ge \frac{C_{10}}{C_{01}+C_{10}}$.
+
+\textbf{68. Gaussian NB means diagonal covariance.} Conditional independence of features under class $y$ implies $\Sigma_y$ has zero off-diagonals, so class density factorizes.
+
+\textbf{69. Kernel SVM prediction.} Since $w=\sum_i\alpha_i y_i\phi(x_i)$, $f(x)=w^T\phi(x)+b=\sum_i\alpha_i y_i K(x_i,x)+b$.
+
+\textbf{70. Nearest-centroid boundary linear.} Compare $\|x-\mu_1\|^2$ and $\|x-\mu_2\|^2$; $x^Tx$ cancels, leaving linear boundary.
+
+\textbf{71. Perceptron raises mistaken score.} After $w^+=w+yx$, $y\langle w^+,x\rangle=y\langle w,x\rangle+\|x\|^2$.
+
+\textbf{72. Hinge subgradient.} $0$ if $yw^Tx>1$, $-yx$ if $yw^Tx<1$, any convex combo at equality.
+
+\textbf{73. Logistic derivative.} $\sigma'(z)=\sigma(z)(1-\sigma(z))$.
+
+\textbf{74. PCA variance along $v_j$.} $\mathrm{Var}(v_j^Tx)=v_j^TSv_j=\lambda_j$.
+
+\textbf{75. EVRs sum to 1.} $\sum_j \lambda_j/\sum_r\lambda_r=1$.
+
+\textbf{76. Best tree split non-worsening.} Chosen split minimizes weighted child impurity, so post-split impurity $\le$ parent impurity.
+
+\textbf{77. Leaf majority vote optimal.} In a leaf, class minimizing $\sum_i\mathbf1[y_i\neq c]$ is the modal class.
+
+\textbf{78. Ridge objective strongly convex.} Hessian $2(X^TX+\lambda I)\succeq 2\lambda I\succ0$ for $\lambda>0$.
+
+\textbf{79. Logistic loss decreasing in margin.} $\ell'(z)=-1/(1+e^z)<0$, so larger margin means smaller loss.
+
+\textbf{80. Hinge loss Lipschitz.} $|\max(0,1-a)-\max(0,1-b)|\le |a-b|$; with $a=yw^Tx$, Lipschitz constant in $w$ is $\|x\|$.
+
+\textbf{81. Bayes error $\le 1/2$.} Choosing best class gives conditional error $\min(\eta,1-\eta)\le 1/2$; average over $x$.
+
+\textbf{82. 1NN train error can be 0.} Each point is its own nearest neighbour (or with tie rule/self-inclusion), so memorizes training labels.
+
+\textbf{83. $k$NN prediction is local majority vote.} Classifier picks $\arg\max_y \sum_{i\in N_k(x)}\mathbf1[y_i=y]$.
+
+\textbf{84. Standardization equalizes feature scales.} $x_j'=(x_j-\mu_j)/s_j$ makes each feature mean $0$, variance $1$, preventing distance domination.
+
+\textbf{85. Gini impurity max at uniform binary split.} $G(p)=2p(1-p)$, derivative $2-4p=0$ at $p=1/2$, max $=1/2$.
+
+\textbf{86. Entropy concave.} $-p\log p$ is concave on $(0,1)$; sum preserves concavity, so mixing distributions increases entropy.
+
+\textbf{87. Softmax preserves order of logits.} $a_i>a_j \Rightarrow e^{a_i}>e^{a_j}\Rightarrow q_i>q_j$.
+
+\textbf{88. Logistic MLE = CE minimization.} Negative Bernoulli log-likelihood is exactly cross-entropy, so maximizing likelihood equals minimizing CE.
+
+\textbf{89. KKT complementarity.} For inequality constraint $g_i(w)\le0$, optimality requires $\alpha_i g_i(w)=0$, so active constraints have nonzero multipliers.
+
+\textbf{90. ERM of convex loss is convex.} If each $\ell(w,z_i)$ is convex in $w$, then $L_S(w)=\frac1n\sum_i \ell(w,z_i)$ is convex since nonnegative sums preserve convexity.
+
+\textbf{91. Nonnegative kernel sum is a kernel.} If $K=aK_1+bK_2$ with $a,b\ge0$ and $K_1,K_2$ PSD, then $c^TKc=a\,c^TK_1c+b\,c^TK_2c\ge0$.
+
+\textbf{92. Centering matrix properties.} $C=I-\frac1n\mathbf1\mathbf1^T$ satisfies $C^T=C$ and $C^2=C$, so centering is a symmetric projection.
+
+\textbf{93. Total variance = sum eigenvalues.} For covariance $S=V\Lambda V^T$, $\mathrm{tr}(S)=\mathrm{tr}(\Lambda)=\sum_j\lambda_j$.
+
+\textbf{94. Softmax argmax = logit argmax.} $q_j=e^{a_j}/\sum_k e^{a_k}$; denominator is common and $e^x$ is increasing, so $\arg\max_j q_j=\arg\max_j a_j$.
+
+\end{multicols}
+\end{document}

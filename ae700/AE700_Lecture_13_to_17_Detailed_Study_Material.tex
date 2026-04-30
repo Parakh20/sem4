@@ -1,0 +1,817 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{bm}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{mathtools}
+
+\setlist[itemize]{itemsep=2pt,topsep=4pt}
+\setlist[enumerate]{itemsep=2pt,topsep=4pt}
+\setlength{\parskip}{0.5em}
+\setlength{\parindent}{0pt}
+
+\newcommand{\vect}[1]{\bm{#1}}
+\newcommand{\R}{\mathbb{R}}
+
+\title{AE700 Detailed Study Material\\Lectures 13 to 17}
+\author{Prepared from course lectures: Guidance and Control of Unmanned Autonomous Vehicles}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Lecture 13: Reduced-Order Guidance Models and Straight-Line Path Following}
+
+\subsection{Why reduced-order guidance models are needed}
+The full 6-DOF rigid-body equations with aerodynamic force and moment models are too complex for real-time outer-loop guidance design. Hence, reduced-order models are used to:
+\begin{itemize}
+  \item preserve dominant closed-loop behavior of the autopilot-vehicle system,
+  \item simplify path-following control design,
+  \item avoid repeated use of full aerodynamic force/moment balance equations.
+\end{itemize}
+
+\subsection{Autopilot-hold loop abstractions used in guidance}
+Common low-order closed-loop models:
+\[
+\dot V_a=b_{V_a}(V_{a,c}-V_a), \qquad
+\dot \phi=b_{\phi}(\phi_c-\phi),
+\]
+\[
+\ddot h=b_{\dot h}(\dot h_c-\dot h)+b_h(h_c-h), \qquad
+\ddot \chi=b_{\dot \chi}(\dot \chi_c-\dot \chi)+b_{\chi}(\chi_c-\chi),
+\]
+\[
+\dot \gamma=b_{\gamma}(\gamma_c-\gamma), \qquad
+\dot n_{lf}=b_{n_{lf}}(n_{lf,c}-n_{lf}).
+\]
+All gains are positive and depend on inner-loop implementation.
+
+\subsection{Kinematic model for controlled flight}
+Ground-velocity form:
+\[
+\dot p_n=V_g\cos\chi\cos\gamma,\quad
+\dot p_e=V_g\sin\chi\cos\gamma,\quad
+\dot h=V_g\sin\gamma.
+\]
+
+With airspeed-heading-flight-path variables and wind:
+\[
+\begin{bmatrix}\dot p_n\\ \dot p_e\\ \dot h\end{bmatrix}
+=
+V_a\begin{bmatrix}\cos\psi\cos\gamma_a\\ \sin\psi\cos\gamma_a\\ \sin\gamma_a\end{bmatrix}
++
+\begin{bmatrix}w_n\\ w_e\\ -w_d\end{bmatrix}.
+\]
+For constant altitude and negligible vertical wind:
+\[
+\dot p_n=V_a\cos\psi+w_n,\qquad
+\dot p_e=V_a\sin\psi+w_e,\qquad
+\dot h=0.
+\]
+
+\subsection{Coordinated-turn relation}
+For coordinated turning (no lateral body-frame acceleration):
+\[
+\dot\chi=\frac{g}{V_g}\tan\phi\cos(\chi-\psi).
+\]
+Using wind-triangle differentiation and constant-airspeed assumption:
+\[
+\dot\psi=\frac{g}{V_a}\tan\phi.
+\]
+This highlights a key idea: turning is achieved through bank angle.
+
+\subsection{Accelerated climb and load factor}
+Force balance normal to velocity direction (with bank):
+\[
+F_{lift}\cos\phi = mV_g\dot\gamma + mg\cos\gamma.
+\]
+Define load factor
+\[
+n_{lf}\triangleq \frac{F_{lift}}{mg},
+\]
+then
+\[
+\dot\gamma=\frac{g}{V_g}(n_{lf}\cos\phi-\cos\gamma).
+\]
+For constant-climb condition ($\dot\gamma=0$):
+\[
+n_{lf}=\frac{\cos\gamma}{\cos\phi}.
+\]
+
+\subsection{Kinematic guidance model options}
+\subsubsection*{Option 1: course and altitude loops}
+\[
+\dot p_n=V_a\cos\psi+w_n,\quad
+\dot p_e=V_a\sin\psi+w_e,
+\]
+\[
+\ddot\chi=b_{\dot\chi}(\dot\chi_c-\dot\chi)+b_{\chi}(\chi_c-\chi),\quad
+\ddot h=b_{\dot h}(\dot h_c-\dot h)+b_h(h_c-h),
+\]
+\[
+\dot V_a=b_{V_a}(V_{a,c}-V_a).
+\]
+Heading from wind triangle (for $\gamma_a=0$):
+\[
+\psi=\chi-\sin^{-1}\!\left(\frac{-w_n\sin\chi+w_e\cos\chi}{V_a}\right).
+\]
+
+\subsubsection*{Option 2: roll as direct input}
+\[
+\dot p_n=V_a\cos\psi+w_n,\quad
+\dot p_e=V_a\sin\psi+w_e,\quad
+\dot\psi=\frac{g}{V_a}\tan\phi,
+\]
+\[
+\ddot h=b_{\dot h}(\dot h_c-\dot h)+b_h(h_c-h),\quad
+\dot V_a=b_{V_a}(V_{a,c}-V_a),\quad
+\dot\phi=b_{\phi}(\phi_c-\phi).
+\]
+
+\subsubsection*{Option 3: load-factor command}
+\[
+\dot p_n=V_a\cos\psi\cos\gamma_a+w_n,\quad
+\dot p_e=V_a\sin\psi\cos\gamma_a+w_e,\quad
+\dot h=V_a\sin\gamma_a-w_d,
+\]
+\[
+\dot\psi=\frac{g}{V_a}\tan\phi,\quad
+\dot\gamma=\frac{g}{V_g}(n_{lf}\cos\phi-\cos\gamma),
+\]
+\[
+\dot n_{lf}=b_n(n_{lf,c}-n_{lf}),\quad
+\dot V_a=b_{V_a}(V_{a,c}-V_a),\quad
+\dot\phi=b_\phi(\phi_c-\phi).
+\]
+
+\subsection{Dynamic point-mass guidance model}
+When lift/drag/thrust are retained explicitly:
+\[
+\dot p_n=V_g\cos\chi\cos\gamma,\quad
+\dot p_e=V_g\sin\chi\cos\gamma,\quad
+\dot h=V_g\sin\gamma,
+\]
+\[
+\dot V_g=\frac{F_{thrust}}{m}-\frac{F_{drag}}{m}-g\sin\gamma,
+\]
+\[
+\dot\chi=\frac{F_{lift}\sin\phi\cos(\chi-\psi)}{mV_g\cos\gamma},
+\quad
+\dot\gamma=\frac{F_{lift}}{mV_g}\cos\phi-\frac{g}{V_g}\cos\gamma.
+\]
+Aerodynamic closure:
+\[
+L=\frac{1}{2}\rho V_a^2SC_L,\quad
+D=\frac{1}{2}\rho V_a^2SC_D,\quad
+C_D=C_{D0}+KC_L^2.
+\]
+
+\subsection{Trajectory tracking vs path following}
+\begin{itemize}
+  \item \textbf{Trajectory tracking}: follow a time-parameterized reference.
+  \item \textbf{Path following}: converge to geometric path, without prescribed timing.
+\end{itemize}
+For small UAVs in wind, path following is usually more robust and less control-intensive.
+
+\subsection{Straight-line path geometry}
+Desired line:
+\[
+\mathcal{P}_{line}(r,q)=\{x\in\R^3:\;x=r+\lambda q,\;\lambda\in\R\},
+\]
+where $r$ is path origin and $q$ is path unit direction. Path-course angle:
+\[
+\chi_q=\tan^{-1}\!\left(\frac{q_e}{q_n}\right).
+\]
+Path-frame error:
+\[
+e_p^P=\begin{bmatrix}e_{px}\\e_{py}\\e_{pz}\end{bmatrix}=R_i^P(p^i-r^i),\quad
+R_i^P=
+\begin{bmatrix}
+\cos\chi_q & \sin\chi_q & 0\\
+-\sin\chi_q & \cos\chi_q & 0\\
+0 & 0 & 1
+\end{bmatrix}.
+\]
+Cross-track dynamics:
+\[
+\dot e_{py}=V_g\sin(\chi-\chi_q)\cos\gamma.
+\]
+
+\subsection{Longitudinal straight-line tracking}
+Desired altitude from projection geometry:
+\[
+h_d=-r_d+\sqrt{s_n^2+s_e^2}\left(\frac{q_d}{\sqrt{q_n^2+q_e^2}}\right).
+\]
+Altitude loop:
+\[
+\ddot h=b_{\dot h}(\dot h_c-\dot h)+b_h(h_c-h).
+\]
+If $h_c=h_d$ and loop is well tuned, steady-state altitude error to constant/ramp-type commands tends to zero.
+
+\subsection{Lateral straight-line vector-field strategy}
+Construct desired relative course:
+\[
+\chi_d(e_{py})=-\chi_\infty\frac{2}{\pi}\tan^{-1}(k_{path}e_{py}),
+\quad
+\chi_\infty\in(0,\pi/2],\;k_{path}>0.
+\]
+Then commanded course:
+\[
+\chi_c=\chi_q+\chi_d(e_{py}).
+\]
+Rule-of-thumb:
+\[
+k_{path}\approx \frac{1}{R_{min}},
+\]
+with $R_{min}$ as minimum turning radius.
+
+\newpage
+\section{Lecture 14: Orbit Following, Carrot-Chasing, and NLGL}
+
+\subsection{Lyapunov proof for straight-line lateral guidance}
+Use:
+\[
+V(e_{py})=\frac{1}{2}e_{py}^2,\qquad
+\chi_c=\chi_q-\chi_\infty\frac{2}{\pi}\tan^{-1}(k_{path}e_{py}).
+\]
+Assuming inner loop makes $\chi\approx\chi_c$:
+\[
+\dot V=e_{py}\dot e_{py}
+=V_g e_{py}\sin(\chi-\chi_q)\cos\gamma
+=-V_g e_{py}\sin\!\left(\chi_\infty\frac{2}{\pi}\tan^{-1}(k_{path}e_{py})\right)\cos\gamma<0.
+\]
+Hence $e_{py}\to 0$ asymptotically.
+
+\subsection{Orbit path representation and kinematics}
+Orbit:
+\[
+\mathcal{P}_{orbit}(c,\rho,\lambda)=\{r\in\R^3:\; r=c+\lambda\rho(\cos\varphi,\sin\varphi,0)^T,\;\varphi\in[0,2\pi)\}.
+\]
+Here:
+\begin{itemize}
+  \item $c$ = center, $\rho$ = radius,
+  \item $\lambda=+1$ clockwise, $\lambda=-1$ counterclockwise,
+  \item $d=\sqrt{(p_n-c_n)^2+(p_e-c_e)^2}$.
+\end{itemize}
+Polar kinematics:
+\[
+\dot d=V_g\cos(\chi-\varphi),\qquad
+\dot\varphi=\frac{V_g}{d}\sin(\chi-\varphi).
+\]
+Desired tangent course:
+\[
+\chi_o=\varphi+\lambda\frac{\pi}{2}.
+\]
+
+\subsection{Orbit vector-field command and stability}
+Course field:
+\[
+\chi_d(d-\rho,\lambda)=\chi_o+\lambda\tan^{-1}\!\left(k_{orbit}\frac{d-\rho}{\rho}\right),\quad k_{orbit}>0.
+\]
+Lyapunov candidate:
+\[
+V=\frac{1}{2}(d-\rho)^2.
+\]
+With $\chi=\chi_d$:
+\[
+\dot V=(d-\rho)V_g\cos(\chi_d-\varphi)
+=-V_g(d-\rho)\sin\!\left(\tan^{-1}\!\left(k_{orbit}\frac{d-\rho}{\rho}\right)\right)<0,\quad d\neq \rho.
+\]
+Therefore $d\to \rho$ asymptotically.
+
+\subsection{Practical angle wrapping issue}
+To avoid command jumps near $\pm\pi$, choose integer wrapping index $m$ such that angle differences stay in $[-\pi,\pi]$.
+For orbit phase:
+\[
+\varphi=\tan^{-1}\!\left(\frac{p_e-c_e}{p_n-c_n}\right)+2\pi m,\quad m\in\mathbb{Z}.
+\]
+
+\subsection{Classification of path-following methods}
+\begin{itemize}
+  \item Geometric methods: pure pursuit, LOS, NLGL.
+  \item Dubins-curve-based methods.
+  \item Vector-field-based methods.
+\end{itemize}
+Many methods rely on a \emph{virtual target point (VTP)} ahead on path.
+
+\subsection{Carrot-chasing algorithm}
+\textbf{Straight-line mode:}
+\begin{itemize}
+  \item project UAV position on line segment,
+  \item place VTP at look-ahead distance $\delta$ along line,
+  \item command heading toward VTP.
+\end{itemize}
+\textbf{Loiter mode:}
+\begin{itemize}
+  \item for desired circle of radius $r$, set VTP at angular offset $\lambda$ ahead on orbit,
+  \item command heading toward VTP.
+\end{itemize}
+
+\subsection{Nonlinear Guidance Law (NLGL) / L1 Logic}
+Look-ahead point at distance $L_1$, angle $\eta$ between velocity vector and line to look-ahead point:
+\[
+L_1=2R\sin\eta \;\Rightarrow\; R=\frac{L_1}{2\sin\eta}.
+\]
+Lateral acceleration command:
+\[
+a_{s,cmd}=\frac{V^2}{R}=\frac{2V^2}{L_1}\sin\eta.
+\]
+
+Small-angle perturbation about straight-line gives PD-like form:
+\[
+\eta\approx \frac{d-d^*_{ref.pt}}{L_1}+\frac{\dot d}{V},
+\]
+\[
+a_{s,cmd}\approx \frac{2V}{L_1}\dot d+\frac{2V^2}{L_1^2}(d-d^*_{ref.pt}).
+\]
+Using $\ddot d=-a_{s,cmd}$:
+\[
+\ddot d+\frac{2V}{L_1}\dot d+\frac{2V^2}{L_1^2}d=\frac{2V^2}{L_1^2}d^*_{ref.pt}.
+\]
+Transfer function:
+\[
+\frac{d(s)}{d^*_{ref.pt}(s)}
+=\frac{2(V/L_1)^2}{s^2+(2V/L_1)s+2(V/L_1)^2}.
+\]
+Hence
+\[
+\zeta=0.707,\qquad \omega_n=\frac{\sqrt{2}V}{L_1}.
+\]
+
+\subsection{Look-ahead distance selection insight}
+\begin{itemize}
+  \item Small $L_1$ gives high gain, faster response, potentially aggressive control.
+  \item For sinusoidal path with wavelength $L_p$, practical recommendation: $L_1\lesssim L_p/4.4$ for good phase recovery near bandwidth.
+\end{itemize}
+
+\subsection{PD/PID vs NLGL in wind}
+Observed in lecture comparisons:
+\begin{itemize}
+  \item fixed-gain PD/PID on cross-track error can show larger deviations in strong wind and varying ground speed;
+  \item NLGL naturally uses ground speed in acceleration command, improving performance in upwind/downwind sectors.
+\end{itemize}
+
+\newpage
+\section{Lecture 15: Circular NLGL Analysis, Path Manager, Fillets, Dubins Basics}
+
+\subsection{Circular path with nonlinear guidance assumptions}
+\begin{itemize}
+  \item Inner-loop control is sufficiently fast.
+  \item All angular quantities are signed consistently.
+  \item Look-ahead distance $L_1$ is constant.
+\end{itemize}
+Key geometry:
+\[
+V_L=V\cos\eta,\qquad V_1=V\sin\eta,\qquad
+V_T=\frac{V\cos\eta}{\cos\beta},\qquad V_2=V\cos\eta\tan\beta.
+\]
+
+\subsection{Dynamics of Eta and Beta}
+\[
+\dot\eta=-\frac{V}{L_1}\left(\sin\eta+\cos\eta\tan\beta\right),
+\]
+\[
+\dot\beta=\frac{V}{L_1}\left(\sin\eta-\cos\eta\tan\beta\right)-\frac{V\cos\eta}{R\cos\beta}.
+\]
+Stationary point from $\dot\eta=\dot\beta=0$:
+\[
+\eta_0=-\beta_0,\qquad
+\eta_0=\sin^{-1}\!\left(\frac{L_1}{2R}\right),\qquad
+L_1\le 2R.
+\]
+
+\subsection{Linearization near circular equilibrium}
+Perturbations:
+\[
+\eta=\eta_0+\Delta\eta,\qquad \beta=\beta_0+\Delta\beta.
+\]
+Linearized second-order behavior yields:
+\[
+\omega_n=\frac{\sqrt{2}V}{L_1},
+\qquad
+\zeta=\frac{1}{\sqrt{2}}\sqrt{1-\left(\frac{L_1}{2R}\right)^2}.
+\]
+Compared to straight-line case, $\omega_n$ stays same while $\zeta$ depends on $L_1/R$.
+
+\subsection{Waypoint path manager motivation}
+A waypoint list:
+\[
+\mathcal{W}=\{w_1,w_2,\dots,w_N\},\qquad w_i\in\R^3.
+\]
+Simple ``ball around waypoint'' switching can fail under wind and short segments.
+
+\subsection{Half-plane switching}
+Half-plane:
+\[
+\mathcal{H}(r,n)=\{p\in\R^3:(p-r)^T n\ge 0\}.
+\]
+Direction for segment $w_i\to w_{i+1}$:
+\[
+q_i=\frac{w_{i+1}-w_i}{\|w_{i+1}-w_i\|}.
+\]
+Switch at waypoint $w_i$ using:
+\[
+n_i=\frac{q_{i-1}+q_i}{\|q_{i-1}+q_i\|},
+\]
+and transition once UAV enters $\mathcal{H}(w_i,n_i)$.
+
+\subsection{Fillet maneuver for smooth line transitions}
+Turn angle:
+\[
+\varrho=\cos^{-1}(-q_{i-1}^Tq_i).
+\]
+For fillet radius $R$:
+\[
+c=w_i-\frac{R}{\sin(\varrho/2)}\frac{q_{i-1}-q_i}{\|q_{i-1}-q_i\|},
+\]
+\[
+r_1=w_i-\frac{R}{\tan(\varrho/2)}q_{i-1},\qquad
+r_2=w_i+\frac{R}{\tan(\varrho/2)}q_i.
+\]
+Procedure:
+\begin{enumerate}
+  \item follow line $w_{i-1}\to w_i$ to half-plane at $r_1$,
+  \item follow circular arc (fillet) of radius $R$ about center $c$,
+  \item switch to line $w_i\to w_{i+1}$ at half-plane through $r_2$.
+\end{enumerate}
+
+\subsection{Path-length correction with fillets}
+Nominal polyline length:
+\[
+|W|=\sum_{i=2}^{N}\|w_i-w_{i-1}\|.
+\]
+Fillet-corrected length:
+\[
+|W|_F
+=|W|+\sum_{i=2}^{N}\left[
+R(\pi-\varrho_i)-\frac{2R}{\tan(\varrho_i/2)}
+\right].
+\]
+This matters in cooperative timing and arrival synchronization.
+
+\subsection{Dubins vehicle and path decomposition}
+Bounded-curvature kinematics:
+\[
+\dot p_n=V\cos\vartheta,\qquad
+\dot p_e=V\sin\vartheta,\qquad
+\dot\vartheta=u,\quad u\in[-\bar u,\bar u].
+\]
+Minimum-turn radius:
+\[
+R=\frac{V}{\bar u}.
+\]
+Dubins path between $(p_s,\chi_s)$ and $(p_e,\chi_e)$ consists of two arcs and one straight segment (e.g., RSR, RSL, LSR, LSL).
+
+\subsection{Circle centers and angle operator}
+For pose $(p,\chi)$:
+\[
+c_r=p+R(\cos(\chi+\pi/2),\sin(\chi+\pi/2),0)^T,
+\]
+\[
+c_l=p+R(\cos(\chi-\pi/2),\sin(\chi-\pi/2),0)^T.
+\]
+Use wrapped-angle operator:
+\[
+\langle\phi\rangle=\phi\;\text{mod}\;2\pi.
+\]
+CW and CCW arc angle measures are defined with this wrapping.
+
+\subsection{Length formulas introduced in Lecture 15}
+\textbf{RSR:}
+\[
+L_{RSR}=\|c_{rs}-c_{re}\|+d_1+d_2,
+\]
+with
+\[
+d_1=R\langle 2\pi+\langle\vartheta-\pi/2\rangle-\langle\chi_s-\pi/2\rangle\rangle,
+\]
+\[
+d_2=R\langle 2\pi+\langle\chi_e-\pi/2\rangle-\langle\vartheta-\pi/2\rangle\rangle.
+\]
+
+\textbf{RSL:}
+Let $l=\|c_{le}-c_{rs}\|$, and
+\[
+\vartheta_2=\vartheta-\left(\frac{\pi}{2}-\sin^{-1}\frac{2R}{l}\right).
+\]
+Then
+\[
+L_{RSL}=\sqrt{l^2-4R^2}+d_3+d_4,
+\]
+\[
+d_3=R\langle 2\pi+\langle\vartheta_2\rangle-\langle\chi_s-\pi/2\rangle\rangle,
+\]
+\[
+d_4=R\langle 2\pi+\langle\vartheta_2+\pi\rangle-\langle\chi_e+\pi/2\rangle\rangle.
+\]
+
+\newpage
+\section{Lecture 16: Dubins Completion and UAV Path Planning Algorithms}
+
+\subsection{Remaining Dubins cases}
+\textbf{LSR:}
+\[
+L_{LSR}=\sqrt{l^2-4R^2}+d_5+d_6,
+\]
+\[
+d_5=R\langle2\pi+\langle\chi_s+\pi/2\rangle-\langle\vartheta+\vartheta_2\rangle\rangle,
+\]
+\[
+d_6=R\langle2\pi+\langle\chi_e-\pi/2\rangle-\langle\vartheta+\vartheta_2-\pi\rangle\rangle.
+\]
+
+\textbf{LSL:}
+\[
+L_{LSL}=\|c_{ls}-c_{le}\|+d_7+d_8,
+\]
+\[
+d_7=R\langle2\pi+\langle\chi_s+\pi/2\rangle-\langle\vartheta+\pi/2\rangle\rangle,
+\]
+\[
+d_8=R\langle2\pi+\langle\vartheta+\pi/2\rangle-\langle\chi_e+\pi/2\rangle\rangle.
+\]
+Choose minimum among feasible RSR/RSL/LSR/LSL.
+
+\subsection{Path planning classes}
+\begin{itemize}
+  \item \textbf{Deliberative planning}: uses global map/model; explicit path computation; good for structured known environments.
+  \item \textbf{Reactive planning}: uses local sensing and behavior rules; better for uncertain dynamic environments.
+\end{itemize}
+For many fixed-wing UAV missions, efficient deliberative planning with simplified motion/wind models is preferred.
+
+\subsection{Point-to-point planning with Voronoi graph}
+Given obstacle point set $Q$, Voronoi partition creates cells and edges equidistant from obstacles, producing safer corridors.
+Graph:
+\[
+G=(V,E),\quad V^+=V\cup\{p_s,p_e\}.
+\]
+Start/end nodes are connected to nearest graph nodes.
+
+\subsection{Edge cost with safety-distance penalty}
+For edge $(v_1,v_2)$ and obstacle point $p$, parameterize segment:
+\[
+w(\sigma)=(1-\sigma)v_1+\sigma v_2,\quad \sigma\in[0,1].
+\]
+Distance minimization gives
+\[
+D=\min_{\sigma\in[0,1]}\|p-w(\sigma)\|.
+\]
+Unconstrained optimizer:
+\[
+\sigma^*=-\frac{(p-v_1)^T(v_1-v_2)}{\|v_1-v_2\|^2}.
+\]
+Use clipped distance $D'(v_1,v_2,p)$:
+\begin{itemize}
+  \item $D(\sigma^*)$ if $\sigma^*\in[0,1]$,
+  \item $\|p-v_1\|$ if $\sigma^*<0$,
+  \item $\|p-v_2\|$ if $\sigma^*>1$.
+\end{itemize}
+Distance from edge to obstacle set:
+\[
+D(v_1,v_2,Q)=\min_{p\in Q}D'(v_1,v_2,p).
+\]
+Edge cost:
+\[
+J(v_1,v_2)=k_1\|v_1-v_2\|+\frac{k_2}{D(v_1,v_2,Q)},\quad k_1,k_2>0.
+\]
+
+\subsection{Dijkstra search procedure}
+\begin{enumerate}
+  \item Initialize tentative distance 0 at start node, $\infty$ for others.
+  \item Repeatedly select unvisited node with minimum tentative distance.
+  \item Relax all unvisited neighbors.
+  \item Mark node visited.
+  \item Stop when destination visited or remaining tentative distances are $\infty$.
+\end{enumerate}
+
+\subsection{RRT for point-to-point planning}
+Rapidly Exploring Random Tree:
+\begin{itemize}
+  \item randomly sample a configuration in workspace,
+  \item find nearest node in existing tree,
+  \item extend by fixed step $D$ toward sample,
+  \item add segment only if collision-free,
+  \item continue until close enough to goal.
+\end{itemize}
+RRT extends naturally to nonlinear and higher-dimensional models, including 3D with climb/descent constraints.
+
+\subsection{Coverage path planning concept}
+Goal is area coverage (search), not just start-to-goal transit.
+\begin{itemize}
+  \item Maintain terrain map (collision check) and return map (search benefit).
+  \item Update return value after visit:
+  \[
+  \Upsilon_i[k]=\Upsilon_i[k-1]-c,\quad c>0.
+  \]
+  \item Build finite-depth look-ahead trees using motion primitives:
+  step length $L$ and heading changes $\{0,\pm\nu\}$ (example: $\nu=\pi/6$).
+\end{itemize}
+
+\newpage
+\section{Lecture 17: Vision-Guided Navigation, Geolocation, and Time-to-Collision}
+
+\subsection{Role of onboard vision}
+EO/IR cameras support:
+\begin{itemize}
+  \item surveillance and situational awareness,
+  \item guidance/control by using image features as measurements.
+\end{itemize}
+
+\subsection{Frames and transformation chain}
+\begin{itemize}
+  \item Body frame: $F_b$
+  \item Gimbal frame: $F_g$
+  \item Camera frame: $F_c$
+\end{itemize}
+Body-to-gimbal-1 (azimuth rotation $\alpha_{az}$):
+\[
+R_b^{g1}(\alpha_{az})=
+\begin{bmatrix}
+\cos\alpha_{az} & \sin\alpha_{az} & 0\\
+-\sin\alpha_{az} & \cos\alpha_{az} & 0\\
+0 & 0 & 1
+\end{bmatrix}.
+\]
+Gimbal-1 to gimbal (elevation $\alpha_{el}$):
+\[
+R_{g1}^{g}(\alpha_{el})=
+\begin{bmatrix}
+\cos\alpha_{el} & 0 & -\sin\alpha_{el}\\
+0 & 1 & 0\\
+\sin\alpha_{el} & 0 & \cos\alpha_{el}
+\end{bmatrix}.
+\]
+Hence
+\[
+R_b^g=R_{g1}^g(\alpha_{el})R_b^{g1}(\alpha_{az}).
+\]
+Camera alignment from gimbal basis:
+\[
+i_c=j_g,\quad j_c=k_g,\quad k_c=i_g
+\Rightarrow
+R_g^c=
+\begin{bmatrix}
+0&1&0\\
+0&0&1\\
+1&0&0
+\end{bmatrix}.
+\]
+
+\subsection{Camera projection model}
+For image width $M$ pixels and field of view $\nu$:
+\[
+f=\frac{M}{2\tan(\nu/2)}.
+\]
+For pixel location $(\epsilon_x,\epsilon_y)$:
+\[
+F=\sqrt{f^2+\epsilon_x^2+\epsilon_y^2},
+\qquad
+l_c=\frac{L}{F}\begin{bmatrix}\epsilon_x\\ \epsilon_y\\ f\end{bmatrix},
+\qquad
+\check l_c=\frac{1}{F}\begin{bmatrix}\epsilon_x\\ \epsilon_y\\ f\end{bmatrix}.
+\]
+Monocular camera gives direction $\check l_c$, not absolute distance $L$.
+
+\subsection{Gimbal pointing control}
+Pan-tilt kinematics:
+\[
+\dot\alpha_{az}=u_{az},\qquad \dot\alpha_{el}=u_{el}.
+\]
+From desired LOS direction in body frame $\check l_d^b=[\check l_{xd}^b,\check l_{yd}^b,\check l_{zd}^b]^T$:
+\[
+\alpha_{az}^c=\tan^{-1}\!\left(\frac{\check l_{yd}^b}{\check l_{xd}^b}\right),\qquad
+\alpha_{el}^c=-\sin^{-1}(\check l_{zd}^b).
+\]
+Simple proportional servo commands:
+\[
+u_{az}=k_{az}(\alpha_{az}^c-\alpha_{az}),\qquad
+u_{el}=k_{el}(\alpha_{el}^c-\alpha_{el}).
+\]
+
+\subsection{Geolocation setup}
+Object position:
+\[
+p_{obj}^i=p_{MAV}^i+R_b^iR_g^bR_c^g\,l_c
+=p_{MAV}^i+L\,R_b^iR_g^bR_c^g\,\check l_c.
+\]
+Unknown $L$ causes scale ambiguity.
+
+\subsection{Flat-earth geolocation estimate}
+If camera-ground intersection uses known vehicle height $h$ and flat-earth assumption:
+\[
+L=\frac{h}{\cos\phi},
+\qquad
+\cos\phi=k_i^T\left(R_b^iR_g^bR_c^g\check l_c\right).
+\]
+Then:
+\[
+p_{obj}^i
+=
+\begin{bmatrix}p_n\\p_e\\p_d\end{bmatrix}
++
+h\,
+\frac{R_b^iR_g^bR_c^g\check l_c}{k_i^T\left(R_b^iR_g^bR_c^g\check l_c\right)}.
+\]
+
+\subsection{EKF formulation for geolocation}
+State:
+\[
+\hat x=\begin{bmatrix}\hat p_{obj}^i\\ \hat L\end{bmatrix}.
+\]
+Prediction equations (stationary object assumption):
+\[
+\dot{\hat p}_{obj}^i=0,\qquad
+\dot{\hat L}
+=-\frac{(\hat p_{obj}^i-\hat p_{MAV}^i)^T\dot{\hat p}_{MAV}^i}{\hat L}.
+\]
+Measurement relation:
+\[
+p_{MAV}^i=p_{obj}^i-LR_b^iR_g^bR_c^g\check l_c.
+\]
+Jacobian terms follow from these dynamics and measurement model.
+
+\subsection{Target pixel filtering and velocity estimation}
+Raw pixel vector $\bar\epsilon=[\bar\epsilon_x,\bar\epsilon_y]^T$ is noisy.
+Use low-pass and filtered derivative:
+\[
+\epsilon(s)=\frac{1}{\tau s+1}\bar\epsilon,\qquad
+\dot\epsilon(s)=\frac{s}{\tau s+1}\bar\epsilon.
+\]
+Using Tustin discretization:
+\[
+\epsilon[n]=\frac{2\tau-T_s}{2\tau+T_s}\epsilon[n-1]
++\frac{T_s}{2\tau+T_s}\left(\bar\epsilon[n]+\bar\epsilon[n-1]\right),
+\]
+\[
+\dot\epsilon[n]=\frac{2\tau-T_s}{2\tau+T_s}\dot\epsilon[n-1]
++\frac{2}{2\tau+T_s}\left(\bar\epsilon[n]-\bar\epsilon[n-1]\right).
+\]
+
+\subsection{Removing apparent motion due to platform/gimbal rotation}
+Rate transport:
+\[
+\frac{d\check l_c}{dt_i}
+=\frac{d\check l_c}{dt_c}+\omega_{c/i}^c\times \check l_c.
+\]
+Normalized LOS derivative from pixel rates:
+\[
+\frac{d\check l_c}{dt_c}=Z(\epsilon)\dot\epsilon,
+\]
+where
+\[
+Z(\epsilon)=\frac{1}{F^3}
+\begin{bmatrix}
+\epsilon_y^2+f^2 & -\epsilon_x\epsilon_y\\
+-\epsilon_x\epsilon_y & \epsilon_x^2+f^2\\
+-\epsilon_x f & -\epsilon_y f
+\end{bmatrix}.
+\]
+Subtracting rotation-induced term isolates translationally useful motion.
+
+\subsection{Time-to-collision (TTC)}
+Definition:
+\[
+t_c=\frac{L}{\dot L}.
+\]
+With monocular camera only, TTC is ambiguous unless additional information is used.
+
+If object physical size $S_{obj}$ and image size $\epsilon_s$ are available:
+\[
+\frac{S_{obj}}{L}=\frac{\epsilon_s}{F}.
+\]
+Differentiation gives:
+\[
+\frac{\dot L}{L}
+=\frac{\epsilon_x\dot\epsilon_x+\epsilon_y\dot\epsilon_y}{F}
+-\frac{\dot\epsilon_s}{\epsilon_s},
+\]
+hence
+\[
+t_c
+=\frac{1}{\dfrac{\epsilon_x\dot\epsilon_x+\epsilon_y\dot\epsilon_y}{F}
+-\dfrac{\dot\epsilon_s}{\epsilon_s}}.
+\]
+
+\newpage
+\section{Consolidated Revision Checklist (Lectures 13--17)}
+\begin{enumerate}
+  \item Derive and interpret coordinated-turn and accelerated-climb equations.
+  \item Explain why path following is preferred over trajectory tracking for small UAVs in wind.
+  \item Reproduce straight-line and orbit vector-field commands and Lyapunov proofs.
+  \item Derive NLGL linearized transfer function and identify $\zeta,\omega_n$.
+  \item Compute half-plane switches and fillet geometry from waypoint triplets.
+  \item Evaluate Dubins path length for all four cases and pick minimum feasible route.
+  \item Build Voronoi graph edge costs and describe Dijkstra steps.
+  \item Explain RRT growth, collision checking, and stopping criteria.
+  \item Write complete frame chain for vision geolocation and identify source of scale ambiguity.
+  \item Derive TTC from pixel-size change and discuss assumptions.
+\end{enumerate}
+
+\section*{Primary Reference}
+Randal Beard and Timothy W. McLain, \emph{Small Unmanned Aircraft: Theory and Practice}, Princeton University Press, 2012.
+
+\end{document}

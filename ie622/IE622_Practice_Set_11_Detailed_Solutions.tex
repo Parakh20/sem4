@@ -1,0 +1,874 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem}
+\usepackage{hyperref}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.45em}
+\setlist[itemize]{itemsep=2pt,topsep=4pt}
+\setlist[enumerate]{itemsep=2pt,topsep=4pt}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\Pois}{\operatorname{Poisson}}
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\1}{\mathbf{1}}
+\newcommand{\cF}{\mathcal{F}}
+\newcommand{\cG}{\mathcal{G}}
+\newcommand{\bbeta}{\boldsymbol{\beta}}
+\newcommand{\brho}{\boldsymbol{\rho}}
+\newcommand{\ee}{\mathbf{e}}
+
+\title{IE622 Practice Problem Set 11\\Detailed Solutions and Concept Notes}
+\author{Prepared from the attached problem set}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\section*{Core Ideas Used Throughout the Set}
+\addcontentsline{toc}{section}{Core Ideas Used Throughout the Set}
+\begin{itemize}
+  \item \textbf{Stationary CTMCs:} If a continuous-time Markov chain is started from its stationary distribution, then its one-dimensional marginals do not change with time. This is what lets us talk about ``the stationary M/M/1 queue'' or ``under stationarity'' in Problems 2, 3, and 5.
+  \item \textbf{Detailed balance:} A probability distribution $\pi$ satisfies detailed balance if $\pi(x)q_{x,y}=\pi(y)q_{y,x}$ for all states $x,y$. This is stronger than global balance and is especially useful when we restrict a chain to a subset of states, as in Problem 4.
+  \item \textbf{Poisson-process operations:} Superposition, thinning, and marking of Poisson processes are used repeatedly. They are the quickest way to analyze arrival and departure streams in queueing systems.
+  \item \textbf{Immigration-death structure:} The M/M/$\infty$ queue is a birth-death chain with constant birth rate $\lambda$ and state-dependent death rate $n\mu$. This structure makes its transient and stationary distributions especially tractable.
+  \item \textbf{Jackson-network product form:} Open Jackson networks reduce large queueing systems to traffic equations plus independent geometric queue-length marginals.
+  \item \textbf{Conditional expectation as best information given a $\sigma$-field:} In Problems 7--10, the central idea is that $\E[X\mid \cG]$ is the unique $\cG$-measurable random variable that matches integrals over all events in $\cG$.
+\end{itemize}
+
+\section{Problem 1: Reading Assignment}
+\subsection*{Question}
+Example 3.5.4 in Norris.
+
+\subsection*{Concept note}
+The problem sheet only cites the textbook example and does not reproduce its statement. Because of that, a literal line-by-line worked solution cannot be written from the sheet alone without the actual textbook page. The right way to study this reading assignment is to extract the following items from the example:
+\begin{itemize}
+  \item What is the state space and what are the transition rates?
+  \item Is the chain irreducible? recurrent? positive recurrent? non-explosive?
+  \item What invariant or stationary measure is being proposed?
+  \item Which theorem or hypothesis is the example testing?
+  \item What exactly fails if one of the assumptions is removed?
+\end{itemize}
+
+For CTMC reading examples in this part of the course, the point is usually not long computation; it is to understand \emph{why a theorem needs all of its hypotheses}. So the most important output of the reading is a short explanation of the phenomenon the example illustrates, not just algebra.
+
+\section{Problem 2: Departures from a Stationary M/M/1 Queue}
+\subsection*{Question}
+Consider a stationary M/M/1 queue with arrival rate $\lambda$ and service rate $\mu$. Let $Y_t$ denote the number of departures in time $[0,t]$. Using a direct argument, without invoking reversibility, show that $\{Y_t\}$ is a Poisson process of rate $\lambda$.
+
+\subsection*{Concepts used}
+\begin{itemize}
+  \item The stationary queue-length distribution of an M/M/1 queue is geometric:
+  \[
+  \pi_n=(1-\rho)\rho^n,\qquad \rho=\frac{\lambda}{\mu},\qquad n\ge 0,
+  \]
+  provided $\lambda<\mu$.
+  \item To study a counting process built from a CTMC, a standard trick is to attach a generating factor $z$ whenever the counted transition occurs.
+  \item If the joint probability generating function of increments factorizes exactly like that of a Poisson process, then the increments are independent Poisson random variables.
+\end{itemize}
+
+\subsection*{Solution}
+Let $X_t$ be the queue length and let $Y_t$ be the number of departures in $[0,t]$. Assume the queue starts in stationarity, so
+\[
+\Pbb(X_0=n)=\pi_n=(1-\rho)\rho^n,\qquad \rho=\frac{\lambda}{\mu}<1.
+\]
+
+For $z\in[0,1]$, define
+\[
+G_n(t;z)=\E\!\left[z^{Y_t}\1_{\{X_t=n\}}\right],\qquad n\ge 0.
+\]
+The idea is simple: every time a departure occurs, we multiply by one extra factor of $z$.
+
+By conditioning over a short time interval and using the Markov property, we obtain the forward equations
+\[
+\frac{d}{dt}G_0(t;z)=-\lambda G_0(t;z)+\mu z\,G_1(t;z),
+\]
+and for $n\ge 1$,
+\[
+\frac{d}{dt}G_n(t;z)=\lambda G_{n-1}(t;z)-(\lambda+\mu)G_n(t;z)+\mu z\,G_{n+1}(t;z).
+\]
+The initial condition is
+\[
+G_n(0;z)=\Pbb(X_0=n)=\pi_n.
+\]
+
+Now use the stationary geometric distribution. Since
+\[
+\mu \pi_{n+1}=\lambda \pi_n,\qquad \lambda \pi_{n-1}=\mu \pi_n\quad (n\ge 1),
+\]
+the functions
+\[
+H_n(t;z)=\pi_n e^{-\lambda(1-z)t}
+\]
+solve the same system:
+\[
+\frac{d}{dt}H_0(t;z)=-\lambda(1-z)\pi_0e^{-\lambda(1-z)t}
+=-\lambda H_0(t;z)+\mu z\,H_1(t;z),
+\]
+because $\mu\pi_1=\lambda\pi_0$, and for $n\ge 1$,
+\begin{align*}
+\frac{d}{dt}H_n(t;z)
+&=-\lambda(1-z)\pi_n e^{-\lambda(1-z)t}\\
+&=\bigl[\lambda \pi_{n-1}-(\lambda+\mu)\pi_n+\mu z\,\pi_{n+1}\bigr]e^{-\lambda(1-z)t}\\
+&=\lambda H_{n-1}(t;z)-(\lambda+\mu)H_n(t;z)+\mu z\,H_{n+1}(t;z).
+\end{align*}
+Since the linear ODE system has a unique solution,
+\[
+G_n(t;z)=H_n(t;z)=\pi_n e^{-\lambda(1-z)t}.
+\]
+Summing over $n$ gives the probability generating function of $Y_t$:
+\[
+\E[z^{Y_t}]=\sum_{n=0}^{\infty}G_n(t;z)=e^{-\lambda(1-z)t}.
+\]
+But this is exactly the pgf of a $\Pois(\lambda t)$ random variable. Hence
+\[
+Y_t\sim \Pois(\lambda t).
+\]
+
+To prove that $\{Y_t\}$ is actually a Poisson \emph{process}, we must also show independent stationary increments. For $h\ge 0$, define the operator
+\[
+(T_h^{(z)}f)(i)=\E_i\!\left[z^{Y_h}f(X_h)\right].
+\]
+The calculation above says that, when the initial distribution is $\pi$,
+\[
+\sum_{i\ge 0}\pi_i (T_h^{(z)}f)(i)
+=e^{-\lambda(1-z)h}\sum_{i\ge 0}\pi_i f(i)
+\]
+for the special choice $f\equiv 1$; equivalently,
+\[
+\pi T_h^{(z)}=e^{-\lambda(1-z)h}\pi.
+\]
+Now take $0=t_0<t_1<\cdots<t_m$ and let $\Delta_r=t_r-t_{r-1}$. By the Markov property,
+\[
+\E\!\left[\prod_{r=1}^m z_r^{\,Y_{t_r}-Y_{t_{r-1}}}\right]
+=\pi T_{\Delta_1}^{(z_1)}T_{\Delta_2}^{(z_2)}\cdots T_{\Delta_m}^{(z_m)}1.
+\]
+Applying the left-eigenvector relation successively,
+\[
+\E\!\left[\prod_{r=1}^m z_r^{\,Y_{t_r}-Y_{t_{r-1}}}\right]
+=\prod_{r=1}^m e^{-\lambda(1-z_r)\Delta_r}.
+\]
+This is exactly the joint pgf of independent random variables
+\[
+Y_{t_r}-Y_{t_{r-1}}\sim \Pois(\lambda \Delta_r).
+\]
+Therefore $\{Y_t\}_{t\ge 0}$ is a Poisson process of rate $\lambda$.
+
+\[
+\boxed{\{Y_t\}_{t\ge 0}\text{ is a Poisson process of rate }\lambda.}
+\]
+
+\section{Problem 3: The M/M/\texorpdfstring{$\infty$}{infinity} Queue}
+\subsection*{Question}
+In the pre-digital days, a phone call required a dedicated line. Suppose that calls arrived at such a facility as a Poisson process with rate $\lambda$, and that call lengths were independent and exponentially distributed with rate $\mu$.
+
+\begin{enumerate}[label=\textbf{(\alph*)}]
+  \item Assume that as many lines are available as needed. Let $X_t$ denote the number of occupied lines at time $t$. Write down the transition rates of the CTMC $\{X_t\}$.
+  \item Show that $X_t$ is approximately $\Pois(\lambda/\mu)$ for large $t$.
+  \item Under stationarity, let $Y_t$ denote the number of calls completed during $[0,t]$. What is the distribution of $Y_t$?
+\end{enumerate}
+
+\subsection*{Concepts used}
+\begin{itemize}
+  \item The M/M/$\infty$ queue is also called an \emph{immigration-death process}: arrivals occur at rate $\lambda$, while each of the $n$ current customers departs independently at rate $\mu$, so the total departure rate from state $n$ is $n\mu$.
+  \item A Poisson number of independent ``survivors'' remains Poisson after thinning.
+  \item If arrivals form a Poisson process and each arrival is independently marked with a time-dependent success probability, then the marked points form a Poisson process with intensity equal to the original intensity multiplied by the marking probability.
+\end{itemize}
+
+\subsection*{(a) Transition rates}
+If $X_t=n$, then:
+\begin{itemize}
+  \item a new call arrives at rate $\lambda$, sending the chain from $n$ to $n+1$;
+  \item each of the $n$ active calls ends at rate $\mu$, so the total completion rate is $n\mu$, sending the chain from $n$ to $n-1$.
+\end{itemize}
+Therefore the generator is
+\[
+q_{n,n+1}=\lambda,\qquad q_{n,n-1}=n\mu\quad (n\ge 1),
+\]
+and
+\[
+q_{n,n}=-(\lambda+n\mu),\qquad q_{n,m}=0\text{ otherwise.}
+\]
+
+\subsection*{(b) Why $X_t$ is approximately $\Pois(\lambda/\mu)$ for large $t$}
+Suppose first that $X_0=n_0$ is deterministic. We decompose the population at time $t$ into two parts:
+\[
+X_t=U_t+V_t,
+\]
+where
+\begin{itemize}
+  \item $U_t$ is the number of the initial $n_0$ calls that are still active at time $t$;
+  \item $V_t$ is the number of calls that arrived during $(0,t]$ and are still active at time $t$.
+\end{itemize}
+
+Each initial call survives until time $t$ with probability $e^{-\mu t}$, independently of the others. Hence
+\[
+U_t\sim \operatorname{Binomial}(n_0,e^{-\mu t}).
+\]
+
+Now consider arrivals during $(0,t]$. A call arriving at time $s\in(0,t]$ is still active at time $t$ with probability
+\[
+\Pbb(\text{service time}>t-s)=e^{-\mu(t-s)}.
+\]
+Since arrivals form a Poisson process of rate $\lambda$, thinning gives
+\[
+V_t\sim \Pois\!\left(\int_0^t \lambda e^{-\mu(t-s)}\,ds\right)
+=\Pois\!\left(\frac{\lambda}{\mu}(1-e^{-\mu t})\right).
+\]
+Also, $U_t$ and $V_t$ are independent. Thus
+\[
+X_t\overset{d}= \operatorname{Binomial}(n_0,e^{-\mu t})
++\Pois\!\left(\frac{\lambda}{\mu}(1-e^{-\mu t})\right).
+\]
+
+As $t\to\infty$, the binomial term goes to $0$ in probability, while the Poisson mean converges to $\lambda/\mu$. Therefore
+\[
+X_t \xrightarrow[d]{} \Pois\!\left(\frac{\lambda}{\mu}\right).
+\]
+In particular, for large $t$,
+\[
+X_t\approx \Pois\!\left(\frac{\lambda}{\mu}\right).
+\]
+
+If the system starts empty, then the binomial term is absent and we have the exact formula
+\[
+X_t\sim \Pois\!\left(\frac{\lambda}{\mu}(1-e^{-\mu t})\right).
+\]
+
+\subsection*{(c) Distribution of the number of completed calls in $[0,t]$ under stationarity}
+Under stationarity,
+\[
+X_0\sim \Pois\!\left(\frac{\lambda}{\mu}\right).
+\]
+Let $Y_t$ be the number of calls completed during $[0,t]$. Split it into
+\[
+Y_t=Y_t^{\text{old}}+Y_t^{\text{new}},
+\]
+where:
+\begin{itemize}
+  \item $Y_t^{\text{old}}$ counts calls already present at time $0$ that complete by time $t$;
+  \item $Y_t^{\text{new}}$ counts calls arriving during $(0,t]$ that also complete by time $t$.
+\end{itemize}
+
+Because $X_0$ is Poisson and each initial call completes by time $t$ with probability $1-e^{-\mu t}$,
+\[
+Y_t^{\text{old}}\sim \Pois\!\left(\frac{\lambda}{\mu}(1-e^{-\mu t})\right).
+\]
+
+For the new arrivals: an arrival at time $s\in(0,t]$ completes by time $t$ with probability
+\[
+1-e^{-\mu(t-s)}.
+\]
+Marking/thinning the Poisson arrival process gives
+\[
+Y_t^{\text{new}}\sim \Pois\!\left(\int_0^t \lambda\bigl(1-e^{-\mu(t-s)}\bigr)\,ds\right).
+\]
+The integral is
+\[
+\int_0^t \lambda\bigl(1-e^{-\mu(t-s)}\bigr)\,ds
+=\lambda t-\frac{\lambda}{\mu}(1-e^{-\mu t}).
+\]
+Hence
+\[
+Y_t^{\text{new}}\sim \Pois\!\left(\lambda t-\frac{\lambda}{\mu}(1-e^{-\mu t})\right).
+\]
+The two components are independent, so the sum is Poisson with mean equal to the sum of the means:
+\[
+Y_t\sim \Pois\!\left(\frac{\lambda}{\mu}(1-e^{-\mu t})
++\lambda t-\frac{\lambda}{\mu}(1-e^{-\mu t})\right)
+=\Pois(\lambda t).
+\]
+
+\[
+\boxed{Y_t\sim \Pois(\lambda t).}
+\]
+In fact, one can go further and show that the completion process itself is a Poisson process of rate $\lambda$.
+
+\section{Problem 4: Restricting a Reversible Chain to a Subset}
+\subsection*{Question}
+Let $\{X_t\}$ be a CTMC with stationary distribution $\pi$ satisfying the detailed balance condition. Let $\{Y_t\}$ be the chain constrained to stay in a subset $A$ of the state space. That is, jumps that would take the chain out of $A$ are not allowed, while allowed jumps occur at the original rates. In symbols,
+\[
+\bar q_{x,y}=
+\begin{cases}
+q_{x,y}, & x,y\in A,\\
+0, & \text{otherwise.}
+\end{cases}
+\]
+Let
+\[
+C=\sum_{y\in A}\pi(y).
+\]
+Show that
+\[
+\nu(x)=\frac{\pi(x)}{C}
+\]
+is a stationary distribution for $\{Y_t\}$.
+
+\subsection*{Concepts used}
+\begin{itemize}
+  \item Detailed balance is often preserved when we delete transitions, provided we only keep transitions within a subset and renormalize the stationary measure.
+  \item Once detailed balance is established for the modified chain, stationarity follows immediately.
+\end{itemize}
+
+\subsection*{Solution}
+Let the original CTMC have stationary distribution $\pi$ satisfying detailed balance:
+\[
+\pi(x)q_{x,y}=\pi(y)q_{y,x}\qquad \text{for all }x,y.
+\]
+Let $A$ be a subset of the state space, and define the constrained chain $\{Y_t\}$ by
+\[
+\bar q_{x,y}=
+\begin{cases}
+q_{x,y}, & x,y\in A,\\
+0, & \text{otherwise.}
+\end{cases}
+\]
+Let
+\[
+C=\sum_{y\in A}\pi(y),\qquad \nu(x)=\frac{\pi(x)}{C}\quad (x\in A).
+\]
+Clearly $\nu$ is a probability distribution on $A$.
+
+Now take $x,y\in A$. Since the original chain satisfies detailed balance,
+\[
+\nu(x)\bar q_{x,y}
+=\frac{\pi(x)}{C}q_{x,y}
+=\frac{\pi(y)}{C}q_{y,x}
+=\nu(y)\bar q_{y,x}.
+\]
+So the constrained chain also satisfies detailed balance with respect to $\nu$.
+
+But any distribution satisfying detailed balance is stationary. Therefore $\nu$ is a stationary distribution for $\{Y_t\}$.
+
+\[
+\boxed{\nu(x)=\frac{\pi(x)}{\sum_{y\in A}\pi(y)}\text{ is stationary on }A.}
+\]
+
+\section{Problem 5: Two M/M/1 Queues in Tandem}
+\subsection*{Question}
+Consider two M/M/1 queues in tandem with service rates $\mu_1$ and $\mu_2$. Customers arrive into the first queue according to a Poisson process of rate $\lambda$. A customer leaving the first queue joins the second queue with probability $p$ and leaves the system with probability $1-p$, independently of everything else.
+
+\begin{enumerate}[label=\textbf{(\alph*)}]
+  \item Under stationarity, what is the arrival process into the second queue?
+  \item Identify a necessary and sufficient condition for stability of the queue lengths, and write down the stationary distribution for the queue-length process $\{(X_t^{(1)},X_t^{(2)})\}$.
+\end{enumerate}
+
+For both parts, justify the answer but do not do unnecessary computations.
+
+\subsection*{Concepts used}
+\begin{itemize}
+  \item In a stationary M/M/1 queue, the departure process is Poisson with the same rate as the arrival process. Problem 2 is exactly this fact.
+  \item Thinning a Poisson process with retention probability $p$ gives a Poisson process of rate multiplied by $p$.
+  \item The tandem system is an open Jackson network with two nodes, so the stationary distribution has product form whenever all loads are strictly below $1$.
+\end{itemize}
+
+\subsection*{(a) Arrival process into the second queue}
+Queue 1 is an M/M/1 queue with external arrival rate $\lambda$ and service rate $\mu_1$. Under stationarity, its departure process is Poisson of rate $\lambda$.
+
+Each departing customer from queue 1 joins queue 2 with probability $p$ and leaves the system with probability $1-p$, independently of everything else. Therefore the stream entering queue 2 is an independently thinned Poisson process, hence also Poisson, with rate
+\[
+\lambda_2=\lambda p.
+\]
+
+\[
+\boxed{\text{The arrival process into queue 2 is Poisson of rate }\lambda p.}
+\]
+
+\subsection*{(b) Stability condition and stationary distribution}
+For queue 1 to be stable, we need
+\[
+\lambda<\mu_1.
+\]
+Queue 2 receives Poisson arrivals at rate $\lambda p$, so for queue 2 to be stable, we need
+\[
+\lambda p<\mu_2.
+\]
+These two inequalities are both necessary and sufficient, because this is an open Jackson network with traffic rates
+\[
+\beta_1=\lambda,\qquad \beta_2=\lambda p.
+\]
+
+Define the loads
+\[
+\rho_1=\frac{\lambda}{\mu_1},\qquad \rho_2=\frac{\lambda p}{\mu_2}.
+\]
+If $\rho_1<1$ and $\rho_2<1$, the stationary distribution of the queue-length process
+\[
+\{(X_t^{(1)},X_t^{(2)})\}
+\]
+is the Jackson product form:
+\[
+\pi(m,n)=(1-\rho_1)(1-\rho_2)\rho_1^m\rho_2^n,\qquad m,n\ge 0.
+\]
+
+So the necessary and sufficient stability condition is
+\[
+\boxed{\lambda<\mu_1\quad \text{and}\quad \lambda p<\mu_2,}
+\]
+and under this condition,
+\[
+\boxed{\pi(m,n)=\left(1-\frac{\lambda}{\mu_1}\right)\left(1-\frac{\lambda p}{\mu_2}\right)
+\left(\frac{\lambda}{\mu_1}\right)^m
+\left(\frac{\lambda p}{\mu_2}\right)^n.}
+\]
+
+\section{Problem 6: Jackson Networks}
+\subsection*{Question}
+Consider the setting of a Jackson network explained in class.
+
+\begin{enumerate}[label=\textbf{(\alph*)}]
+  \item Show that the traffic equations
+  \[
+  \beta_i=\lambda_i+\sum_{j=1}^K \beta_j p_{j,i}
+  \]
+  have a unique non-negative solution.
+  \item Show that if $\rho_i=\beta_i/\mu_i<1$ for all $i$, then the CTMC $(X_t^{(1)},\dots,X_t^{(K)})$ is positive recurrent with stationary distribution
+  \[
+  \pi(n)=\prod_{i=1}^K (1-\rho_i)\rho_i^{n_i},
+  \qquad n=(n_1,\dots,n_K).
+  \]
+\end{enumerate}
+
+\subsection*{Concepts used}
+\begin{itemize}
+  \item The traffic equations say that the total effective arrival rate into a node equals the external input plus the routed flow coming from other nodes.
+  \item In an open Jackson network, the routing matrix is transient: customers eventually leave the network with probability $1$. That is why the Neumann series $(I-P)^{-1}=\sum_{n\ge 0}P^n$ is valid.
+  \item The product-form stationary distribution is proved by combining the traffic equations with a global-balance calculation.
+\end{itemize}
+
+\subsection*{Notation}
+Let $P=(p_{i,j})_{1\le i,j\le K}$ be the routing matrix between the $K$ queues, and define
+\[
+p_{i,0}=1-\sum_{j=1}^K p_{i,j}
+\]
+to be the probability that a customer leaving node $i$ exits the network.
+
+We write vectors as row vectors, so the traffic equations are
+\[
+\bbeta=\lambda+\bbeta P.
+\]
+
+\subsection*{(a) Uniqueness of the non-negative solution to the traffic equations}
+Because the network is open, every customer eventually leaves the system with probability $1$. In matrix terms, this means that the substochastic routing matrix $P$ is transient, so
+\[
+P^n\to 0\qquad \text{as }n\to\infty,
+\]
+and therefore its spectral radius satisfies $r(P)<1$.
+
+Rearranging the traffic equations gives
+\[
+\bbeta(I-P)=\lambda.
+\]
+Since $r(P)<1$, the matrix $I-P$ is invertible and
+\[
+(I-P)^{-1}=\sum_{n=0}^{\infty}P^n.
+\]
+Hence the unique solution is
+\[
+\bbeta=\lambda(I-P)^{-1}
+=\lambda\sum_{n=0}^{\infty}P^n.
+\]
+Every term in this series is entrywise non-negative, so $\bbeta$ is entrywise non-negative.
+
+Therefore the traffic equations have a unique non-negative solution.
+
+\[
+\boxed{\bbeta=\lambda(I-P)^{-1}=\lambda\sum_{n=0}^{\infty}P^n.}
+\]
+
+\subsection*{(b) Positive recurrence and stationary distribution}
+Let
+\[
+\rho_i=\frac{\beta_i}{\mu_i},\qquad i=1,\dots,K,
+\]
+and assume $\rho_i<1$ for all $i$.
+
+We claim that
+\[
+\pi(n)=\prod_{i=1}^K (1-\rho_i)\rho_i^{n_i},
+\qquad n=(n_1,\dots,n_K)\in\mathbb{Z}_+^K,
+\]
+is stationary.
+
+\textbf{Step 1: $\pi$ is a probability distribution.}
+
+Since each $\rho_i\in[0,1)$,
+\[
+\sum_{n_i=0}^{\infty}(1-\rho_i)\rho_i^{n_i}=1
+\]
+for every $i$. Therefore
+\[
+\sum_{n\in\mathbb{Z}_+^K}\pi(n)
+=\prod_{i=1}^K \sum_{n_i=0}^{\infty}(1-\rho_i)\rho_i^{n_i}
+=1.
+\]
+
+\textbf{Step 2: Verify global balance.}
+
+From state $n$, the chain leaves at total rate
+\[
+\sum_{i=1}^K \lambda_i+\sum_{i=1}^K \mu_i \1_{\{n_i>0\}}.
+\]
+So the total outgoing probability flux is
+\[
+\pi(n)\left(\sum_{i=1}^K \lambda_i+\sum_{i=1}^K \mu_i \1_{\{n_i>0\}}\right).
+\]
+
+Now compute the incoming flux into state $n$.
+
+\begin{itemize}
+  \item An external arrival to node $i$ can bring the system from $n-\ee_i$ to $n$ if $n_i>0$, contributing
+  \[
+  \lambda_i \pi(n-\ee_i)\1_{\{n_i>0\}}.
+  \]
+  \item A service completion at node $i$ followed by exit from the network can bring the system from $n+\ee_i$ to $n$, contributing
+  \[
+  \mu_i p_{i,0}\pi(n+\ee_i).
+  \]
+  \item A service completion at node $i$ followed by routing to node $j$ can bring the system from $n+\ee_i-\ee_j$ to $n$, provided $n_j>0$, contributing
+  \[
+  \mu_i p_{i,j}\pi(n+\ee_i-\ee_j)\1_{\{n_j>0\}}.
+  \]
+\end{itemize}
+
+Hence the incoming flux equals
+\begin{align*}
+&\sum_{i=1}^K \lambda_i \pi(n-\ee_i)\1_{\{n_i>0\}}
++\sum_{i=1}^K \mu_i p_{i,0}\pi(n+\ee_i)\\
+&\qquad
++\sum_{i=1}^K\sum_{j=1}^K \mu_i p_{i,j}\pi(n+\ee_i-\ee_j)\1_{\{n_j>0\}}.
+\end{align*}
+
+Now use the product form:
+\[
+\pi(n-\ee_i)\1_{\{n_i>0\}}=\frac{\pi(n)}{\rho_i}\1_{\{n_i>0\}}
+=\pi(n)\frac{\mu_i}{\beta_i}\1_{\{n_i>0\}},
+\]
+\[
+\pi(n+\ee_i)=\rho_i\pi(n)=\pi(n)\frac{\beta_i}{\mu_i},
+\]
+and, when $n_j>0$,
+\[
+\pi(n+\ee_i-\ee_j)
+=\pi(n)\frac{\rho_i}{\rho_j}
+=\pi(n)\frac{\beta_i}{\mu_i}\frac{\mu_j}{\beta_j}.
+\]
+
+Substituting these expressions gives incoming flux equal to
+\begin{align*}
+\pi(n)\Bigg[
+&\sum_{i=1}^K \lambda_i\frac{\mu_i}{\beta_i}\1_{\{n_i>0\}}
++\sum_{i=1}^K \beta_i p_{i,0}\\
+&\qquad
++\sum_{j=1}^K \frac{\mu_j}{\beta_j}\1_{\{n_j>0\}}
+\sum_{i=1}^K \beta_i p_{i,j}
+\Bigg].
+\end{align*}
+
+Using the traffic equations,
+\[
+\sum_{i=1}^K \beta_i p_{i,j}=\beta_j-\lambda_j.
+\]
+So the two terms involving $\1_{\{n_j>0\}}$ combine to
+\[
+\lambda_j\frac{\mu_j}{\beta_j}\1_{\{n_j>0\}}
++(\beta_j-\lambda_j)\frac{\mu_j}{\beta_j}\1_{\{n_j>0\}}
+=\mu_j\1_{\{n_j>0\}}.
+\]
+Therefore the incoming flux becomes
+\[
+\pi(n)\left[\sum_{i=1}^K \beta_i p_{i,0}
++\sum_{j=1}^K \mu_j\1_{\{n_j>0\}}\right].
+\]
+
+Finally, sum the traffic equations over $j$:
+\[
+\sum_{j=1}^K \beta_j
+=\sum_{j=1}^K \lambda_j+\sum_{i=1}^K \beta_i\sum_{j=1}^K p_{i,j}.
+\]
+Rearranging,
+\[
+\sum_{i=1}^K \beta_i\left(1-\sum_{j=1}^K p_{i,j}\right)
+=\sum_{j=1}^K \lambda_j,
+\]
+that is,
+\[
+\sum_{i=1}^K \beta_i p_{i,0}=\sum_{j=1}^K \lambda_j.
+\]
+So incoming flux equals outgoing flux for every state $n$. Hence $\pi$ is stationary.
+
+Since the chain is irreducible and admits a stationary probability distribution, it is positive recurrent.
+
+\[
+\boxed{\pi(n)=\prod_{i=1}^K (1-\rho_i)\rho_i^{n_i},\qquad \rho_i=\frac{\beta_i}{\mu_i}<1.}
+\]
+
+\section*{Shared Setup for Problems 7--10}
+\addcontentsline{toc}{section}{Shared Setup for Problems 7--10}
+For the remaining problems, let $(\Omega,\mathcal{F},\mathbb{P})$ be a probability space, and let $\mathcal{G}\subset \mathcal{F}$ be a $\sigma$-field. All random variables $X$, $X_1$, and $X_2$ are assumed to be integrable.
+
+\section{Problem 7: Conditional Expectation Given \texorpdfstring{$Z$}{Z} via a Joint Density}
+\subsection*{Question}
+Suppose $(X,Z)$ has joint density $f$. Show that
+\[
+Y(\omega)=
+\begin{cases}
+\dfrac{\int g(x)f(x,Z(\omega))\,dx}{\int f(x,Z(\omega))\,dx}, & \text{if the denominator is positive},\\[2ex]
+0, & \text{otherwise},
+\end{cases}
+\]
+is a version of $\E[g(X)\mid Z]$.
+
+\subsection*{Concepts used}
+\begin{itemize}
+  \item If $(X,Z)$ has joint density $f(x,z)$, then the marginal density of $Z$ is
+  \[
+  m(z)=\int f(x,z)\,dx.
+  \]
+  \item The conditional density of $X$ given $Z=z$ is formally
+  \[
+  \frac{f(x,z)}{m(z)}
+  \]
+  when $m(z)>0$.
+  \item To prove that a random variable is a version of $\E[g(X)\mid Z]$, we must show two things:
+  it is $\sigma(Z)$-measurable, and it satisfies the defining integral identity against all bounded measurable functions of $Z$.
+\end{itemize}
+
+\subsection*{Solution}
+Define
+\[
+m(z)=\int f(x,z)\,dx,\qquad
+n(z)=\int g(x)f(x,z)\,dx.
+\]
+Then the random variable in the problem can be written as
+\[
+Y(\omega)=\varphi(Z(\omega)),
+\]
+where
+\[
+\varphi(z)=
+\begin{cases}
+\dfrac{n(z)}{m(z)}, & m(z)>0,\\[1ex]
+0, & m(z)=0.
+\end{cases}
+\]
+
+\textbf{Step 1: Measurability.}
+
+Since $m(z)$ and $n(z)$ are measurable functions of $z$, $\varphi$ is measurable. Therefore $Y=\varphi(Z)$ is measurable with respect to $\sigma(Z)$.
+
+\textbf{Step 2: Verify the defining property.}
+
+Let $h$ be any bounded measurable function. Then
+\begin{align*}
+\E[h(Z)Y]
+&=\int h(z)\varphi(z)m(z)\,dz\\
+&=\int h(z)n(z)\,dz\\
+&=\int h(z)\left(\int g(x)f(x,z)\,dx\right)dz\\
+&=\int\!\!\int h(z)g(x)f(x,z)\,dx\,dz\\
+&=\E[h(Z)g(X)].
+\end{align*}
+The second equality uses the definition of $\varphi$: when $m(z)>0$, we have $\varphi(z)m(z)=n(z)$, and when $m(z)=0$, both sides are zero.
+
+Since this identity holds for every bounded measurable $h(Z)$, $Y$ is a version of $\E[g(X)\mid Z]$.
+
+\[
+\boxed{Y=\E[g(X)\mid Z]\ \text{a.s.}}
+\]
+
+\section{Problem 8: Equality on a \texorpdfstring{$G$}{G}-Measurable Set}
+\subsection*{Question}
+If $X_1$ and $X_2$ are $\mathcal{F}$-measurable random variables with $X_1=X_2$ on $B\in \mathcal{G}$, show that
+\[
+\E[X_1\mid \mathcal{G}]=\E[X_2\mid \mathcal{G}]
+\quad \text{a.s. on }B.
+\]
+
+\subsection*{Concepts used}
+\begin{itemize}
+  \item Conditional expectation respects information contained in the conditioning $\sigma$-field.
+  \item If two integrable random variables are equal on a set $B\in \cG$, then once we condition on $\cG$, the conditioned versions must also agree on $B$.
+\end{itemize}
+
+\subsection*{Solution}
+Let
+\[
+D=\bigl(\E[X_1\mid \cG]-\E[X_2\mid \cG]\bigr)\1_B.
+\]
+Since $B\in \cG$ and conditional expectations are $\cG$-measurable, $D$ is $\cG$-measurable.
+
+Now take any $A\in \cG$. Then
+\begin{align*}
+\E[D\1_A]
+&=\E\bigl[(\E[X_1\mid \cG]-\E[X_2\mid \cG])\1_{A\cap B}\bigr]\\
+&=\E[X_1\1_{A\cap B}]-\E[X_2\1_{A\cap B}]\\
+&=\E[(X_1-X_2)\1_{A\cap B}]\\
+&=0,
+\end{align*}
+because $X_1=X_2$ on $B$.
+
+So $D$ is a $\cG$-measurable random variable whose integral over every event in $\cG$ is zero. Therefore $D=0$ almost surely. Equivalently,
+\[
+\E[X_1\mid \cG]=\E[X_2\mid \cG]\qquad \text{a.s. on }B.
+\]
+
+\[
+\boxed{\E[X_1\mid \cG]=\E[X_2\mid \cG]\text{ a.s. on }B.}
+\]
+
+\section{Problem 9: Basic Properties of Conditional Expectation}
+\subsection*{Question}
+Show the following properties of conditional expectation.
+
+\begin{enumerate}[label=\textbf{(\alph*)}]
+  \item Linearity:
+  \[
+  \E[\alpha X_1+\beta X_2\mid \mathcal{G}]
+  =
+  \alpha \E[X_1\mid \mathcal{G}]+\beta \E[X_2\mid \mathcal{G}].
+  \]
+  \item Positivity: if $X_1\le X_2$, then
+  \[
+  \E[X_1\mid \mathcal{G}] \le \E[X_2\mid \mathcal{G}].
+  \]
+\end{enumerate}
+
+\subsection*{Concepts used}
+\begin{itemize}
+  \item To prove an identity for conditional expectations, show that the proposed right-hand side is $\cG$-measurable and satisfies the defining integral property.
+  \item Positivity is proved by applying conditional expectation to a non-negative random variable.
+\end{itemize}
+
+\subsection*{(a) Linearity}
+Let
+\[
+Y=\alpha \E[X_1\mid \cG]+\beta \E[X_2\mid \cG].
+\]
+Then $Y$ is $\cG$-measurable. For any $A\in \cG$,
+\begin{align*}
+\E[Y\1_A]
+&=\alpha \E[\E[X_1\mid \cG]\1_A]+\beta \E[\E[X_2\mid \cG]\1_A]\\
+&=\alpha \E[X_1\1_A]+\beta \E[X_2\1_A]\\
+&=\E[(\alpha X_1+\beta X_2)\1_A].
+\end{align*}
+So $Y$ satisfies the defining property of $\E[\alpha X_1+\beta X_2\mid \cG]$. Hence
+\[
+\boxed{\E[\alpha X_1+\beta X_2\mid \cG]
+=\alpha \E[X_1\mid \cG]+\beta \E[X_2\mid \cG].}
+\]
+
+\subsection*{(b) Positivity}
+Assume $X_1\le X_2$ almost surely. Then
+\[
+X_2-X_1\ge 0.
+\]
+Let
+\[
+U=\E[X_2-X_1\mid \cG].
+\]
+We first show that $U\ge 0$ almost surely. If not, then the set
+\[
+A=\{U<0\}
+\]
+belongs to $\cG$ and has positive probability. But then
+\[
+\E[(X_2-X_1)\1_A]
+=\E[U\1_A]
+<0,
+\]
+which is impossible because $(X_2-X_1)\1_A\ge 0$ almost surely. Hence $U\ge 0$ almost surely.
+
+By linearity,
+\[
+U=\E[X_2\mid \cG]-\E[X_1\mid \cG]\ge 0\quad \text{a.s.}
+\]
+Therefore
+\[
+\boxed{X_1\le X_2\implies \E[X_1\mid \cG]\le \E[X_2\mid \cG]\quad \text{a.s.}}
+\]
+
+\section{Problem 10: Random Sums}
+\subsection*{Question}
+Let $\{Y_i\}$ be a sequence of i.i.d.\ random variables with mean $\mu$ and variance $\sigma^2$. Let $N$ be a non-negative integer-valued random variable with $\E[N^2]<\infty$, independent of $\{Y_i\}$. Let
+\[
+X=Y_1+Y_2+\cdots+Y_N.
+\]
+Show that
+\begin{enumerate}[label=\textbf{(\alph*)}]
+  \item $\E[X]=\mu \E[N]$.
+  \item $\Var(X)=\sigma^2\E[N]+\mu^2\Var(N)$.
+\end{enumerate}
+
+\subsection*{Concepts used}
+\begin{itemize}
+  \item Conditioning on $N$ converts the random sum into an ordinary sum of exactly $N$ i.i.d.\ terms.
+  \item The tower property gives expectations:
+  \[
+  \E[X]=\E[\E[X\mid N]].
+  \]
+  \item The law of total variance gives
+  \[
+  \Var(X)=\E[\Var(X\mid N)]+\Var(\E[X\mid N]).
+  \]
+\end{itemize}
+
+\subsection*{Solution}
+Let
+\[
+X=Y_1+\cdots+Y_N,
+\]
+where $\{Y_i\}$ are i.i.d.\ with mean $\mu$ and variance $\sigma^2$, and $N$ is independent of the sequence.
+
+\subsection*{(a) Computing $\E[X]$}
+Condition on $N$. Given $N=n$,
+\[
+X=Y_1+\cdots+Y_n,
+\]
+so
+\[
+\E[X\mid N=n]=n\mu.
+\]
+Therefore
+\[
+\E[X\mid N]=N\mu.
+\]
+Applying the tower property,
+\[
+\E[X]=\E[\E[X\mid N]]=\E[N\mu]=\mu \E[N].
+\]
+Hence
+\[
+\boxed{\E[X]=\mu \E[N].}
+\]
+
+\subsection*{(b) Computing $\Var(X)$}
+Again condition on $N=n$. Since the $Y_i$ are i.i.d.\ and independent,
+\[
+\Var(X\mid N=n)=n\sigma^2.
+\]
+So
+\[
+\Var(X\mid N)=N\sigma^2.
+\]
+Also, from part (a),
+\[
+\E[X\mid N]=N\mu.
+\]
+Now use the law of total variance:
+\begin{align*}
+\Var(X)
+&=\E[\Var(X\mid N)]+\Var(\E[X\mid N])\\
+&=\E[N\sigma^2]+\Var(N\mu)\\
+&=\sigma^2 \E[N]+\mu^2\Var(N).
+\end{align*}
+Thus
+\[
+\boxed{\Var(X)=\sigma^2 \E[N]+\mu^2\Var(N).}
+\]
+
+\end{document}

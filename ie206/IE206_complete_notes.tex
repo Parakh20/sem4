@@ -1,0 +1,579 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,mathtools,amsthm}
+\usepackage{booktabs,array}
+\usepackage{enumitem}
+\setlist[itemize]{leftmargin=*,itemsep=0.25em,topsep=0.2em}
+\setlist[enumerate]{leftmargin=*,itemsep=0.25em,topsep=0.2em}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\1}{\mathbf{1}}
+
+\title{IE206 Complete Notes (from Provided PDFs)}
+\author{}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Coverage Map (All Provided Files)}
+\begin{center}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.37\linewidth} >{\raggedright\arraybackslash}p{0.57\linewidth}}
+\toprule
+Source PDF & Topics included in these notes \\
+\midrule
+\texttt{IE206\_Lec01.pdf} & Supervised setup, classification vs regression, simple/multiple linear regression, MSE/LSE, correlation, $R^2$, SST/SSM/SSE, polynomial fit \\
+\texttt{IE206\_Logistics\_2.pdf} & Model validation perspective, regression diagnostics, outliers/influence, robust losses (L2/L1/Huber/Bisquare), Ridge/LASSO, Bayesian view of regularization, logistic regression and sigmoid/logit \\
+\texttt{IE\_206\_ModelEvaluation\_3.pdf} & Hypothesis classes, train/test split, confusion matrix metrics, precision/recall/F1, underfit/overfit, holdout, $k$-fold CV, model selection curve \\
+\texttt{IE\_206\_SGD.pdf} & GD/SGD basics, subgradients, hinge subgradient, step-size schedules, strongly convex case, projected SGD, convergence guarantee in convex-Lipschitz bounded setting \\
+\texttt{IE\_206\_Perceptron\_4.pdf} & Halfspaces, perceptron update rule, convergence theorem and mistake bound, feature scaling/standardization, feature engineering and polynomial basis \\
+\texttt{IE\_206\_SVM.pdf} & Linear separability, margin geometry, hard/soft SVM, slack variables, hinge-loss regularization, support vectors, duality, dual optimization \\
+\texttt{IE\_206\_KNN.pdf} & KNN algorithm, distance metrics, curse of dimensionality, Bayes classifier/risk/optimality, Naive Bayes, discriminative vs generative methods \\
+\texttt{IE\_206\_MultiClass.pdf} & One-vs-All, All-Pairs, reduction pitfalls, linear multiclass predictors, multiclass SVM, SGD update, ranking intro and losses \\
+\texttt{IE\_206\_RandoMForest.pdf} & Decision trees, ID3, entropy/gini gains, threshold splits for real-valued features, random forest construction, boosting, decision stumps, ERM for stumps, AdaBoost and training error bound \\
+\texttt{IE206\_PracticeQs\_1.pdf} & Cost-sensitive model choice, imbalanced metrics tradeoff, LOOCV in linear regression, hyperparameter selection, Sherman-Morrison identity, fast LOOCV formula via hat matrix, convexity/nondifferentiability of clipped regression loss \\
+\texttt{IE206\_PracticeQs\_2.pdf} & Bayes vs 1-NN error bound, scaling effect in KNN, hard-margin SVM worked geometry, soft-margin extremes ($C=0,\infty$), KKT interpretation ($\alpha_i=C$ case) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Linear Regression Notes (\texttt{IE206\_Lec01.pdf})}
+\subsection*{Learning setup}
+Given i.i.d. samples
+\[
+S=\{(x^{(i)},y^{(i)})\}_{i=1}^m,
+\]
+classification has finite/discrete label set $\mathcal Y$, while regression has continuous (or non-countable) labels.
+
+\subsection*{Simple linear regression}
+Model:
+\[
+y=\beta_0+\beta_1x.
+\]
+Probabilistic form with noise:
+\[
+y^{(i)}=\beta_0+\beta_1x^{(i)}+\varepsilon_i,
+\qquad \E[y^{(i)}\mid x^{(i)}]=\beta_0+\beta_1x^{(i)}.
+\]
+
+\subsection*{Goodness of fit and least squares}
+Residual $r_i=y^{(i)}-(\beta_0+\beta_1x^{(i)})$. Common losses:
+\begin{itemize}
+\item absolute error: $|r_i|$
+\item squared error: $r_i^2$
+\end{itemize}
+MSE/LSE objective:
+\[
+(\hat\beta_0,\hat\beta_1)=\arg\min_{\beta_0,\beta_1}\sum_{i=1}^m r_i^2.
+\]
+Closed form:
+\[
+\hat\beta_1=\frac{\sum_i(x_i-\bar x)(y_i-\bar y)}{\sum_i(x_i-\bar x)^2},
+\qquad
+\hat\beta_0=\bar y-\hat\beta_1\bar x.
+\]
+
+\subsection*{Correlation and interpretation}
+Sample correlation coefficient:
+\[
+r=\frac{\sum_i(x_i-\bar x)(y_i-\bar y)}{\sqrt{\sum_i(x_i-\bar x)^2}\sqrt{\sum_i(y_i-\bar y)^2}}.
+\]
+Interpretation: sign gives direction, magnitude gives linear association strength.
+
+\subsection*{Multiple linear regression}
+\[
+y^{(i)}=x^{(i)\top}\beta+\varepsilon_i,
+\quad
+\hat\beta=\arg\min_\beta\sum_{i=1}^m(y^{(i)}-x^{(i)\top}\beta)^2.
+\]
+Matrix form (standard convention with $X\in\R^{m\times d}$):
+\[
+\hat\beta=(X^\top X)^{-1}X^\top y
+\]
+(when $X^\top X$ is invertible).
+
+\subsection*{Coefficient of determination and decomposition}
+\[
+\text{SST}=\sum_i(y_i-\bar y)^2,
+\quad
+\text{SSE}=\sum_i(y_i-\hat y_i)^2,
+\quad
+\text{SSM}=\sum_i(\hat y_i-\bar y)^2.
+\]
+Identity:
+\[
+\text{SST}=\text{SSM}+\text{SSE},
+\qquad
+R^2=1-\frac{\text{SSE}}{\text{SST}}=\frac{\text{SSM}}{\text{SST}}.
+\]
+
+\subsection*{Polynomial fit (feature expansion)}
+Linear in parameters can represent nonlinear curves by expanding features:
+\[
+\phi(x)=(1,x,x^2,\dots,x^p),
+\quad y\approx w^\top\phi(x).
+\]
+
+\subsection*{Important caution}
+High training fit does not imply good extrapolation/generalization; always validate on unseen data.
+
+\section{Logistic + Robust Regression Notes (\texttt{IE206\_Logistics\_2.pdf})}
+\subsection*{Regression diagnostics and outliers}
+Key checks:
+\begin{itemize}
+\item residual behavior (random vs patterned)
+\item outliers (large residual) and influential points (large effect on fitted model)
+\item feature redundancy/collinearity
+\end{itemize}
+
+\subsection*{Robustness through loss design}
+Let $r_i=y_i-x_i^\top\beta$.
+\begin{itemize}
+\item L2 (squared): $\rho(r)=r^2$ (sensitive to large outliers)
+\item LAD/L1: $\rho(r)=|r|$ (more robust; nondifferentiable at 0)
+\item Huber:
+\[
+\rho_k(r)=
+\begin{cases}
+\frac12r^2,& |r|\le k,\\
+k\left(|r|-\frac{k}{2}\right),& |r|>k,
+\end{cases}
+\]
+quadratic near 0 and linear in tails
+\item Bisquare/Tukey: strong downweighting of very large residuals
+\end{itemize}
+
+\subsection*{Distribution view of loss choice}
+\begin{itemize}
+\item Gaussian noise $\Rightarrow$ squared loss (MLE)
+\item Laplace noise $\Rightarrow$ absolute loss (MLE)
+\end{itemize}
+
+\subsection*{Ridge and LASSO}
+\textbf{Ridge:}
+\[
+\hat\beta_{\text{ridge}}
+=\arg\min_\beta\sum_{i=1}^m(y_i-x_i^\top\beta)^2+\lambda\sum_{j=1}^d\beta_j^2
+\]
+\[
+\hat\beta_{\text{ridge}}=(X^\top X+\lambda I)^{-1}X^\top y.
+\]
+Effects: shrinkage, handles collinearity, usually not sparse.
+
+\textbf{LASSO:}
+\[
+\hat\beta_{\text{lasso}}=
+\arg\min_\beta\sum_{i=1}^m(y_i-x_i^\top\beta)^2+\lambda\sum_{j=1}^d|\beta_j|.
+\]
+Effects: shrinkage + feature selection (sparse coefficients).
+
+\subsection*{Bayesian connection}
+MAP estimation with priors:
+\begin{itemize}
+\item Gaussian prior on $\beta$ $\Rightarrow$ Ridge penalty
+\item Laplace prior on $\beta$ $\Rightarrow$ LASSO penalty
+\end{itemize}
+
+\subsection*{Logistic regression}
+Binary classification with score $\eta=x^\top\beta$:
+\[
+\PP(Y=1\mid X=x)=\sigma(\eta)=\frac{1}{1+e^{-\eta}}.
+\]
+Logit transform:
+\[
+\log\frac{p(x)}{1-p(x)}=x^\top\beta.
+\]
+Likelihood for data $\{(x_i,y_i)\}$, $y_i\in\{0,1\}$:
+\[
+L(\beta)=\prod_{i=1}^m p_i^{y_i}(1-p_i)^{1-y_i},
+\quad p_i=\sigma(x_i^\top\beta).
+\]
+Equivalent minimization is negative log-likelihood (logistic loss), solved iteratively (no closed-form like OLS).
+
+\section{Model Evaluation Notes (\texttt{IE\_206\_ModelEvaluation\_3.pdf})}
+\subsection*{Hypothesis class}
+A hypothesis is a mapping $h:\mathcal X\to\mathcal Y$.
+Examples: linear, quadratic, hyperplane, polynomial classes. Learning chooses a good $h$ from $\mathcal H$.
+
+\subsection*{Train-test split}
+Typical split: train 70--80\%, test 20--30\%. Test data estimates out-of-sample performance.
+
+\subsection*{Confusion matrix metrics}
+With TP, TN, FP, FN:
+\[
+\text{Accuracy}=\frac{TP+TN}{TP+TN+FP+FN},
+\]
+\[
+\text{Precision}=\frac{TP}{TP+FP},
+\qquad
+\text{Recall}=\frac{TP}{TP+FN},
+\]
+\[
+F1=\frac{2\cdot\text{Precision}\cdot\text{Recall}}{\text{Precision}+\text{Recall}}.
+\]
+Use precision when FP cost is high; recall when FN cost is high; F1 for class imbalance/tradeoff.
+
+\subsection*{Underfitting vs overfitting}
+\begin{itemize}
+\item Underfit: high train and test error (high bias)
+\item Proper complexity: low test error
+\item Overfit: low train but high test error (high variance)
+\end{itemize}
+
+\subsection*{Validation strategies}
+\begin{itemize}
+\item Holdout: simple, but can waste data and have high variance estimate
+\item $k$-fold CV: each sample validated once, more stable estimate
+\item Practical default often $k=5$ or $10$ depending on data size/compute
+\end{itemize}
+Model selection should be based on validation/CV performance, not training error.
+
+\section{SGD Notes (\texttt{IE\_206\_SGD.pdf})}
+\subsection*{Gradient descent}
+For differentiable $f:\R^d\to\R$:
+\[
+ w_{t+1}=w_t-\eta\nabla f(w_t).
+\]
+$\eta$ controls step size/stability.
+
+\subsection*{Subgradient for non-differentiable convex functions}
+A vector $g$ is subgradient at $w$ if
+\[
+f(u)\ge f(w)+\langle g,u-w\rangle\quad\forall u.
+\]
+Used when gradient does not exist (e.g., hinge, absolute value).
+
+\subsection*{Hinge loss and Lipschitz idea}
+For labeled example $(x,y)$:
+\[
+\ell_{\text{hinge}}(w;(x,y))=\max(0,1-y\langle w,x\rangle).
+\]
+Subgradient:
+\[
+\partial \ell=
+\begin{cases}
+\{0\}, & y\langle w,x\rangle>1,\\
+\{-yx\}, & y\langle w,x\rangle<1,\\
+\text{conv}\{0,-yx\}, & y\langle w,x\rangle=1.
+\end{cases}
+\]
+
+\subsection*{Stochastic gradient descent}
+Use unbiased stochastic (sub)gradient $v_t$:
+\[
+\E[v_t\mid w_t]\in\partial f(w_t),
+\qquad
+w_{t+1}=w_t-\eta_t v_t.
+\]
+Common output is averaged iterate $\bar w=\frac{1}{T}\sum_{t=1}^T w_t$.
+
+\subsection*{Variants}
+\begin{itemize}
+\item Decreasing step size, e.g. $\eta_t\propto 1/\sqrt t$
+\item Strongly convex case often uses $\eta_t\propto 1/(\lambda t)$
+\item Projected SGD enforces constraints by projection:
+\[
+w_{t+1}=\Pi_{\mathcal H}(w_t-\eta_t v_t).
+\]
+\end{itemize}
+
+\subsection*{Convergence message from lecture}
+For convex-Lipschitz bounded setup, SGD with suitable $T$ and $\eta$ reaches expected suboptimality $\le\varepsilon$ with sample complexity matching regularized ERM order.
+
+\section{Perceptron + Feature Engineering Notes (\texttt{IE\_206\_Perceptron\_4.pdf})}
+\subsection*{Halfspaces and affine score}
+\[
+h_{w,b}(x)=\langle w,x\rangle+b,
+\qquad
+\hat y=\operatorname{sign}(h_{w,b}(x))\in\{-1,+1\}.
+\]
+
+\subsection*{Perceptron update rule}
+Given a mistake on $(x_i,y_i)$ where $y_i\langle w_t,x_i\rangle\le0$:
+\[
+w_{t+1}=w_t+y_ix_i.
+\]
+Repeat until no mistakes (if separable).
+
+\subsection*{Convergence guarantee}
+For separable data with
+\[
+R=\max_i\|x_i\|,
+\quad
+B=\min\{\|w\|:\ y_i\langle w,x_i\rangle\ge1\ \forall i\},
+\]
+lecture bound:
+\[
+T\le(RB)^2.
+\]
+Practical implication: feature scaling strongly affects convergence speed.
+
+\subsection*{Normalization and centralization}
+Standardization (z-score form):
+\[
+\phi(x)=\frac{x-\bar x}{\sigma}.
+\]
+Benefits: balanced feature influence, faster optimization, better numerical behavior.
+
+\subsection*{Feature engineering and polynomial basis}
+Map original input into richer features to make classes linearly separable:
+\[
+\phi(x_1,x_2)=(1,x_1,x_2,x_1^2,x_1x_2,x_2^2,\dots).
+\]
+XOR-style patterns become separable in transformed space.
+
+\section{SVM Notes (\texttt{IE\_206\_SVM.pdf})}
+\subsection*{Margin geometry}
+Distance from point $x$ to hyperplane $(w,b)$:
+\[
+\operatorname{dist}(x,\{z:w^\top z+b=0\})=\frac{|w^\top x+b|}{\|w\|}.
+\]
+For canonical SVM constraints $y_i(w^\top x_i+b)\ge1$, margin width is
+\[
+\frac{2}{\|w\|}.
+\]
+
+\subsection*{Hard-margin SVM}
+\[
+\min_{w,b}\frac12\|w\|^2
+\quad\text{s.t.}\quad
+y_i(w^\top x_i+b)\ge1\ \forall i.
+\]
+Needs linear separability.
+
+\subsection*{Soft-margin SVM}
+Introduce slack $\xi_i\ge0$:
+\[
+\min_{w,b,\xi}\frac12\|w\|^2 + C\sum_i\xi_i
+\quad\text{s.t.}\quad
+y_i(w^\top x_i+b)\ge1-\xi_i.
+\]
+Equivalent regularized hinge-loss form:
+\[
+\min_{w,b}\lambda\|w\|^2+\frac1m\sum_i\max\{0,1-y_i(w^\top x_i+b)\}.
+\]
+
+\subsection*{Support vectors}
+Points with active margin constraints determine the separator; in dual view, these are points with nonzero dual coefficients.
+
+\subsection*{Duality and dual optimization}
+For hard margin, dual (schematic):
+\[
+\max_{\alpha\ge0}\sum_i\alpha_i-\frac12\sum_{i,j}\alpha_i\alpha_j y_i y_j\langle x_i,x_j\rangle.
+\]
+Key implications:
+\begin{itemize}
+\item solution is linear combination of training points
+\item optimization depends only on inner products (kernel entry point)
+\item weak duality always; strong duality for convex feasible settings
+\end{itemize}
+
+\section{KNN + Bayes Notes (\texttt{IE\_206\_KNN.pdf})}
+\subsection*{K-Nearest Neighbors}
+Workflow:
+\begin{enumerate}
+\item choose $k$ and a distance metric
+\item compute distance from query to all train points
+\item pick $k$ nearest points
+\item classify by majority vote (or average for regression)
+\end{enumerate}
+
+Common distances for $x,y\in\R^n$:
+\[
+\|x-y\|_2,\quad \|x-y\|_1,\quad \|x-y\|_p.
+\]
+
+Limitations from lecture:
+\begin{itemize}
+\item curse of dimensionality
+\item prediction-time cost grows with dataset size
+\item sensitivity to noisy data and scaling
+\end{itemize}
+
+\subsection*{Bayes classifier}
+Bayes theorem:
+\[
+\PP(Y\mid X)=\frac{\PP(X\mid Y)\PP(Y)}{\PP(X)}.
+\]
+Optimal classifier:
+\[
+h^*(x)=\arg\max_y \PP(Y=y\mid X=x).
+\]
+Binary case:
+\[
+h^*(x)=\1\{\eta(x)>0.5\},\quad \eta(x)=\PP(Y=1\mid X=x).
+\]
+Bayes risk (minimum possible classification error):
+\[
+R^*=\E_X\left[1-\max_k\PP(Y=k\mid X)\right].
+\]
+
+\subsection*{Naive Bayes}
+Conditional independence assumption:
+\[
+\PP(Y\mid X_1,\dots,X_n)\propto \PP(Y)\prod_{j=1}^n \PP(X_j\mid Y).
+\]
+Fast, scalable, often strong baseline (especially text tasks).
+
+\subsection*{Discriminative vs generative}
+\begin{itemize}
+\item Discriminative: model $\PP(Y\mid X)$ or decision boundary directly (e.g., SVM, logistic)
+\item Generative: model joint/conditional data generation (e.g., Naive Bayes)
+\end{itemize}
+
+\section{Multiclass Notes (\texttt{IE\_206\_MultiClass.pdf})}
+\subsection*{Problem}
+Predict one of $k$ classes for each input.
+
+\subsection*{Reduction methods}
+\textbf{One-vs-All (OvA):}
+train $k$ binary models $h_i$; predict
+\[
+\hat y=\arg\max_i h_i(x).
+\]
+
+\textbf{All-Pairs (OvO):}
+train one binary model per class pair $(i,j)$; aggregate pairwise scores/votes.
+
+\subsection*{Pitfalls of reductions}
+For imbalanced/low-mass classes, OvA can output trivial all-negative model for a class, causing severe multiclass failure even when a global multiclass linear separator exists.
+
+\subsection*{Linear multiclass predictor}
+Unified score model:
+\[
+\hat y=\arg\max_{y\in\{1,\dots,k\}} \langle w,\Psi(x,y)\rangle.
+\]
+Advantages: one jointly trained model; supports cost-sensitive losses $\Delta(y',y)$.
+
+\subsection*{Multiclass SVM + SGD}
+Structured hinge objective (lecture form):
+\[
+\min_w\lambda\|w\|^2+\frac1m\sum_{i=1}^m \max_{y'}\Big[\Delta(y',y_i)+\langle w,\Psi(x_i,y')-\Psi(x_i,y_i)\rangle\Big].
+\]
+Typical SGD step uses worst offending class $y^*$:
+\[
+w_{t+1}=w_t-\eta_t\big(\Psi(x,y^*)-\Psi(x,y)\big)
+\]
+(with regularization term as applicable).
+
+\subsection*{Ranking intro}
+Output is an ordering, not a single class. Mentioned losses: Kendall-tau pairwise disagreement and NDCG (top-heavy relevance quality).
+
+\section{Decision Trees, Random Forest, Boosting Notes (\texttt{IE\_206\_RandoMForest.pdf})}
+\subsection*{Decision trees}
+Hierarchical split model with nodes, branches, leaves. Greedy top-down building is used because globally optimal tree search is computationally hard.
+
+\subsection*{ID3-style construction}
+Recursive rules:
+\begin{itemize}
+\item stop if pure node
+\item stop if no features left; output majority label
+\item otherwise split using feature with best gain and recurse
+\end{itemize}
+
+\subsection*{Gain measures}
+For binary class proportion $a$:
+\[
+\text{Entropy }C(a)=-a\log a-(1-a)\log(1-a),
+\]
+\[
+\text{Gini }C(a)=2a(1-a).
+\]
+Information gain = impurity before split minus weighted impurity after split.
+
+\subsection*{Real-valued features via thresholds}
+Convert to binary tests $\1[x_j<\theta]$ with candidate thresholds from sorted feature values. Efficient gain search can be implemented in about $O(dm\log m)$ (or better with incremental updates after sorting).
+
+\subsection*{Random forest}
+Core idea: reduce variance by averaging many decorrelated trees.
+\begin{itemize}
+\item bootstrap sample of training data per tree
+\item random subset of features at each split
+\item majority vote aggregation
+\end{itemize}
+Small feature subset size per split helps decorrelate trees.
+
+\subsection*{Boosting and decision stumps}
+Decision stump: one-split tree (weak learner).
+Boosting trains weak learners sequentially with reweighting to focus on hard examples.
+
+\subsection*{ERM for decision stumps}
+Given weighted sample distribution $D$, choose feature-threshold pair minimizing weighted classification error. Sorting by each feature and sweeping thresholds yields efficient implementation.
+
+\subsection*{AdaBoost}
+At round $t$:
+\begin{itemize}
+\item train weak learner $h_t$ on distribution $D_t$
+\item weighted error $\varepsilon_t$
+\item learner weight $\alpha_t=\frac12\log\frac{1-\varepsilon_t}{\varepsilon_t}$
+\item upweight misclassified examples for next round
+\end{itemize}
+Final model:
+\[
+H(x)=\operatorname{sign}\left(\sum_{t=1}^T \alpha_t h_t(x)\right).
+\]
+Training error bound (lecture theorem style): decays exponentially with rounds when each weak learner beats random guessing ($\varepsilon_t<1/2$).
+
+\section{Practice Sheet Notes (\texttt{IE206\_PracticeQs\_1.pdf}, \texttt{IE206\_PracticeQs\_2.pdf})}
+\subsection*{PracticeQs\_1 themes}
+\begin{itemize}
+\item \textbf{Cost-sensitive decision making}: choose model by total expected penalty, not by accuracy alone.
+\item \textbf{Imbalanced fraud setting}: compare accuracy vs precision/recall/F1 and pick metric matching business objective.
+\item \textbf{LOOCV for linear regression}: compute leave-one-out models and compare fit quality ($R^2$/MSE).
+\item \textbf{Hyperparameter tuning}: choose setting with best validation performance (generalization), avoid overfitting settings with low train but poor validation error.
+\item \textbf{Sherman--Morrison identity}: rank-one inverse update useful for efficient LOOCV derivation.
+\item \textbf{Fast LOOCV formula via hat matrix}:
+\[
+\hat y_i^{(-i)}=\frac{\hat y_i-h_{ii}y_i}{1-h_{ii}},
+\qquad
+e_i^{(-i)}=\frac{e_i}{1-h_{ii}},
+\]
+so
+\[
+\text{CV}(n)=\frac1n\sum_{i=1}^n\left(\frac{y_i-\hat y_i}{1-h_{ii}}\right)^2.
+\]
+\item \textbf{Clipped/rectified regression loss}:
+\[
+\ell(w;x,y)=\big|y-\max(0,w^\top x)\big|.
+\]
+Convex in $w$ as composition of convex functions with affine map plus absolute value; non-differentiable at hinge boundaries where $w^\top x=0$ and/or where the outer absolute value argument is zero.
+\end{itemize}
+
+\subsection*{PracticeQs\_2 themes}
+\begin{itemize}
+\item \textbf{Bayes vs 1-NN asymptotics}: pointwise error bound
+\[
+\varepsilon_{NN}(x)\le2\varepsilon_{Bayes}(x).
+\]
+\item \textbf{Feature scaling in KNN}: nearest neighbor can flip after normalization due to scale dominance in raw Euclidean distance.
+\item \textbf{Hard-margin SVM geometry}: separability proof, optimal separator, support vector identification, effect of removing non-support vectors.
+\item \textbf{Soft-margin extremes}: behavior for $C=0$ (regularization dominates) and $C\to\infty$ (hard-margin-like behavior if separable).
+\item \textbf{KKT interpretation in soft SVM}: from
+\[
+\alpha_i(1-y_if_i-\xi_i)=0,\quad \beta_i\xi_i=0,\quad \alpha_i+\beta_i=C,
+\]
+if $\alpha_i=C$ then $\beta_i=0$; point is inside margin or misclassified (cannot be strictly outside margin with inactive slack and $\alpha_i=C$ simultaneously).
+\end{itemize}
+
+\section{Quick Exam-Revision Checklist}
+\begin{enumerate}
+\item Derive OLS and ridge closed forms, and know when matrix inverse fails.
+\item Compute and interpret $R^2$, SST/SSM/SSE, and correlation.
+\item Know robust losses and when to prefer L1/Huber over L2.
+\item Use precision/recall/F1 correctly for imbalanced data.
+\item Implement CV logic and LOOCV hat-matrix shortcut.
+\item Remember perceptron mistake update and convergence condition.
+\item Derive hard/soft SVM primal forms, hinge loss form, and dual interpretation.
+\item Explain KNN distance scaling and curse of dimensionality.
+\item Distinguish Bayes optimal, Naive Bayes, discriminative vs generative.
+\item Compare OvA/OvO vs joint multiclass methods.
+\item Explain random forest variance reduction mechanism.
+\item State AdaBoost update logic and why training error can drop exponentially.
+\item Explain SGD vs GD and when projection/subgradient is required.
+\end{enumerate}
+
+\end{document}

@@ -1,0 +1,359 @@
+\documentclass[10pt,fleqn]{article}
+\usepackage[a4paper,margin=0.065in]{geometry}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+\setlength{\columnsep}{0.045in}
+\setlength{\columnseprule}{0.1pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.04ex}
+\setlength{\abovedisplayskip}{0pt}
+\setlength{\belowdisplayskip}{0pt}
+\setlength{\abovedisplayshortskip}{0pt}
+\setlength{\belowdisplayshortskip}{0pt}
+\setlength{\premulticols}{0pt}
+\setlength{\postmulticols}{0pt}
+\setlength{\multicolsep}{0pt}
+\setlength{\emergencystretch}{2.5em}
+\setlength{\mathindent}{0pt}
+\setlength{\jot}{0pt}
+\hfuzz=200pt
+\hbadness=100000
+\vbadness=100000
+\pagestyle{empty}
+\allowdisplaybreaks
+\setlist[itemize]{leftmargin=*,itemsep=0.08ex,topsep=0.08ex,parsep=0pt,partopsep=0pt}
+
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\shead}[1]{\vspace{0.05ex}\textbf{\scriptsize #1}\par}
+\newcommand{\topic}[1]{\textbf{#1}\ }
+\newcommand{\qa}[2]{\textbf{#1} #2\par}
+\newcommand{\pfq}[2]{\textbf{#1} #2\par}
+\DeclareMathOperator{\Exp}{Exp}
+\DeclareMathOperator{\Pois}{Pois}
+
+\begin{document}
+\fontsize{5.5}{5.78}\selectfont
+\sloppy
+\raggedright
+
+\begin{multicols*}{2}
+\raggedcolumns
+
+\shead{Refs}
+Ross SP 5; Wolff 4--5; Ross IPM 6,8; Kumar 4; Shortle 1,3; B\&G 3; H-B 16,19.
+
+\shead{CTMC Basics}
+\topic{Homogeneous CTMC} \(P_{ij}(t)=\PP(X(s+t)=j\mid X(s)=i)\), independent of \(s\). Markov property:
+\[
+\PP(X(s+t)=j\mid \mathcal F_s,\ X(s)=i)=\PP(X(s+t)=j\mid X(s)=i).
+\]
+Holding time in \(i\): \(\tau_i\sim\Exp(v_i)\), since \(\PP(\tau_i>s+t\mid \tau_i>s)=\PP(\tau_i>t)\). \(v_i=0\): absorbing; \(v_i=\infty\): instantaneous; assume \(0\le v_i<\infty\).
+
+\topic{Visit structure} On each visit to \(i\): sojourn \(\tau_i\sim\Exp(v_i)\); next state \(j\ne i\) chosen with probs. \(P_{ij}\), \(\sum_{j\ne i}P_{ij}=1\); \(\tau_i\) and next state are independent. CTMC is a semi-Markov process with \(F_{ij}(t)=1-e^{-v_it}\).
+
+\topic{Regularity} Regular means finitely many jumps in every finite interval w.p.\ 1. Nonregular example: \(P_{i,i+1}=1,\ v_i=i^2\); then \(\tau_i\sim\Exp(i^2)\), \(\E\sum_{i\ge1}\tau_i=\sum_{i\ge1}1/i^2<\infty\), so explosion has positive probability.
+
+\topic{Rates / generator} For \(i\ne j\): \(q_{ij}=v_iP_{ij}\), \(v_i=\sum_{k\ne i}q_{ik}\), \(P_{ij}=q_{ij}/v_i\) when \(v_i>0\). Define \(r_{ii}=-v_i,\ r_{ij}=q_{ij}\) for \(i\ne j\). Competing timers view: while in \(i\), \(T_{ij}\sim\Exp(q_{ij})\) independent for \(j\ne i\); first timer to ring gives jump time and destination.
+
+\topic{Core examples} Shoe-shine: states \(0\to1\to2\to0\) with rates \(q_{01}=\lambda,\ q_{12}=\mu_1,\ q_{20}=\mu_2\). Poisson: \(q_{n,n+1}=\lambda\). M/M/1: \(q_{0,1}=\lambda\), and for \(n\ge1\), \(q_{n,n+1}=\lambda,\ q_{n,n-1}=\mu\).
+
+\topic{Birth-death} \(q_{n,n+1}=\lambda_n,\ q_{n,n-1}=\mu_n\), all other off-diagonal rates \(0\). Then \(v_0=\lambda_0,\ v_n=\lambda_n+\mu_n\) for \(n\ge1\), \(P_{n,n+1}=\lambda_n/(\lambda_n+\mu_n)\), \(P_{n,n-1}=\mu_n/(\lambda_n+\mu_n)\). M/M/\(s\): \(\lambda_n=\lambda\), \(\mu_n=n\mu\) for \(1\le n\le s\), \(\mu_n=s\mu\) for \(n>s\).
+
+\topic{Pure birth} \(\mu_n=0\) for all \(n\). Poisson process: \(\lambda_n=\lambda\). Yule process: \(\lambda_n=n\lambda\).
+
+\topic{Yule} Starting from one individual, \(T_i=\) time to go from \(i\) to \(i+1\), with \(T_i\sim\Exp(i\lambda)\) independent. Then
+\[
+\PP(T_1+\cdots+T_j\le t)=(1-e^{-\lambda t})^j,
+\]
+\[
+P_{1j}(t)=e^{-\lambda t}(1-e^{-\lambda t})^{j-1},
+\]
+\[
+P_{ij}(t)=\binom{j-1}{i-1}e^{-i\lambda t}(1-e^{-\lambda t})^{j-i}.
+\]
+So \(X(t)\mid X(0)=1\) is geometric on \(\{1,2,\dots\}\) with mean \(e^{\lambda t}\); with \(i\) initial individuals, \(X(t)\) is negative binomial.
+
+\topic{Simple epidemic} \(m\) people, one initially infected, each infected-susceptible pair infects at rate \(\alpha\). If \(n\) are infected: \(\lambda_n=n(m-n)\alpha,\ n=1,\dots,m-1\). If \(T=\sum_{i=1}^{m-1}T_i\) is time until all infected, then \(T_i\sim\Exp(i(m-i)\alpha)\) independent,
+\[
+\E[T]=\sum_{i=1}^{m-1}\frac{1}{i(m-i)\alpha},\qquad
+\Var(T)=\sum_{i=1}^{m-1}\frac{1}{i^2(m-i)^2\alpha^2}.
+\]
+
+\shead{Transition Equations}
+\topic{Small-time facts} \(P_{ii}(h)=1-v_ih+o(h)\), \(P_{ij}(h)=q_{ij}h+o(h)\) for \(i\ne j\). Two or more jumps in time \(h\) have probability \(o(h)\).
+
+\topic{Chapman-Kolmogorov} \(P_{ij}(t+s)=\sum_k P_{ik}(t)P_{kj}(s)\).
+
+\topic{Backward eqns} From \(P_{ij}(t+h)=\sum_k P_{ik}(h)P_{kj}(t)\):
+\[
+P'_{ij}(t)=\sum_{k\ne i}q_{ik}P_{kj}(t)-v_iP_{ij}(t).
+\]
+
+\topic{Forward eqns} From \(P_{ij}(t+h)=\sum_k P_{ik}(t)P_{kj}(h)\):
+\[
+P'_{ij}(t)=\sum_{k\ne j}P_{ik}(t)q_{kj}-v_jP_{ij}(t).
+\]
+Valid for finite-state models and all birth-death processes.
+
+\topic{Matrix form} With \(R=(r_{ij})\), \(r_{ii}=-v_i,\ r_{ij}=q_{ij}\) for \(i\ne j\):
+\[
+P'(t)=RP(t)=P(t)R.
+\]
+If \(v_i\) are bounded, \(P(t)=e^{Rt}=\sum_{n\ge0}(Rt)^n/n!\).
+
+\topic{Pure birth / BD} Pure birth:
+\[
+P'_{ii}(t)=-\lambda_iP_{ii}(t),
+\]
+\[
+P'_{ij}(t)=\lambda_{j-1}P_{i,j-1}(t)-\lambda_jP_{ij}(t)\qquad (j>i),
+\]
+so \(P_{ii}(t)=e^{-\lambda_i t}\) and
+\[
+P_{ij}(t)=\lambda_{j-1}e^{-\lambda_j t}\int_0^t e^{\lambda_j s}P_{i,j-1}(s)\,ds.
+\]
+Birth-death forward:
+\[
+P'_{i0}(t)=\mu_1P_{i1}(t)-\lambda_0P_{i0}(t),
+\]
+\[
+P'_{ij}(t)=\lambda_{j-1}P_{i,j-1}(t)+\mu_{j+1}P_{i,j+1}(t)-(\lambda_j+\mu_j)P_{ij}(t)\qquad (j\ge1).
+\]
+Pure birth backward: \(P'_{ij}(t)=\lambda_iP_{i+1,j}(t)-\lambda_iP_{ij}(t)\). Full BD backward:
+\[
+P'_{0j}(t)=\lambda_0P_{1j}(t)-\lambda_0P_{0j}(t),
+\]
+\[
+P'_{ij}(t)=\lambda_iP_{i+1,j}(t)+\mu_iP_{i-1,j}(t)-(\lambda_i+\mu_i)P_{ij}(t),\ i>0.
+\]
+
+\topic{Two-state / repair} For \(0\xrightarrow{\lambda}1,\ 1\xrightarrow{\mu}0\):
+\[
+P_{00}(t)=\frac{\mu}{\lambda+\mu}+\frac{\lambda}{\lambda+\mu}e^{-(\lambda+\mu)t},
+\]
+\[
+P_{11}(t)=\frac{\lambda}{\lambda+\mu}+\frac{\mu}{\lambda+\mu}e^{-(\lambda+\mu)t},
+\]
+\(P_{01}(t)=1-P_{00}(t)\), \(P_{10}(t)=1-P_{11}(t)\). Machine repair model is exactly this chain; if initially working, \(\PP(\text{working at }10)=P_{00}(10)\).
+
+\topic{Uniformization} If all \(v_i=v\), then \(N(t)\sim\Pois(vt)\) and
+\[
+P_{ij}(t)=\sum_{n\ge0}P^{(n)}_{ij}e^{-vt}\frac{(vt)^n}{n!},
+\]
+where \(P^{(n)}_{ij}\) are \(n\)-step probs. of the embedded DTMC. If only \(v_i\le v\), add self-jumps: \(P^*_{ij}=q_{ij}/v\) for \(i\ne j\), \(P^*_{ii}=1-v_i/v\). Then
+\[
+P_{ij}(t)=\sum_{n\ge0}(P^{*n})_{ij}e^{-vt}\frac{(vt)^n}{n!}.
+\]
+For the two-state chain choose \(v=\lambda+\mu\); both rows of \(P^*\) become \(\big(\mu/(\lambda+\mu),\lambda/(\lambda+\mu)\big)\).
+
+\shead{Stationarity / Reversibility}
+\topic{Embedded DTMC} CTMC and embedded DTMC have the same communication classes; irreducibility is the same.
+
+\topic{Steady-state law} If embedded DTMC has stationary law \(\pi\), then CTMC long-run time fractions are
+\[
+p_j=\frac{\pi_j/v_j}{\sum_i \pi_i/v_i}.
+\]
+Equivalent balance equations:
+\[
+v_jp_j=\sum_i p_iq_{ij},\qquad \sum_j p_j=1.
+\]
+Set balance: for any \(A\subseteq S\),
+\[
+\sum_{i\in A}\sum_{j\in A^c}p_iq_{ij}=
+\sum_{i\in A^c}\sum_{j\in A}p_iq_{ij}.
+\]
+If \(X(0)\sim p\), then \(\PP(X(t)=j)=\sum_i p_iP_{ij}(t)=p_j\): the CTMC is stationary.
+
+\topic{Birth-death steady state} Local balance:
+\[
+p_n\lambda_n=p_{n+1}\mu_{n+1}.
+\]
+Hence
+\[
+p_n=\frac{\lambda_{n-1}\cdots\lambda_0}{\mu_n\cdots\mu_1}p_0,\qquad
+p_0=\left(1+\sum_{n\ge1}\frac{\lambda_{n-1}\cdots\lambda_0}{\mu_n\cdots\mu_1}\right)^{-1}.
+\]
+Steady state exists iff the series is finite. M/M/1: \(p_n=(1-\rho)\rho^n,\ \rho=\lambda/\mu<1\).
+
+\topic{Shoe-shine steady state} Balance:
+\[
+\lambda p_0=\mu_2p_2,\qquad \mu_1p_1=\lambda p_0,\qquad \mu_2p_2=\mu_1p_1.
+\]
+So
+\[
+p_0=\frac{\mu_1\mu_2}{\mu_1\mu_2+\lambda(\mu_1+\mu_2)},\quad
+p_1=\frac{\lambda\mu_2}{\mu_1\mu_2+\lambda(\mu_1+\mu_2)},
+\]
+\[
+p_2=\frac{\lambda\mu_1}{\mu_1\mu_2+\lambda(\mu_1+\mu_2)}.
+\]
+
+\topic{Repairman shop} \(n=\) machines down among \(M\). \(\lambda_n=(M-n)\lambda\) for \(0\le n\le M\), \(\mu_n=\mu\) for \(n\ge1\). Then
+\[
+p_0=\left(1+\sum_{k=1}^M\Big(\frac{\lambda}{\mu}\Big)^k\frac{M!}{(M-k)!}\right)^{-1},
+\]
+\[
+p_n=\Big(\frac{\lambda}{\mu}\Big)^n\frac{M!}{(M-n)!}p_0,\quad 1\le n\le M.
+\]
+Average no. down \(=\sum_{n=0}^Mn p_n\); long-run fraction a tagged machine works \(=\sum_{n=0}^M \frac{M-n}{M}p_n\).
+
+\topic{Time reversal} Start CTMC in steady state \(p\). Reverse process is also a CTMC; holding rate in \(i\) is still \(v_i\). If \(\pi\) is stationary for the embedded DTMC, reverse embedded chain has
+\[
+P^*_{ij}=\frac{\pi_jP_{ji}}{\pi_i},\qquad q^*_{ij}=v_iP^*_{ij}.
+\]
+Using \(p_i\propto \pi_i/v_i\), \(p_iq^*_{ij}=p_jq_{ji}\).
+
+\topic{Detailed balance} CTMC is time reversible iff \(q^*_{ij}=q_{ij}\), equivalently
+\[
+p_iq_{ij}=p_jq_{ji}\qquad \forall i,j.
+\]
+This implies stationarity. Birth-death chains are reversible because \(p_n\lambda_n=p_{n+1}\mu_{n+1}\). More generally, if nonnegative \(x_j\) satisfy \(\sum_jx_j=1\) and \(x_iq_{ij}=x_jq_{ji}\) for all \(i,j\), then \(x\) is stationary and the chain is reversible.
+
+\topic{Truncation} If a reversible CTMC on \(S\) is truncated to irreducible \(A\subseteq S\) by deleting transitions from \(A\) to \(A^c\), it stays reversible with
+\[
+p_j^{(A)}=\frac{p_j}{\sum_{k\in A}p_k},\qquad j\in A.
+\]
+Hence M/M/1/\(N\):
+\[
+p_n=\frac{\rho^n}{\sum_{k=0}^N\rho^k}=
+\frac{(1-\rho)\rho^n}{1-\rho^{N+1}},\quad n=0,\dots,N.
+\]
+
+\topic{Recurrence} \(Y(t)=\inf\{s>0:X(t+s)\ne X(t)\}\) is residual holding time. Return time after leaving \(j\):
+\[
+S_{jj}=\inf\{t\ge0:t>Y(0),\ X(t)=j\}.
+\]
+State \(j\) is recurrent if \(\PP(S_{jj}<\infty)=1\), positive recurrent if \(\E[S_{jj}]<\infty\), null recurrent if \(\E[S_{jj}]=\infty\).
+
+\topic{No periodicity} \(P_{ii}(t)\ge e^{-v_it}>0\) for every \(t>0\), so CTMCs have no period. Embedded DTMC may be periodic (e.g.\ M/M/\(s\) has period \(2\)).
+
+\topic{CTMC vs embedded} Irreducible CTMC is recurrent iff embedded DTMC is recurrent. But positive/null recurrence can differ. If \(\pi>0\) solves \(\pi=\pi P\), then
+\[
+\E[S_{jj}]=\frac{1}{\pi_j}\sum_i\frac{\pi_i}{v_i}.
+\]
+Thus CTMC is positive recurrent iff \(\sum_i\pi_i/v_i<\infty\), null recurrent iff the sum diverges. Embedded DTMC is positive recurrent iff \(\sum_i\pi_i<\infty\). Hence a recurrent CTMC and its embedded DTMC need not share positive/null recurrence. Example from the notes: a reflected simple random walk embedded chain can be null recurrent while sufficiently fast state-dependent holding rates make the CTMC positive recurrent.
+
+\shead{Queueing Basics}
+\topic{Notation + metrics} \(T_j=t_{j+1}-t_j,\ S_j=\) service, \(D_j=\) queue delay, \(W_j=D_j+S_j\), \(N(t)=\sum_{j\ge1}\mathbf 1\{t_j\le t<t_j+W_j\}=N_q(t)+N_s(t)\), \(\Lambda(t)=\) arrivals by \(t\), \(\Omega(t)=\Lambda(t)-N(t)\). Long-run metrics: \(\lambda=\lim_{t\to\infty}\Lambda(t)/t\), \(L=\lim_{t\to\infty}t^{-1}\int_0^tN(u)\,du\), \(Q=\lim_{t\to\infty}t^{-1}\int_0^tN_q(u)\,du\), \(L_s=\lim_{t\to\infty}t^{-1}\int_0^tN_s(u)\,du\), \(w=\lim_{n\to\infty}n^{-1}\sum_{j=1}^nW_j\), \(d=\lim_{n\to\infty}n^{-1}\sum_{j=1}^nD_j\), \(1/\mu=\lim_{n\to\infty}n^{-1}\sum_{j=1}^nS_j\).
+
+\topic{Little + PASTA} \(\int_0^tN(u)\,du=\sum_{j=1}^{\Lambda(t)}W_j+R(t)\) with \(R(t)/t\to0\), so \(L=\lambda w,\ Q=\lambda d,\ L_s=\lambda/\mu\). School example: \(L=30\times6=180\). M/G/\(\infty\): \(N(t)\sim\Pois(\lambda\int_0^t\bar G(u)\,du)\), so \(L=\lambda/\mu,\ w=1/\mu\). For Poisson arrivals, \(\PP(X(t)\in B\mid\text{arrival at }t)=\PP(X(t)\in B)\), so arrivals see time averages; not true in general for non-Poisson input.
+
+\shead{M/M/1 Family}
+\topic{M/M/1} Stable iff \(\rho=\lambda/\mu<1\). Then \(p_n=(1-\rho)\rho^n\), \(L=\rho/(1-\rho)\), \(Q=\rho^2/(1-\rho)\), \(L_s=\rho\), \(w=1/(\mu-\lambda)\), \(d=\lambda/[\mu(\mu-\lambda)]\); if \(\rho\ge1\), queue is unstable. Given \(N_a=n\), \(W\mid N_a=n\sim\text{Erlang}(n+1,\mu)\); by PASTA, \(\E[e^{sW}]=\sum_{n\ge0}(\mu/(\mu-s))^{n+1}(1-\rho)\rho^n=(\mu-\lambda)/(\mu-\lambda-s)\), hence \(W\sim\Exp(\mu-\lambda)\).
+
+\topic{Finite buffer + design} M/M/1/\(N\): \(p_n=(1-\rho)\rho^n/(1-\rho^{N+1})\), \(\lambda_s=\lambda(1-p_N)\), \(L=\rho[1-(N+1)\rho^N+N\rho^{N+1}]/[(1-\rho)(1-\rho^{N+1})]\), \(w=L/\lambda_s\), lost-sales cost rate \(=\lambda p_NC\). Design example with \(\mu_1=100,\mu_2=200,\lambda=80\), rents \(c_1=\$1000,c_2=\$1800\) per month over \(200\) hr/month and waiting cost \(\$1\)/customer-hr: total cost/hr \(=L_i+c_i/200\), giving \(\$9\)/hr for model 1 and \(\$9.67\)/hr for model 2, so choose model 1.
+
+\shead{Multi-Server Queues}
+\topic{M/M/\(m\)} \(\rho=\lambda/(m\mu)<1\), \(\lambda_n=\lambda\), \(\mu_n=n\mu\) for \(1\le n\le m\), \(\mu_n=m\mu\) for \(n\ge m+1\). Then
+\[
+p_0=\left[\sum_{n=0}^{m-1}\frac{(m\rho)^n}{n!}+\frac{(m\rho)^m}{m!(1-\rho)}\right]^{-1},
+\]
+\[
+p_n=
+\begin{cases}
+\dfrac{(m\rho)^n}{n!}p_0, & 1\le n\le m,\\[0.6ex]
+\dfrac{(m\rho)^m}{m!}\rho^{n-m}p_0, & n\ge m+1,
+\end{cases}
+\]
+\(P_Q=\frac{(m\rho)^m}{m!(1-\rho)}p_0\) (Erlang C), \(Q=\rho P_Q/(1-\rho)\), \(d=P_Q/(m\mu-\lambda)\), \(w=1/\mu+P_Q/(m\mu-\lambda)\), \(L=m\rho+\rho P_Q/(1-\rho)\). Compared with one fast M/M/1 server of rate \(m\mu\): \(\tilde w=1/(m\mu)+\tilde P_Q/(m\mu-\lambda)\); light load gives \(\tilde w\approx w/m\), heavy load gives \(\tilde w\approx w\).
+
+\topic{Loss system} M/M/\(m\)/\(m\): \(p_n=\frac{(\lambda/\mu)^n/n!}{\sum_{k=0}^m(\lambda/\mu)^k/k!}\), \(P_{\text{block}}=p_m\) (Erlang B).
+
+\shead{Networks}
+\topic{Burke + tandem} In stationary M/M/\(m\), departures are Poisson(\(\lambda\)) and independent of the past queue-length process at observation time. Hence a tandem M/M/1 with service rates \(\mu_1,\mu_2\) has \(\PP(N_1=n_1,N_2=n_2)=(1-\rho_1)\rho_1^{n_1}(1-\rho_2)\rho_2^{n_2}\), \(\rho_i=\lambda/\mu_i\), \(L=\rho_1/(1-\rho_1)+\rho_2/(1-\rho_2)\), \(w=L/\lambda\).
+
+\topic{Open Jackson} \(K\) FCFS M/M/1 nodes, external Poisson rates \(r_j\), routing \(P_{ij}\), service \(\mu_j\). Traffic equations: \(\lambda_j=r_j+\sum_{i=1}^K\lambda_iP_{ij}\). If every customer eventually exits and \(\rho_j=\lambda_j/\mu_j<1\), then \(\PP(N_1=n_1,\dots,N_K=n_K)=\prod_{j=1}^K(1-\rho_j)\rho_j^{n_j}\). State transitions: external arrival \(n\to n+e_j\) at \(r_j\); service completion leaving network \(n\to n-e_j\) at \(\mu_j(1-\sum_iP_{ji})\); routing \(j\to i\): \(n\to n-e_j+e_i\) at \(\mu_jP_{ji}\). Internal arrivals need not be Poisson; feedback can make them bursty.
+
+\topic{CPU + I/O open net} \(\lambda_1=\lambda+\lambda_2,\ \lambda_2=p_2\lambda_1\Rightarrow \lambda_1=\lambda/p_1,\ \lambda_2=\lambda p_2/p_1\), where \(p_1=1-p_2\). Then \(\rho_j=\lambda_j/\mu_j,\ L_j=\rho_j/(1-\rho_j),\ L=L_1+L_2,\ w=L/\lambda\). Total service demands per job: \(S_1=1/(\mu_1p_1)\), \(S_2=p_2/(\mu_2p_1)\); hence \(\rho_1=\lambda S_1,\ \rho_2=\lambda S_2,\ w=1/(S_1^{-1}-\lambda)+1/(S_2^{-1}-\lambda)\).
+
+\topic{Closed Jackson / Gordon-Newell} \(M\) jobs circulate among \(K\) nodes with \(\sum_jP_{ij}=1\). Flow equations: \(\lambda_j=\sum_{i=1}^K\lambda_iP_{ij}\), solution unique up to scale if routing DTMC is irreducible. For any positive solution set \(\rho_j=\lambda_j/\mu_j\), \(G(M)=\sum_{n_1+\cdots+n_K=M}\rho_1^{n_1}\cdots\rho_K^{n_K}\), and \(\PP(N_1=n_1,\dots,N_K=n_K)=\rho_1^{n_1}\cdots\rho_K^{n_K}/G(M)\).
+
+\topic{Closed examples} CPU-I/O closed net with \(M\) jobs: choose \(\lambda_1=\mu_1,\ \lambda_2=p_2\mu_1\), so \(\rho_1=1,\ \rho_2=p_2\mu_1/\mu_2\), \(P(M-n,n)=\rho_2^n/G(M)\), \(U_{\text{CPU}}(M)=1-P(0,M)=G(M-1)/G(M)\). Lecture 3-node example with \(M=2,\ \mu=(1,2,3)\): \(\rho=(1,1/6,2/9)\), \(G(2)=1.5031\), \(\E[N_1]=1.589,\ U_1=0.924\).
+
+\shead{Standard Qs}
+\qa{Q1. Build the generator from the description:}{if holding rate in \(i\) is \(v_i\) and next-state probs. are \(P_{ij}\), then \(q_{ij}=v_iP_{ij}\), \(r_{ii}=-\sum_{j\ne i}q_{ij}\).}
+\qa{Q2. Solve a two-state CTMC transiently:}{write one ODE \(P'_{00}(t)=\mu-(\lambda+\mu)P_{00}(t)\), use \(P_{00}(0)=1\), then \(P_{00}(t)=\mu/(\lambda+\mu)+[\lambda/(\lambda+\mu)]e^{-(\lambda+\mu)t}\).}
+\qa{Q3. Find CTMC steady state:}{solve \(pR=0,\ \sum_jp_j=1\); for birth-death chains use local balance \(p_{n+1}=p_n\lambda_n/\mu_{n+1}\), then normalize.}
+\qa{Q4. Test reversibility:}{check detailed balance \(p_iq_{ij}=p_jq_{ji}\). Birth-death chains always satisfy it via \(p_n\lambda_n=p_{n+1}\mu_{n+1}\).}
+\qa{Q5. M/M/1 numerical question:}{compute \(\rho=\lambda/\mu\); if \(\rho<1\), use \(p_n=(1-\rho)\rho^n,\ L=\rho/(1-\rho),\ w=1/(\mu-\lambda),\ Q=\rho^2/(1-\rho),\ d=Q/\lambda\).}
+\qa{Q6. Find the waiting-time distribution in M/M/1:}{PASTA gives \(N_a\sim\text{Geom}(1-\rho)\); sum of \(N_a+1\) exp.\(\mu\) services gives \(W\sim\Exp(\mu-\lambda)\).}
+\qa{Q7. Blocking / loss questions:}{M/M/1/\(N\): \(P_{\text{block}}=p_N,\ \lambda_s=\lambda(1-p_N),\ w=L/\lambda_s\). M/M/\(m\)/\(m\): use Erlang B \(=p_m\). M/M/\(m\) waiting probability: use Erlang C \(P_Q\).}
+\qa{Q8. Jackson-network question:}{open net: solve traffic equations, set \(\rho_j=\lambda_j/\mu_j\), then product form \(\prod_j(1-\rho_j)\rho_j^{n_j}\). Closed net: solve visit ratios up to scale, form \(G(M)\), then \(P(n)=\prod_j\rho_j^{n_j}/G(M)\), utilization \(U_i=1-\PP(N_i=0)\).}
+\qa{Q9. Uniformization question:}{pick \(v\ge\sup_i v_i\), build \(P^*_{ij}=q_{ij}/v\) for \(i\ne j\), \(P^*_{ii}=1-v_i/v\), then \(P_{ij}(t)=\sum_{n\ge0}(P^{*n})_{ij}e^{-vt}(vt)^n/n!\).}
+\qa{Q10. Yule / epidemic question:}{write the pure-birth rates first. Yule: \(\lambda_n=n\lambda\Rightarrow P_{1j}(t)=e^{-\lambda t}(1-e^{-\lambda t})^{j-1}\). Epidemic: \(\lambda_n=n(m-n)\alpha\Rightarrow T=\sum T_i\) with \(T_i\sim\Exp(i(m-i)\alpha)\), so moments add.}
+\qa{Q11. Burke/tandem question:}{use reversibility of M/M/\(m\) to get Poisson departures; feed those as Poisson arrivals into the next queue; then apply M/M/1 or M/M/\(m\) steady-state formulas nodewise.}
+\qa{Q12. Closed-network utilization question:}{after getting \(P(n)\propto\prod_j\rho_j^{n_j}\), compute utilization of node \(i\) by \(U_i=1-\PP(N_i=0)\); for the 2-node closed CPU-I/O system, \(U_{\text{CPU}}(M)=G(M-1)/G(M)\).}
+\qa{Q13. Positive vs null recurrence question:}{first solve \(\pi=\pi P\) for the embedded chain; then CTMC classification depends on \(\sum_i\pi_i/v_i\), not just on \(\sum_i\pi_i\).}
+\qa{Q14. Queue design/comparison question:}{compute the relevant performance metric first: M/M/1 uses \(w=1/(\mu-\lambda)\), M/M/\(m\) uses Erlang C, finite-buffer systems use served rate \(\lambda_s\); then convert waiting or blocking to cost.}
+\qa{Q15. Show CTMC and embedded DTMC have same communication classes:}{show \(i\to j\) in CTMC iff there is a positive-probability path from \(i\) to \(j\) in the embedded DTMC.}
+\qa{Q16. Why is there no periodicity in CTMCs?}{use \(P_{ii}(t)\ge e^{-v_it}>0\) for every \(t>0\), so returns are not confined to multiples of a base step.}
+\qa{Q17. Steady state of shoe-shine or tandem serial service model:}{write balance equations along the directed cycle and normalize.}
+\qa{Q18. Show M/M/1/\(N\) is truncated M/M/1:}{start from reversible M/M/1, truncate to \(\{0,\dots,N\}\), then renormalize \(p_n\propto \rho^n\).}
+\qa{Q19. Compare CTMC and embedded-chain recurrence classes:}{recurrence/transience is the same; positive/null recurrence can differ because CTMC also depends on holding rates \(v_i\).}
+\qa{Q20. Find expected time to complete epidemic / cascade:}{decompose into independent stage times \(T=\sum_iT_i\) and add means; if needed, add variances too.}
+\qa{Q21. Multi-server design question:}{compute \(P_Q\) by Erlang C, then compare \(w=1/\mu+P_Q/(m\mu-\lambda)\) across candidate \(m,\mu\) values or against a fast single server.}
+\qa{Q22. Closed-network normalization with small \(M\):}{enumerate all states with total population \(M\), compute \(G(M)\), then \(P(n)=\prod_j\rho_j^{n_j}/G(M)\).}
+\qa{Q23. Check stability quickly:}{M/M/1 stable iff \(\lambda<\mu\); M/M/\(m\) stable iff \(\lambda<m\mu\); open Jackson stable iff every \(\rho_j<1\).}
+\qa{Q24. Find utilization of a server/queue:}{for single server \(U=L_s=\lambda/\mu\); for closed networks use \(U_i=1-\PP(N_i=0)\).}
+\qa{Q25. Throughput / carried load question:}{finite buffer gives throughput \(\lambda_s=\lambda(1-p_N)\); loss system carried traffic \(=\lambda(1-p_m)\).}
+\qa{Q26. Use set balance on a subset \(A\):}{write \(\sum_{i\in A,j\in A^c}p_iq_{ij}=\sum_{i\in A^c,j\in A}p_iq_{ij}\); for birth-death choose \(A=\{0,\dots,n\}\).}
+\qa{Q27. Show truncation keeps reversibility:}{start with \(p_iq_{ij}=p_jq_{ji}\) on full chain; inside \(A\) rates stay same, so normalized \(p_i^{(A)}\propto p_i\) still satisfy detailed balance.}
+\qa{Q28. Arrival sees \(n\) customers, find waiting law:}{conditional law is sum of remaining service times; in M/M/1 that is Erlang\((n+1,\mu)\), then mix over \(N_a\).}
+\qa{Q29. Open-network arrivals to node \(j\):}{always solve traffic equations before anything else; external rates alone are not total rates if routing/feedback exists.}
+\qa{Q30. Time-reversibility question:}{first guess \(p\), then verify \(p_iq_{ij}=p_jq_{ji}\); if true, \(p\) is stationary and reverse chain equals forward chain.}
+
+\shead{If Asked, Use}
+\qa{Transient probability in CTMC:}{use Kolmogorov forward/backward equations; for 2-state directly use \(P'_{00}(t)=\mu-(\lambda+\mu)P_{00}(t)\).}
+\qa{Steady-state / long-run proportion:}{use \(pR=0,\ \sum_jp_j=1\); for birth-death use \(p_n\lambda_n=p_{n+1}\mu_{n+1}\) first.}
+\qa{Time spent in a state / holding time:}{use \(\tau_i\sim\Exp(v_i)\), mean \(1/v_i\), memoryless property.}
+\qa{Probability of jumping from \(i\) to \(j\):}{use \(q_{ij}=v_iP_{ij}\), so \(P_{ij}=q_{ij}/v_i\).}
+\qa{Question says ``rate matrix'' or ``generator'':}{fill off-diagonals with \(q_{ij}\), diagonal with \(r_{ii}=-\sum_{j\ne i}q_{ij}\).}
+\qa{Birth-death stationary distribution:}{write \(p_{n+1}=p_n\lambda_n/\mu_{n+1}\), expand recursively from \(p_0\), then normalize.}
+\qa{Need reversibility / detailed balance:}{check \(p_iq_{ij}=p_jq_{ji}\); for birth-death this reduces to adjacent-state balance only.}
+\qa{Question about recurrence type of CTMC:}{first solve embedded-chain \(\pi=\pi P\), then test \(\sum_i\pi_i/v_i\): finite means positive recurrent, infinite means null recurrent.}
+\qa{Question asks what arrivals see:}{if arrivals are Poisson, use PASTA; arrival-seen distribution equals time-average distribution.}
+\qa{Question asks average waiting from average number:}{use Little's law \(L=\lambda w,\ Q=\lambda d,\ L_s=\lambda/\mu\).}
+\qa{M/M/1 average measures:}{compute \(\rho=\lambda/\mu\), then use \(L=\rho/(1-\rho)\), \(Q=\rho^2/(1-\rho)\), \(w=1/(\mu-\lambda)\), \(d=Q/\lambda\).}
+\qa{M/M/1 waiting-time distribution:}{use \(W\sim\Exp(\mu-\lambda)\), derived via PASTA + geometric \(N_a\).}
+\qa{Finite-capacity queue / blocking:}{M/M/1/\(N\): blocking \(=p_N\), served rate \(\lambda_s=\lambda(1-p_N)\), then \(w=L/\lambda_s\).}
+\qa{Many-server queue with waiting:}{use Erlang C \(P_Q=\frac{(m\rho)^m}{m!(1-\rho)}p_0\), then \(d=P_Q/(m\mu-\lambda)\), \(w=1/\mu+d\).}
+\qa{Many-server loss system:}{use Erlang B \(P_{\text{block}}=p_m\) for M/M/\(m\)/\(m\).}
+\qa{Open Jackson network:}{solve traffic equations \(\lambda_j=r_j+\sum_i\lambda_iP_{ij}\), compute \(\rho_j=\lambda_j/\mu_j\), then use product form.}
+\qa{Closed Jackson/Gordon-Newell network:}{solve visit ratios up to scale, define \(\rho_j=\lambda_j/\mu_j\), form \(G(M)\), then \(P(n)=\prod_j\rho_j^{n_j}/G(M)\).}
+\qa{CPU-I/O service-demand question:}{convert repeated visits into total demands \(S_1,S_2\), then use \(w=\sum_k 1/(S_k^{-1}-\lambda)\).}
+\qa{Burke / tandem queues:}{departure of stationary M/M/\(m\) is Poisson(\(\lambda\)); use that as arrival to downstream queue.}
+\qa{Uniformization / compute \(P_{ij}(t)\):}{pick \(v\ge\sup_i v_i\), build \(P^*\), then sum \(\sum_{n\ge0}(P^{*n})_{ij}e^{-vt}(vt)^n/n!\).}
+\qa{Pure-birth/Yule question:}{identify \(\lambda_n\); if Yule, directly use \(P_{1j}(t)=e^{-\lambda t}(1-e^{-\lambda t})^{j-1}\) and NB form for \(i\to j\).}
+\qa{Epidemic completion-time moments:}{write \(T=\sum_iT_i\) with independent exponentials, then add means and variances.}
+\qa{Cost comparison question:}{first decide whether the real metric is \(L,w,d,P_Q\), or \(P_{\text{block}}\); only then multiply by waiting/loss/rental cost.}
+
+\shead{Direct Formulas}
+\qa{2-state CTMC:}{\(P_{01}(t)=\frac{\lambda}{\lambda+\mu}(1-e^{-(\lambda+\mu)t}),\ P_{10}(t)=\frac{\mu}{\lambda+\mu}(1-e^{-(\lambda+\mu)t})\).}
+\qa{Birth-death steady state:}{\(p_n=\frac{\lambda_{n-1}\cdots\lambda_0}{\mu_n\cdots\mu_1}p_0,\ p_0=\Big(1+\sum_{n\ge1}\frac{\lambda_{n-1}\cdots\lambda_0}{\mu_n\cdots\mu_1}\Big)^{-1}\).}
+\qa{Yule / epidemic:}{\(P_{1j}(t)=e^{-\lambda t}(1-e^{-\lambda t})^{j-1},\ P_{ij}(t)=\binom{j-1}{i-1}e^{-i\lambda t}(1-e^{-\lambda t})^{j-i}\); \(\E[T_{\text{epi}}]=\sum_{i=1}^{m-1}\frac{1}{i(m-i)\alpha}\).}
+\qa{M/M/1 direct:}{\(p_n=(1-\rho)\rho^n,\ L=\frac{\rho}{1-\rho},\ Q=\frac{\rho^2}{1-\rho},\ w=\frac1{\mu-\lambda},\ d=\frac{Q}{\lambda}\).}
+\qa{M/M/1/\(N\) direct:}{\(p_n=\frac{(1-\rho)\rho^n}{1-\rho^{N+1}},\ \lambda_s=\lambda(1-p_N),\ w=\frac{L}{\lambda_s},\ P_{\text{block}}=p_N\).}
+\qa{M/M/\(m\) direct:}{\(P_Q=\frac{(m\rho)^m}{m!(1-\rho)}p_0,\ d=\frac{P_Q}{m\mu-\lambda},\ w=\frac1\mu+\frac{P_Q}{m\mu-\lambda},\ L=m\rho+\frac{\rho P_Q}{1-\rho}\).}
+\qa{Loss / Jackson direct:}{M/M/\(m\)/\(m\): \(P_{\text{block}}=p_m\); open Jackson: \(P(n)=\prod_j(1-\rho_j)\rho_j^{n_j}\); closed Jackson: \(P(n)=\prod_j\rho_j^{n_j}/G(M)\).}
+
+\shead{Proof Sketches}
+\pfq{Pf1. Why is the holding time exponential?}{If chain entered \(i\) at \(0\), then \(\PP(\tau_i>s+t\mid \tau_i>s)=\PP(X(s+u)=i,\ 0\le u\le t\mid X(s)=i)=\PP(\tau_i>t)\) by Markov property, so \(\tau_i\) is memoryless, hence exponential.}
+\pfq{Pf2. Why are sojourn time and next state independent?}{If next state depended on elapsed time in \(i\), then knowing how long we have already waited would change the law of the future jump destination, contradicting the Markov property.}
+\pfq{Pf3. Chapman-Kolmogorov proof:}{condition on \(X(t)=k\): \(P_{ij}(t+s)=\sum_k\PP(X(t+s)=j\mid X(t)=k,X(0)=i)\PP(X(t)=k\mid X(0)=i)=\sum_kP_{ik}(t)P_{kj}(s)\).}
+\pfq{Pf4. Backward equations proof:}{start with \(P_{ij}(t+h)=\sum_kP_{ik}(h)P_{kj}(t)\), subtract \(P_{ij}(t)\), divide by \(h\), use \(P_{ii}(h)=1-v_ih+o(h)\), \(P_{ik}(h)=q_{ik}h+o(h)\).}
+\pfq{Pf5. Forward equations proof:}{start with \(P_{ij}(t+h)=\sum_kP_{ik}(t)P_{kj}(h)\), then use the same short-time expansions on the \(P_{kj}(h)\) terms.}
+\pfq{Pf6. Birth-death stationary distribution proof:}{use set balance on \(A=\{0,\dots,n\}\), giving only one boundary crossing: \(p_n\lambda_n=p_{n+1}\mu_{n+1}\). Iterate this recursion from \(p_0\), then normalize.}
+\pfq{Pf7. Detailed balance \(\Rightarrow\) stationarity:}{sum \(p_iq_{ij}=p_jq_{ji}\) over \(i\) to get \(\sum_i p_iq_{ij}=p_j\sum_i q_{ji}=p_jv_j\), which is exactly the balance equation.}
+\pfq{Pf8. Little's law proof skeleton:}{area under \(N(t)\) over \([0,T]\) equals total customer-time in system, i.e. \(\int_0^TN(u)\,du=\sum_{j=1}^{\Lambda(T)}W_j+R(T)\). Divide by \(T\), let \(T\to\infty\), and use \(R(T)/T\to0\).}
+\pfq{Pf9. PASTA proof skeleton:}{for small \(\delta\), condition on exactly one Poisson arrival in \((t,t+\delta]\); by independent increments, that future increment is independent of \(X(t)\). Let \(\delta\downarrow0\).}
+\pfq{Pf10. Burke's theorem idea:}{reverse stationary M/M/\(m\). By reversibility, reverse chain has same law as forward chain. Forward departures become reverse arrivals, and reverse arrivals are Poisson(\(\lambda\)); hence forward departures are Poisson(\(\lambda\)).}
+
+\end{multicols*}
+\end{document}

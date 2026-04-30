@@ -1,0 +1,705 @@
+\documentclass[8pt]{extarticle}
+\usepackage[a4paper,portrait,margin=0.28in]{geometry}
+\usepackage{multicol}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs,array,tabularx}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\microtypesetup{expansion=false}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1pt}
+\setlength{\columnsep}{0.14in}
+\setlength{\columnseprule}{0.15pt}
+\raggedright
+\raggedcolumns
+\pagenumbering{gobble}
+
+\definecolor{head}{RGB}{0,72,128}
+\definecolor{sub}{RGB}{90,35,110}
+\definecolor{boxc}{RGB}{245,248,252}
+\titleformat{\section}{\color{head}\bfseries\small}{\thesection}{0.25em}{}
+\titleformat{\subsection}{\color{sub}\bfseries\scriptsize}{\thesubsection}{0.25em}{}
+\titlespacing*{\section}{0pt}{3pt}{1pt}
+\titlespacing*{\subsection}{0pt}{2pt}{0pt}
+\setlist[itemize]{leftmargin=*,nosep,itemsep=0pt,topsep=0pt}
+\setlist[enumerate]{leftmargin=*,nosep,itemsep=0pt,topsep=0pt}
+\newcommand{\term}[1]{\textbf{#1}}
+\newcommand{\bits}{\{0,1\}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\G}{\mathbb{G}}
+\newcommand{\Hash}{\mathsf{H}}
+\newcommand{\Keccak}{\mathsf{Keccak256}}
+\newcommand{\sha}{\mathsf{SHA256}}
+\newcommand{\sighash}{\mathsf{SIGHASH}}
+\newcommand{\enc}{\mathsf{Enc}}
+\newcommand{\dec}{\mathsf{Dec}}
+\newcommand{\gen}{\mathsf{Gen}}
+\newcommand{\mac}{\mathsf{Mac}}
+\newcommand{\vrfy}{\mathsf{Vrfy}}
+\newcommand{\adv}{\mathcal{A}}
+\newcommand{\negl}{\mathsf{negl}}
+\newcommand{\concat}{\mathbin\Vert}
+\newcommand{\minihead}[1]{\textcolor{head}{\textbf{#1}}}
+\newcommand{\tightbox}[1]{\colorbox{boxc}{\parbox{0.985\linewidth}{#1}}}
+
+\begin{document}
+\scriptsize
+\begin{multicols*}{3}
+
+\begin{center}
+{\Large\bfseries EE465 Endsem Cheatsheet}\\[-1pt]
+{\footnotesize Sources covered: syllabus PDFs in \texttt{ee465}, excluding \texttt{Introduction\_to\_Modern\_Cryptography.pdf} per instruction: Bitcoin intro/tx/ECC/mining, hash/group theory, blockchain notes, Ethereum intro/data/tx/EVM/blocks/PoS, Solidity, JavaScript/Node, Tornado Cash, circom, Monero, Tendermint, consensus, quiz sheet.}
+\end{center}
+
+\section{Quick Find and Exam Moves}
+\tightbox{\term{Find fast}: EC formulas $\to$ Group Theory and Bitcoin ECC; ECDSA nonce/recovery $\to$ ECC + Worked Examples; RLP/HP/MPT $\to$ Ethereum Encoding; gas/tx types $\to$ Quick Tables; Solidity bugs $\to$ Solidity + Exam Templates; Tornado/Groth16 $\to$ Tornado Cash and zk; circom/R1CS $\to$ circom and R1CS; Monero/LSAG/Pedersen/range proofs $\to$ Monero; Dolev-Strong/FLP/FLM $\to$ Consensus; Tendermint phases $\to$ Tendermint; Casper/BLS/LMD-GHOST $\to$ Ethereum PoS.}
+
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Question verb & Fast response pattern\\
+\midrule
+Compute & write formula, substitute numbers, reduce mod/bytes/gas each step\\
+Trace & list state before, message/vote/action, state after, stopping condition\\
+Prove/show & identify invariant, quorum intersection or hardness assumption, contradiction\\
+Design & state inputs/outputs, constraints/checks, edge cases, gas/security note\\
+Spot bug & name vulnerability, attack path, violated invariant, minimal fix\\
+\bottomrule
+\end{tabularx}
+
+\section{Bitcoin Basics}
+\subsection{What Bitcoin Solves}
+Bitcoin = open-source cryptocurrency + decentralized network. Problems: counterfeiting, money creation rules, and double spending. Nodes verify; miners assemble blocks and do PoW; wallets hold keys; merchants wait for confirmations.
+
+\term{Workflow}: Bob gives address out-of-band; Alice constructs transaction; broadcasts to P2P network; miners include in candidate block; once mined, confirmations accumulate as blocks build on top.
+
+\term{UTXO model}: transaction consumes old unspent outputs and creates new outputs. Inputs reference $(\mathrm{txid},vout)$ and provide unlocking data; outputs specify amount and locking script. Validity: referenced UTXOs exist, signatures/scripts pass, no double spend, sum inputs $\ge$ sum outputs; fee = input sum - output sum.
+
+\subsection{Keys, Addresses, Blocks}
+Bitcoin private key $d\in[1,n-1]$ for secp256k1; public key $Q=dG$. Address derivation: compressed/uncompressed public key $\to \sha256 \to \mathsf{RIPEMD160}$ = HASH160, add version byte, checksum = first 4 bytes of SHA256d, Base58Check encode. SegWit uses Bech32.
+
+\term{Block header fields}: \texttt{nVersion} 4B, \texttt{hashPrevBlock} 32B, \texttt{hashMerkleRoot} 32B, \texttt{nTime} 4B, \texttt{nBits} 4B target encoding, \texttt{nNonce} 4B. Block hash = double SHA-256 of header. Merkle tree hashes txids pairwise; duplicate last hash if odd. Hash pointer chain gives tamper evidence.
+
+\term{Genesis block}: first block hardcoded; embeds newspaper headline as timestamp/proof of no pre-mine style. \term{SPV}: light clients verify block headers + Merkle inclusion proof, not all scripts/state; trust longest/heaviest valid-header chain assumption.
+
+\subsection{P2P and Chain Selection}
+Node discovery via DNS seeds, peer exchange, address messages. Transactions propagate through mempool gossip; nodes check policy/consensus. Blocks propagate after PoW; stale/orphan blocks arise from latency. Bitcoin follows most accumulated work, not simply block count. 51\% attacker can reorganize recent history, double-spend own txs, censor temporarily; cannot forge signatures or spend others' coins.
+
+\section{Hash Functions and Mining}
+\subsection{SHA-256}
+SHA-256 accepts messages length $<2^{64}$ bits, outputs 256 bits. Padding: append 1 bit, zeros until length $\equiv448\bmod512$, append 64-bit length. Split into 512-bit blocks; compression uses message schedule $W_0,\dots,W_{63}$, working words $a,\dots,h$, constants, rotations/shifts, functions Ch, Maj, $\Sigma_0,\Sigma_1,\sigma_0,\sigma_1$. Avalanche: small input change changes output unpredictably. Bitcoin uses SHA256d to avoid length-extension issues and for conservative design.
+
+\subsection{Proof of Work}
+Valid block if $\operatorname{SHA256d}(\mathrm{header}) < T$. Difficulty $D=T_1/T$ where $T_1$ is max target. Expected hashes per valid block $\approx 2^{256}/T = D\cdot 2^{32}$ under Bitcoin convention. Difficulty retarget every 2016 blocks toward 10 min/block, bounded by protocol adjustment rules.
+
+\term{Nonce exhaustion}: 4-byte \texttt{nNonce} gives $2^{32}$ tries; miners vary extranonce in coinbase, hence Merkle root. Can vary timestamp within rules; version bits signal soft forks, so should not freely abuse. \texttt{nTime} must exceed median of previous 11 blocks and not exceed network-adjusted time by more than 2h.
+
+\term{Mining pools}: miners search shares at easier target; pool pays proportional/PPS/PPLNS. Pool centralization risks censorship and majority concentration. \term{Selfish mining}: strategic withholding can earn disproportionate revenue above threshold depending on network advantage $\gamma$. \term{Mempool lifecycle}: broadcast, validation, fee-rate ordering, eviction, replacement rules, mined or dropped. \term{Lightning}: payment channels use funding tx, commitment txs, HTLCs, revocation penalties for fast off-chain payments.
+
+\subsection{AsicBoost}
+Bitcoin header is 80 bytes, so SHA-256 processes two 64-byte chunks. Chunk 1: \texttt{nVersion} + \texttt{hashPrevBlock} + first 32 bytes Merkle root. Chunk 2: last 4 bytes Merkle root + \texttt{nTime} + \texttt{nBits} + \texttt{nNonce}. Key insight: message schedule/internal $W_j$ calculation is independent of previous compression state $H^{(i-1)}$. If two Merkle roots share same last 4 bytes, chunk 2 is identical and miners can reuse computation. Result: about 20\% speedup. Proposed by Timo Hanke and Sergio Demian Lerner.
+
+\section{Group Theory}
+\subsection{Groups, Cyclic Groups, Fields}
+Group $(G,\star)$: closed, associative, identity $e$, inverse for every element. Abelian if $a\star b=b\star a$. Finite group order = $|G|$. Cyclic group: some generator $g$ produces all elements $\{g,g^2,g^3,\ldots\}$ (or additive multiples). $\Z_n=\{0,\ldots,n-1\}$ under addition mod $n$ is cyclic with generator 1. $\Z_n^*=\{i\in\Z_n\setminus\{0\}:\gcd(i,n)=1\}$ under multiplication mod $n$ is a group.
+
+\term{Discrete log}: in cyclic group $\langle g\rangle$, given $h=g^x$, find $x$. Easy to compute $g^x$, hard to invert in selected groups. Finite field: set with addition/multiplication where nonzero elements form multiplicative group; $\F_p=\Z_p$ for prime $p$. Modular inverse exists iff $\gcd(a,n)=1$; compute by extended Euclidean algorithm. Fermat: $a^{p-1}\equiv1\pmod p$ for $p\nmid a$. Lagrange: subgroup order divides group order; element order divides $|G|$. Quadratic residue mod prime $p$: $a=x^2\bmod p$; Euler criterion $a^{(p-1)/2}\equiv 1$ for residue and $-1$ for non-residue.
+
+\section{Group Theory and Bitcoin ECC}
+\subsection{Elliptic Curves}
+Curve over field: $E: y^2=x^3+ax+b$ with $4a^3+27b^2\ne0$ plus point at infinity $\mathcal{O}$. Over $\F_p$ use modular arithmetic. Inverse of $(x,y)$ is $(x,-y)$. Identity $\mathcal{O}$. Point addition for $P=(x_1,y_1)$, $Q=(x_2,y_2)$:
+\[
+\lambda=\frac{y_2-y_1}{x_2-x_1},\quad x_3=\lambda^2-x_1-x_2,\quad y_3=\lambda(x_1-x_3)-y_1.
+\]
+Doubling:
+\[
+\lambda=\frac{3x_1^2+a}{2y_1},\quad x_3=\lambda^2-2x_1,\quad y_3=\lambda(x_1-x_3)-y_1.
+\]
+All operations mod $p$. Scalar multiplication by double-and-add. ECDLP: given $G,Q=xG$, find $x$ hard.
+
+\subsection{secp256k1 and ECDSA}
+Bitcoin curve: $y^2=x^3+7$ over prime field $p=2^{256}-2^{32}-977$. Generator $G$, order
+$n=\texttt{FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFE BAAEDCE6 AF48A03B BFD25E8C D0364141}_{16}$. Cofactor 1.
+
+Keygen: private $d\in_R[1,n-1]$, public $Q=dG$. \term{ECDSA sign}: $z=H(m)$, choose fresh secret nonce $k$, $R=kG$, $r=R_x\bmod n$, $s=k^{-1}(z+rd)\bmod n$. Signature $(r,s)$. Never reuse $k$: $d=(sk-z)r^{-1}$; two signatures reveal $k$ and $d$. Low-$s$ normalization prevents malleability.
+
+\term{Verify}: reject invalid ranges; $w=s^{-1}$, $u_1=zw$, $u_2=rw$, $X=u_1G+u_2Q$; accept if $X_x\bmod n=r$. \term{Schnorr/Taproot}: linear signatures enable key aggregation and simpler non-malleability; Taproot combines Schnorr + Merkle script paths.
+
+\tightbox{\term{ECDSA recovery}: recID 0: $x=r$, even $y$; 1: $x=r$, odd $y$; 2: $x=r+n$, even $y$; 3: $x=r+n$, odd $y$. Ethereum pre-Spurious Dragon $v=27/28$; post-EIP-155 $v=2\cdot\text{chainId}+35$ or $36$.}
+
+\section{Bitcoin Transactions and Script}
+\subsection{Transaction Format}
+Legacy transaction: version, input count, inputs, output count, outputs, locktime. Input: previous txid, output index, scriptSig length, scriptSig, sequence. Output: value in satoshis, scriptPubKey length, scriptPubKey. Coinbase tx has special input, creates block subsidy + fees; first tx in block.
+
+\term{SegWit}: separates witness from txid calculation; fixes third-party tx malleability. Weight = base size $\times4$ + witness size; virtual bytes = weight/4. P2WPKH scriptPubKey: \texttt{0 <20-byte-keyhash>}; witness: signature, pubkey.
+
+\subsection{Script}
+Bitcoin Script is stack-based, intentionally not Turing complete. Evaluate unlocking script then locking script; spend valid if final stack top true and no failure. Common opcodes: \texttt{OP\_DUP}, \texttt{OP\_HASH160}, \texttt{OP\_EQUALVERIFY}, \texttt{OP\_CHECKSIG}, \texttt{OP\_CHECKMULTISIG}, \texttt{OP\_RETURN}, \texttt{OP\_CHECKLOCKTIMEVERIFY}, \texttt{OP\_CHECKSEQUENCEVERIFY}.
+
+\term{P2PKH}: scriptPubKey
+\[
+\texttt{OP\_DUP OP\_HASH160 <PubKeyHash> OP\_EQUALVERIFY OP\_CHECKSIG}
+\]
+scriptSig: \texttt{<Signature> <PublicKey>}. Steps: duplicate pubkey, hash, compare to keyhash, verify sig against transaction digest.
+
+\term{P2SH}: locking script \texttt{OP\_HASH160 <redeemScriptHash> OP\_EQUAL}; spender provides redeemScript and data. Lets complex scripts be hidden until spend. \term{Multisig}: \texttt{OP\_m <PK1> ... <PKn> OP\_n OP\_CHECKMULTISIG}; historical off-by-one dummy item in scriptSig. \term{Timelocks}: absolute locktime via \texttt{nLockTime}/CLTV; relative via \texttt{nSequence}/CSV.
+
+\section{Ethereum Overview}
+\subsection{Platform}
+Ethereum = blockchain for decentralized applications: code + state on chain; txs execute code, update state, emit events/logs. History: whitepaper 2013, presale 2014, launch July 30 2015, Merge to PoS Sep 15 2022. Applications: ICOs, NFTs, DeFi.
+
+\begin{tabularx}{\linewidth}{@{}lXX@{}}
+\toprule
+ & Bitcoin & Ethereum\\
+\midrule
+State & UTXO & account/world state\\
+Consensus & SHA256 PoW & PoS after Merge\\
+Contracts & Script & EVM bytecode\\
+Interval & 10 min & about 12 s\\
+Fees & sat/vB & gas, EIP-1559\\
+\bottomrule
+\end{tabularx}
+
+\term{Accounts}: EOA controlled by private key; contract account controlled by code. Account value $[\mathrm{nonce},\mathrm{balance},\mathrm{storageRoot},\mathrm{codeHash}]$. Address: last 20 bytes of Keccak-256(pubkey) for EOAs. Ether units: $1\ \mathrm{ETH}=10^{18}$ wei; gwei $=10^9$ wei.
+
+\term{Gas}: each opcode costs gas to meter computation/storage and prevent DoS. Transaction specifies gas limit and fee parameters. Out-of-gas reverts state but gas spent is not refunded. Contract execution deterministic across nodes.
+
+\subsection{EIP-1559 Fees}
+Type-2 tx fields include chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, destination, value, data, accessList, signature. Base fee adjusts per block based on gas used relative to target and is burned. Effective gas price = $\min(\text{maxFee},\text{baseFee}+\text{priorityFee})$. Miner/validator tip = effective - base. Sender prepays gasLimit$\times$maxFee; unused gas and excess fee refunded. Nonce prevents replay/order ambiguity; chainId prevents cross-chain replay.
+
+\section{Ethereum Encoding and State}
+\subsection{RLP}
+RLP serializes byte arrays and lists. For byte array $x$: if $|x|=1$ and byte $<0x80$, encoding is $x$; if $|x|<56$, prefix $0x80+|x|$ then $x$; long string prefix $0xb7+\ell(\mathrm{len})$, length, data. For list payload length $L$: short prefix $0xc0+L$ if $L<56$; long prefix $0xf7+\ell(L)$ then $L$ then payload. Integers are minimal big-endian byte arrays; zero often empty string in Ethereum encodings. BE = big-endian representation.
+
+\term{First byte ranges}: \texttt{0x00-0x7f} single byte; \texttt{0x80-0xbf} byte array; \texttt{0xc0-0xff} list. \term{Worked encodings}: \texttt{0xaabbcc -> 0x83 aabbcc} since $128+3=0x83$; empty byte array $\epsilon\to\texttt{0x80}$; byte \texttt{0x80 -> 0x81 80} because value 128 is not $<128$; empty list \texttt{[] -> 0xc0}; \texttt{[[]] -> 0xc1 c0}; \texttt{[[],[[]],[[],[[]]]] -> 0xc7 c0 c1 c0 c3 c0 c1 c0}.
+
+\subsection{Merkle Patricia Trie}
+Ethereum authenticated key-value structure uses nibbles and Keccak hashes. Node types: branch node with 16 children + optional value; extension node for shared path; leaf node for terminal path/value. Hex-prefix encodes odd/even path length and leaf/extension flag. If RLP(node) $<32$ bytes, embed; else store hash. Four major tries: state trie (accounts), storage trie per contract, transaction trie, receipts trie. Roots in block header authenticate state/txs/receipts. Bloom filters in receipts/logs support approximate event search with false positives, no false negatives.
+
+\term{Hex-prefix table}: first nibble 0 = extension/even path; 1 = extension/odd; 2 = leaf/even; 3 = leaf/odd. Examples: leaf $[0,f,1,c,b,8]\to\texttt{20 0f 1c b8}$; leaf $[f,1,c,b,8]\to\texttt{3f 1c b8}$; extension $[1,2,3,4,5]\to\texttt{11 23 45}$; extension $[0,1,2,3,4,5]\to\texttt{00 01 23 45}$.
+
+\section{Ethereum Transactions, EVM, Blocks}
+\subsection{Transactions}
+World-state transition $\sigma_{t+1}=\Upsilon(\sigma_t,T)$. Only EOAs initiate external txs; contracts can create internal message calls during execution. Types covered: legacy, EIP-2930 access-list, EIP-1559 dynamic-fee; as of Pectra there are five total in Ethereum.
+
+Legacy tx: nonce, gasPrice, gasLimit, to, value, data, v,r,s. Contract creation has empty \texttt{to}; created address derived from sender and nonce (or CREATE2 from deployer, salt, init-code hash). Message call invokes destination with calldata. Function selector = first 4 bytes of Keccak-256(signature), e.g. \texttt{transfer(address,uint256)}. ABI encodes static types inline in 32-byte words; dynamic types use offset then length/data padded to 32 bytes.
+
+\subsection{EVM}
+Stack machine, 1-byte opcodes, 32-byte words. Stack max 1024 words. Code in virtual ROM; stack and memory volatile; storage persistent per contract key-value map word$\to$word. Memory is byte array with expanding cost (quadratic component). Current contract storage via \texttt{SLOAD}/\texttt{SSTORE}; other contract code via \texttt{EXTCODECOPY}; calldata via \texttt{CALLDATALOAD}/\texttt{CALLDATACOPY}. Call stack depth limit 1024; each call frame has own stack/memory but shared persistent state subject to revert.
+
+Opcode families: arithmetic \texttt{ADD MUL SUB DIV MOD EXP}; comparison/bit \texttt{LT GT EQ ISZERO AND OR XOR NOT BYTE SHL SHR}; crypto \texttt{KECCAK256}; environment \texttt{ADDRESS CALLER CALLVALUE CALLDATALOAD CODESIZE GASPRICE}; block \texttt{BLOCKHASH COINBASE TIMESTAMP NUMBER PREVRANDAO GASLIMIT BASEFEE}; memory/storage \texttt{MLOAD MSTORE SLOAD SSTORE}; control \texttt{JUMP JUMPI STOP RETURN REVERT SELFDESTRUCT}; calls \texttt{CALL STATICCALL DELEGATECALL CREATE CREATE2}.
+
+\subsection{Blocks}
+Eth1 block = (Header, Transactions, Uncle/Ommers). Header fields: parentHash, ommersHash, beneficiary, stateRoot, transactionsRoot, receiptsRoot, logsBloom, difficulty, number, gasLimit, gasUsed, timestamp, extraData, mixHash, nonce, baseFeePerGas after London. Ommer = stale sibling of parent; rewarded in PoW because short block times. Uncle txs invalid; ommer creator got partial reward and no tx fees. GHOST chooses heaviest subtree; Eth2 uses LMD-GHOST variant.
+
+Post-Merge execution header changes: ommersHash = hash empty list, difficulty = 0, nonce = eight zero bytes, mixHash renamed/reused as prevRandao, baseFeePerGas present. Execution client runs EVM/state; beacon client runs PoS consensus and finality.
+
+\section{Solidity and Smart Contracts}
+\subsection{Language Essentials}
+Solidity: statically typed, JavaScript-like syntax, compiles to EVM bytecode. Variables: local (function, not persistent), state (contract storage), special globals. Value types: bool, uint/int sizes, address, bytes1..bytes32, enum. Reference types: arrays, structs, mappings; data locations \texttt{storage}, \texttt{memory}, \texttt{calldata}; calldata is read-only and cheaper for external inputs.
+
+\term{Constants/immutables}: \texttt{constant} fixed at compile time, saves gas; \texttt{immutable} set once in constructor. Mappings: \texttt{mapping(K=>V)}, no iteration, key cannot be reference type, default values. Arrays: fixed/dynamic; dynamic supports push/pop/length. Structs group fields. Events write logs; indexed parameters searchable; apps listen via full node/ethers.js.
+
+\term{Function visibility}: \texttt{public}, \texttt{external}, \texttt{internal}, \texttt{private}. Mutability: \texttt{view} reads no state mutation, \texttt{pure} reads no state, \texttt{payable} accepts ETH. \texttt{require} validates inputs/conditions and refunds remaining gas; \texttt{assert} for invariants/panic. Modifiers run code before/after function body. Inheritance via \texttt{is}; \texttt{virtual}/\texttt{override}; multiple inheritance searches parents right-to-left; state variables cannot be overridden.
+
+\subsection{Calls, Interfaces, Ether}
+High-level external calls use typed contract interfaces. Low-level \texttt{call} returns $(success,data)$ and forwards gas; handle return value. \texttt{delegatecall} executes callee code in caller storage context (proxy pattern risk). \texttt{receive()} handles empty calldata ETH; \texttt{fallback()} handles missing function or calldata. Ether sent to a contract without receive/fallback can fail or be stuck depending path.
+
+\term{Reentrancy}: external call before state update lets attacker re-enter. DAO lost 3.54M ETH; Ethereum hard forked. Defenses: checks-effects-interactions (update balance before transfer), reentrancy guard modifier, pull payments, limit external calls.
+
+\term{ERC-20}: standard fungible token interface: \texttt{name}, \texttt{symbol}, \texttt{decimals}, \texttt{totalSupply}, \texttt{balanceOf}, \texttt{transfer}, \texttt{allowance}, \texttt{approve}, \texttt{transferFrom}, \texttt{Transfer}/\texttt{Approval} events. \term{ERC-721}: NFTs are token IDs in contract state; media usually off-chain URI. Use OpenZeppelin implementations when possible.
+
+\term{Common vulnerabilities}: reentrancy, integer/logic mistakes, unchecked low-level calls, bad access control, tx.origin auth, timestamp dependence, front-running/MEV, delegatecall storage collision, upgrade initializer bugs, randomness from block variables, DoS via unbounded loops, unsafe selfdestruct assumptions.
+
+\section{JavaScript, Node, Hardhat}
+JavaScript created for browser interactivity; Node.js runtime runs JS outside browser and powers Hardhat tooling. Use \texttt{console.log}, \texttt{node file.js}. Variables: \texttt{let} mutable block-scoped, \texttt{const} immutable binding, avoid \texttt{var}. Types include number, bigint, string, boolean, object, undefined, null. Functions: declarations, arrows. Arrays: \texttt{push}, \texttt{map}, \texttt{filter}, \texttt{reduce}, \texttt{for...of}. Objects store key/value pairs; destructuring useful.
+
+Promises represent future result. \texttt{async function f()} returns Promise; \texttt{await} pauses until settled. Use \texttt{try/catch}. Node modules: \texttt{require} or ES imports depending project. \texttt{npm} installs packages. \texttt{inquirer} accepts CLI input. \texttt{ethers.js}: provider reads chain, signer sends tx, contract object wraps ABI+address. Important calls: \texttt{await contract.method()}, tx response then \texttt{await tx.wait()}, parse units with \texttt{parseEther}/\texttt{parseUnits}.
+
+\section{Tornado Cash and zk}
+\subsection{Mixer Protocol}
+Motivation: direct ETH payments reveal total balance and links. Tornado Cash = Ethereum mixer contract with fixed-denomination pools. Deposit creates commitment; withdrawal proves membership without linking deposit.
+
+Browser generates private note: nullifier + secret (62 random bytes in slides). Commitment $C=H(\mathrm{nullifier},\mathrm{secret})$ inserted into on-chain Merkle tree. User stores note. Withdrawal public inputs include Merkle root, nullifier hash, recipient, relayer, fee/refund depending version. Private witness includes note and Merkle path. Contract verifies zkSNARK, checks root known and nullifier hash unused, then pays recipient/relayer and marks nullifier spent.
+
+\term{Desired properties}: completeness, soundness/no double spend, zero knowledge/link privacy, fixed denomination anonymity set, non-custodial contract. \term{OFAC}: Tornado Cash addresses sanctioned; legal/regulatory relevance.
+
+\subsection{Commitments and SNARKs}
+Commitment scheme: hiding + binding. Pedersen commitment $C(a,x)=xG+aH$ with unknown $\log_G H$: perfectly hiding if $x$ random; binding under discrete-log hardness; homomorphic $C(a,x)+C(b,y)=C(a+b,x+y)$.
+
+\term{Pedersen proof tricks}: prove $C$ commits to 0 by signature verifiable under public key $C$; if $C=xG+aH$ and $a\ne0$, this requires knowing $\log_GH$. Prove known value $a$ by signature under $C-aH$. Prove $C_1,C_2$ commit to same amount by signature under $C_1-C_2=(x_1-x_2)G$. Homomorphic: $C(a_1,x_1)+C(a_2,x_2)=C(a_1+a_2,x_1+x_2)$.
+
+SNARK = Succinct Non-interactive Argument of Knowledge. zkSNARK adds zero knowledge. Soundness only against PPT provers (argument), proof short and one-message. Statements must be arithmetized over prime field with additions/multiplications.
+
+\term{Groth16}: small proofs, fast verification, trusted setup circuit-specific. Ethereum verifier cost $\approx181{,}000+6{,}150k$ gas for $k$ public inputs; at 20 gwei and \$3000/ETH, about \$12 for 3 public inputs. \texttt{ecPairing} precompile at address \texttt{0x08}, cost 45,000 gas. Used by Tornado Cash/Dark Forest.
+
+\section{circom and R1CS}
+\subsection{R1CS}
+R1CS expresses constraints
+\[
+\left(\sum_i u_i a_i\right)\left(\sum_i v_i a_i\right)=\left(\sum_i w_i a_i\right)
+\]
+where $a_i$ are witness/signal values and $(u_i,v_i,w_i)$ are circuit constants. Rank 1 because product of two linear combinations. Boolean bit constraint: $b(1-b)=0$. AND: $c=ab$. OR: $c=a+b-ab$. XOR: $c=a+b-2ab$. NOT: $c=1-a$.
+
+\subsection{circom Signals and Operators}
+circom = circuit compiler for zk statements, uses Groth16 toolchain. Signals are immutable field elements; components are subcircuits; inputs private by default; public signals declared in main component. \texttt{===} adds equality constraint. \texttt{<--} assigns witness/advice without constraint. \texttt{<==} assigns and constrains when expression is quadratic-valid. Only quadratic constraints allowed; non-quadratic computations require advice plus constraints.
+
+Patterns: arrays of signals/components; \texttt{var} for mutable compile-time variables. Multiplexer: if selector bit $s$, output $(1-s)c_0+s c_1$. Zero check uses advice inverse: if input nonzero, constrain $in\cdot inv=1$ and output 0; if zero, output 1 with constraints preventing false positive. Bit decomposition: constrain each bit boolean and $\sum 2^i b_i=in$; range proof if fits $n$ bits. Comparator: compare via bit decomposition of shifted difference; circom default field fits about 253-bit safe arithmetic.
+
+Tornado circuits: Merkle tree path checker + withdrawal checker; public root/nullifierHash/recipient/relayer/fee, private nullifier/secret/path.
+
+\subsection{Key circom Circuits}
+\term{IsZero}: \texttt{inv <-- in!=0 ? 1/in : 0}; \texttt{out <== -in*inv + 1}; \texttt{in*out === 0}. \term{Num2Bits(n)}: \texttt{out[i] <-- (in >> i) \& 1}; constrain \texttt{out[i]*(out[i]-1)===0}; constrain $\sum2^i\texttt{out[i]}=\texttt{in}$. \term{LessThan(n)}: \texttt{n2b.in <== in[0]+(1<<n)-in[1]}; \texttt{out <== 1-n2b.out[n]}; output 1 iff $\texttt{in[0]}<\texttt{in[1]}$. \term{Mux}: \texttt{s*(s-1)===0}; \texttt{out <== (c[1]-c[0])*s+c[0]}.
+
+\section{Monero}
+\subsection{Privacy Model}
+Monero launched Apr 2014, privacy-oriented, CryptoNote-based. Hides amounts, uses one-time addresses, ring signatures/linkable ring signatures to weaken chain analysis. Popular in cryptojacking/ransomware because privacy + CPU/GPU mining history.
+
+\term{Stealth/one-time address}: Bob has private $(x_1,x_2)$, public $(P_1=x_1G,P_2=x_2G)$. Alice picks $r$, computes $P=H_s(rP_1)G+P_2$, publishes $P$ and $R=rG$. Bob scans: $P'=H_s(x_1R)G+P_2$; if equal, spend key $x=H_s(x_1R)+x_2$ satisfies $P=xG$. Tracking key $(x_1,P_2)$ lets third party detect incoming payments without spend key.
+
+\tightbox{\term{One-time address isolated}: setup Bob private $(x_1,x_2)$, public $(P_1=x_1G,P_2=x_2G)$. Send: Alice random $r$, output $P=H_s(rP_1)G+P_2$, publish $P,R=rG$. Receive: Bob tests $P'=H_s(x_1R)G+P_2$; if $P'=P$, spend key $x=H_s(x_1R)+x_2$. Tracking key $(x_1,P_2)$ audits incoming only.}
+
+\subsection{Ring and Linkable Ring Signatures}
+Ring signature proves signer knows one private key among $P_0,\dots,P_{n-1}$ without revealing which. Basic flow: choose random $\alpha,s_i$ for $i\ne j$; set $L_j=\alpha G$, challenge chain $c_{j+1}=H_s(m,L_j)$, compute $L_i=s_iG+c_iP_i$ around ring, set $s_j=\alpha-c_jx_j$; signature $(c_0,s_0,\dots,s_{n-1})$ verifies if challenge closes.
+
+Linkable LSAG adds key image $I=x_jH_p(P_j)$. Compute both $L_i=s_iG+c_iP_i$ and $R_i=s_iH_p(P_i)+c_iI$; signature includes $I$. Duplicate key images are rejected, preventing double spend while preserving signer ambiguity. Source address obfuscation: spender inserts true one-time address among decoys; outsider cannot identify true input or even know membership cleanly.
+
+\term{LSAG steps}: key image $I=x_jH_p(P_j)$. Sign: pick $\alpha,s_i$ for $i\ne j$; $L_j=\alpha G$, $R_j=\alpha H_p(P_j)$, $c_{j+1}=H_s(m,L_j,R_j)$. For $i\ne j$, $L_i=s_iG+c_iP_i$, $R_i=s_iH_p(P_i)+c_iI$, $c_{i+1}=H_s(m,L_i,R_i)$. Set $s_j=\alpha-c_jx_j$. Signature $\sigma=(I,c_0,s_0,\ldots,s_{n-1})$. Verify recomputes chain and checks last hash returns $c_0$; duplicate $I$ rejected.
+
+\subsection{Confidential Transactions}
+Amounts hidden with Pedersen commitments $C(a,x)=xG+aH$. Balance condition over commitments:
+\[
+\sum C_i^{in}-\sum C_j^{out}-C(f,0)=C(0,x)
+\]
+prove zero commitment by signature with commitment as public key / knowledge of blinding. Modular arithmetic alone unsafe: attacker could output $p-4$ amount if no range proof. Range proofs prove committed amounts in valid range (e.g., 64-bit). Naive bit proof: commit to $a_i2^i$ and prove each bit is 0/1 with ring signatures; Bulletproofs reduce proof size to $O(\log n)$.
+
+\term{Range proof construction}: modular balance alone permits commitment to $p-4$ as a huge hidden amount. Naive proof ring-signs over $\{C-iH:0\le i<2^{64}\}$, size $O(2^{64})$. Better: decompose $a=\sum_{i=0}^{63}a_i2^i$, $a_i\in\{0,1\}$; create $C_i=x_iG+a_i2^iH$; ring sig over $\{C_i,C_i-2^iH\}$ proves bit 0/1. If $x=\sum x_i$, then $C(a,x)=\sum C_i$. Bulletproofs give $O(\log n)$ proof size for $n$-bit range.
+
+RingCT: each output has one-time address $P$ and Pedersen commitment $C$. For $m$ inputs and ring size $n$, spender builds matrix of key vectors/commitments; MLSAG proves knowledge of all private keys in one column and balance with fees/outputs, while key images prevent double spend.
+
+\section{Consensus Theory}
+\subsection{SMR and Models}
+Consensus protocols keep nodes in sync despite unreliable network and faults. State Machine Replication: clients submit txs; each node keeps append-only ordered history; if same initial state and same order, same final state. Requirements: \term{consistency/safety}: honest nodes agree on same history; \term{liveness}: every valid tx submitted eventually included.
+
+Network models: synchronous = known message delay bound/global rounds; asynchronous = no timing guarantees; partially synchronous = bound $\Delta$ exists after unknown GST. Faults: crash (stop), omission (drop sends/receives), Byzantine (arbitrary but cannot forge signatures). Permissioned = fixed known validators/PKI; permissionless requires Sybil resistance (PoW/PoS).
+
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Model & Timing\\
+\midrule
+Synchronous & global clock, delays $\le\Delta$ per step, same timestep\\
+Asynchronous & no clock/bound; messages eventually arrive\\
+Partial sync & arbitrary until unknown GST, then delays $\le\Delta$\\
+\bottomrule
+\end{tabularx}
+
+\subsection{Byzantine Broadcast}
+Single sender with input $v^*$. Properties: termination (honest halt), agreement (same output), validity (if sender honest, output $v^*$). SMR from BB: each epoch leader proposes list of pending txs; run BB; append output. Liveness usually for txs reaching honest leaders/nodes.
+
+For $f=1$ cross-checking: sender signs value to all; recipients sign/forward; if see one valid value output it, conflicts handled by default depending protocol. Dolev-Strong (PKI synchronous): tolerate $f<n$ Byzantine in $f+1$ rounds using signature chains. In round $j$, forward values with valid chain length $j$ and distinct signers; accept only values with valid length $f+1$ at end. Signatures prevent late equivocation.
+
+\term{Dolev-Strong exact}: convincing message for value $v$ at time $t$ references $v$, is signed by sender, and signed by at least $t-1$ other distinct nodes. Time 0 sender sends $v^*$ with signature to all. Times $t=1$ to $f+1$: if convinced of new $v$, sign and forward. Final output: exactly one convinced value $v$ gives $v$, otherwise $\bot$. Tolerates any $f$ Byzantine in synchronous PKI.
+
+\term{Bounds}: without PKI, Byzantine agreement in synchrony needs $n>3f$ (FLM-style). Asynchronous deterministic consensus impossible for $n\ge2$, $f=1$ (FLP). Partial synchrony BFT possible iff $n>3f$ for Byzantine faults. \term{FLP}: no deterministic async protocol satisfies termination+agreement+validity with $f=1$. \term{FLM}: without PKI, if $f\ge n/3$, no Byzantine broadcast. \term{CAP}: cannot have consistency+availability+partition tolerance; Tendermint/PBFT sacrifice liveness during partition, Bitcoin sacrifices consistency via reorgs.
+
+\section{Tendermint}
+Tendermint = partially synchronous BFT consensus, permissioned/PKI, consistency always and eventual post-GST liveness if $f<n/3$. Real deployments in Cosmos ecosystem; votes may be stake-weighted, but slides describe one vote/node.
+
+\term{Rounds}: known $\Delta$ after GST. Round length $4\Delta$: propose, prevote/stage-1, precommit/stage-2, commit/timeout. Unique rotating leader per round. Quorum certificate (QC) = signatures from $>2n/3$ validators for same block/round/stage.
+
+\term{Phase timing}: round $r$ starts at $t=4\Delta r$. Phase 1 $t=4\Delta r$: leader broadcasts $(B_l,Q_l)$. Phase 2 $t=4\Delta r+\Delta$: nodes cast stage-1 vote for $B_i$. Phase 3 $t=4\Delta r+2\Delta$: if $>2n/3$ stage-1 votes, cast stage-2 vote and form stage-1 QC. Phase 4 $t=4\Delta r+3\Delta$: if $>2n/3$ stage-2 votes, commit, increment height, form stage-2 QC. QC order: non-null $>$ null; later round $>$ earlier; stage-2 $>$ stage-1 in same round.
+
+\term{Local state}: locked block/value and lock round; valid block/round for leader proposal. Protocol idea: leader proposes block, nodes prevote if proposal valid and compatible with lock; if receive $>2/3$ prevotes, precommit and lock; if receive $>2/3$ precommits, commit. If timeout, move to next round. Safety: two conflicting commits would require two $>2/3$ quorums intersecting in $>n/3$ nodes, at least one honest double-voting, impossible with locking rules. Liveness after GST: eventually honest leader with compatible valid value and sufficient timeout gets proposal/votes through.
+
+\section{Ethereum Proof of Stake}
+\subsection{Validators, Slots, Committees}
+Merge on Sep 15 2022 moved Ethereum to PoS, reducing power from 5.13 GW to 2.62 MW in slides (99.95\%). Validators deposit 32 ETH in deposit contract; can later withdraw deposit/rewards. Slot = 12 s, one block proposer selected; epoch = 32 slots = 6.4 min. Validators assigned to committees per slot to reduce communication; one active validator proposes, committees attest.
+
+\term{BLS signatures}: groups $G_1,G_2$ of prime order $p$ with pairing $e:G_1\times G_2\to G_T$; bilinear $e(g_1^\alpha,g_2^\beta)=e(g_1,g_2)^{\alpha\beta}$. Secret $x$, public $g_1^x$. Sign $\sigma=H(m)^x$ with $H(m)\in G_2$. Verify $e(g_1,\sigma)=e(g_1^x,H(m))$. Same-message aggregate: $\sigma_{\rm agg}=\prod\sigma_i$, $pk_{\rm agg}=\prod pk_i$, verify aggregate under $pk_{\rm agg}$. Enables compact committee attestations.
+
+\term{Randomness}: RANDAO contributions produce on-chain randomness; committee assignment shuffles validators. Security needs unpredictability/unbiasability enough to prevent adversarial committee capture.
+
+\subsection{Fork Choice and Finality}
+\term{LMD-GHOST}: Latest Message Driven Greediest Heaviest Observed SubTree. Starting at genesis/finalized checkpoint, at each fork choose child with greatest total stake from latest attestations of validators; repeat. Uses only latest vote per validator to avoid vote duplication weight.
+
+\term{Casper FFG}: checkpoints every epoch. Vote is source checkpoint $\to$ target checkpoint. Justification: supermajority link $s\to t$ ($>2/3$ stake) with $s$ justified $\Rightarrow t$ justified. Finalization: justified $c_1\to c_2$ supermajority where $c_2$ is direct child of $c_1$ $\Rightarrow c_1$ finalized. Rule 1 no double vote: validator must not publish $s_1\to t_1$ and $s_2\to t_2$ where $h(t_1)=h(t_2)$. Rule 2 no surround vote: must not publish votes where $h(s_1)<h(s_2)<h(t_2)<h(t_1)$. If $<1/3$ Byzantine, conflicting checkpoints cannot both finalize without slashable votes.
+
+\section{Quick Tables}
+\subsection{Impossibility and Models}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Result & Meaning\\
+\midrule
+FLP & async + deterministic + $f\ge1$ gives no termination+agreement+validity\\
+FLM & sync + no PKI + $f\ge n/3$ gives no Byzantine broadcast\\
+Partial sync BFT & possible iff $f<n/3$; Tendermint/PBFT achieve this\\
+\bottomrule
+\end{tabularx}
+
+\subsection{Ethereum Tx Types and Gas}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Type & Fields\\
+\midrule
+0 legacy & nonce, gasPrice, gasLimit, to, value, data, $v,r,s$\\
+1 EIP-2930 & adds chainId, accessList, signatureYParity\\
+2 EIP-1559 & maxPriorityFeePerGas + maxFeePerGas replace gasPrice\\
+Pectra & as of May 2025: 5 total tx types\\
+\bottomrule
+\end{tabularx}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Gas item & Cost\\
+\midrule
+Tx base & 21,000\\
+Calldata & zero 4, nonzero 16\\
+SLOAD & cold 2100, warm 100\\
+CALL address & cold 2600, warm 100\\
+CREATE & 32,000 minimum\\
+KECCAK256 & $30+6$ per word\\
+ecPairing & 45,000 gas\\
+\bottomrule
+\end{tabularx}
+
+\subsection{Privacy and Scripts}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Monero term & Meaning\\
+\midrule
+One-time address & hides receiver, fresh each tx\\
+Ring signature & hides sender among decoys\\
+Key image & $I=xH_p(P)$ links double spends only\\
+Pedersen & hides amount; homomorphic\\
+Range proof & amount valid without revealing\\
+Bulletproofs & $O(\log n)$ range proof size\\
+Tracking key & $(x_1,P_2)$ audits incoming\\
+MLSAG & multi-layer linkable spontaneous anonymous group sig\\
+\bottomrule
+\end{tabularx}
+\begin{tabularx}{\linewidth}{@{}lXX@{}}
+\toprule
+ & Bitcoin & Ethereum\\
+\midrule
+Script & stack-based, not Turing complete, stateless & EVM bytecode, gas-bounded Turing complete, stateful, 1024-word stack\\
+\bottomrule
+\end{tabularx}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Commitment & Property\\
+\midrule
+Hiding & random blinding reveals nothing\\
+Binding & cannot open differently unless know $\log_GH$\\
+Homomorphic & $C(a,x)+C(b,y)=C(a+b,x+y)$\\
+\bottomrule
+\end{tabularx}
+
+\subsection{Header and Transaction Fields}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Item & Must remember\\
+\midrule
+Bitcoin header & version, prev hash, Merkle root, time, bits, nonce; hash = SHA256d\\
+Bitcoin tx & inputs spend UTXOs; outputs create UTXOs; fee = in - out\\
+Ethereum account & nonce, balance, storageRoot, codeHash\\
+Eth tx & nonce, gas fields, to/creation, value, data, access list, signature\\
+Eth header & parent, state/tx/receipt roots, logsBloom, beneficiary, gas, time, prevRandao/baseFee\\
+\bottomrule
+\end{tabularx}
+
+\subsection{High-Yield Formulas}
+\begin{itemize}
+\item Hash collision work $2^{n/2}$; preimage work $2^n$.
+\item Bitcoin PoW valid iff SHA256d(header)$<T$; expected hashes $\approx D2^{32}$.
+\item ECDSA: $s=k^{-1}(z+rd)$; verify $X=(zs^{-1})G+(rs^{-1})Q$.
+\item Ethereum fee: effective price $=\min(\mathrm{maxFee},\mathrm{baseFee}+\mathrm{tip})$; base fee burned.
+\item Pedersen: $C(a,x)=xG+aH$; additive homomorphism.
+\item R1CS: $(u\cdot a)(v\cdot a)=w\cdot a$.
+\item Tendermint/Ethereum BFT thresholds: $>2/3$ quorum; safety if Byzantine stake/nodes $<1/3$.
+\end{itemize}
+
+\subsection{Common Confusions}
+\begin{itemize}
+\item Bitcoin addresses are hashes/encodings of public keys, not public keys themselves until spent in P2PKH.
+\item Most-work chain differs from longest-by-count chain.
+\item SegWit fixes txid malleability by moving signatures to witness.
+\item Ethereum contracts cannot initiate top-level txs; they execute because an EOA tx or another call invoked them.
+\item \texttt{view/pure} are Solidity promises enforced for external calls/compilation; gas still used if called inside tx.
+\item Logs/events are not contract-readable state; they are for off-chain indexing.
+\item A zkSNARK proof hides witness but public inputs are public; nullifier prevents double withdrawal.
+\item Ring signatures hide which input was spent; key images still link double spends.
+\item FLP is about deterministic async consensus; practical BFT gets liveness by synchrony/partial synchrony assumptions.
+\end{itemize}
+
+\section{Exam Templates}
+\subsection{Calculation Checklists}
+\term{EC over $\F_p$}: verify point by comparing $y^2$ and $x^3+ax+b$ mod $p$; inverse $(x,-y\bmod p)$; if $P=Q$ use doubling slope; if $P\ne Q$ use add slope; compute modular inverse by trial/Euclid; reduce $\lambda,x_3,y_3$ mod $p$; if denominator 0 then result $\mathcal O$. \term{Group order}: for each $x$, compute RHS; count 0 roots if non-residue, 1 if RHS=0, 2 if residue; add $\mathcal O$.
+
+\term{RLP}: convert item to bytes; single byte $<0x80$ encodes itself; short string prefix $0x80+\ell$; short list prefix $0xc0+$ payload length; nested lists use already-RLP-encoded children as payload. \term{HP}: decide leaf/ext and odd/even; even uses flag nibble then 0 pad; odd packs flag nibble with first path nibble; pack remaining nibbles two per byte.
+
+\term{Gas/fees}: tx cost $=21000+\mathrm{calldata}+EVM/storage$; EIP-1559 effective price $=\min(\mathrm{maxFee},\mathrm{baseFee}+\mathrm{tip})$; burned $=\mathrm{baseFee}\cdot\mathrm{gasUsed}$; validator tip $=(\mathrm{effective}-\mathrm{baseFee})\cdot\mathrm{gasUsed}$; refund unused gas and unused max fee.
+
+\subsection{Protocol Trace Templates}
+\term{Casper}: for each vote write source height, target height, voter/stake. Justified iff source justified and $>2/3$ link. Finalized iff justified parent has justified direct child. Slash if same target height or surround inequality $h(s_1)<h(s_2)<h(t_2)<h(t_1)$.
+
+\term{Tendermint}: per round write leader proposal $(B,Q)$, prevotes/stage-1, precommits/stage-2, lock state. Commit requires $>2n/3$ stage-2 votes. Safety proof always uses quorum intersection: two $>2n/3$ quorums intersect in $>n/3$, so at least one honest validator would need to violate lock/vote rule.
+
+\term{Dolev-Strong}: at time $t$ only accept chains with sender sig + $t-1$ distinct extra sigs; sign/forward each value once; at final time output sole convincing value else $\bot$. Late messages with too-short chains cannot convince.
+
+\subsection{circom Design Recipes}
+\term{Always}: signals are field elements; every Boolean needs $b(b-1)=0$; every division/comparison/bit extraction usually needs advice plus constraints. Never trust \texttt{<--} alone; pair it with \texttt{===}/\texttt{<==}. Split degree $>2$ expressions into temporaries.
+
+\term{Range check $x<2^n$}: run \texttt{Num2Bits(n)} and constrain reconstruction. \term{Equality}: constrain $a-b=0$. \term{Nonzero}: advice inverse $inv$, constrain $x\cdot inv=1$. \term{Select}: $out=(1-s)a+sb$ with Boolean $s$. \term{Merkle path}: at each level use selector bit to order left/right, hash, constrain final root public.
+
+\subsection{Solidity Bug Checklist}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Bug & Exam answer/fix\\
+\midrule
+Reentrancy & external call before state update; fix checks-effects-interactions or guard\\
+Access control & missing \texttt{onlyOwner}/role; restrict privileged state changes\\
+Unchecked call & low-level \texttt{call} return ignored; require success and decode data\\
+\texttt{tx.origin} auth & phishing via intermediate contract; use \texttt{msg.sender}\\
+Delegatecall & callee writes caller storage; align storage and restrict implementation\\
+Bad randomness & block vars manipulable/predictable; use commit-reveal/VRF\\
+Unbounded loop & gas DoS over growing array; use pagination/pull pattern\\
+Front-running & public mempool ordering; commit-reveal, slippage/deadline, checks\\
+\bottomrule
+\end{tabularx}
+
+\subsection{Smart Contract Writing Templates}
+\term{Solidity mental model}: a contract is like a class with persistent storage on-chain. State variables live forever; functions change/read them; \texttt{msg.sender} is caller; \texttt{msg.value} is ETH sent; \texttt{require(cond,"msg")} stops if false and reverts.
+
+\term{Basic syntax}: every statement ends with \texttt{;}. Code blocks use \texttt{\{...\}}. Comments use \texttt{//}. Types first, name second: \texttt{uint amount; address user; bool ok; string memory s;}. Function shape:
+\begin{verbatim}
+function name(type arg) visibility modifier returns(type) {
+  // body
+}
+\end{verbatim}
+\term{Visibility}: \texttt{public}=callable inside/outside; \texttt{external}=outside only; \texttt{internal}=contract/children; \texttt{private}=this contract. \term{Mutability}: \texttt{view}=reads state; \texttt{pure}=reads no state; \texttt{payable}=can receive ETH.
+
+\term{Storage building blocks}: \texttt{uint public x;} auto-creates getter. \texttt{mapping(address=>uint) public bal;} maps address to number. \texttt{address public owner;} stores admin. \texttt{event E(...);} records log for frontend/exam answer. \texttt{modifier m()\{...\_;...\}} wraps functions.
+
+\term{Exam skeleton}:
+\begin{verbatim}
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+contract X {
+  address public owner;
+  event Done(address indexed user,uint amount);
+  error NotOwner(); error BadAmount();
+  constructor(){ owner = msg.sender; }
+  modifier onlyOwner(){ if(msg.sender!=owner) revert NotOwner(); _; }
+}
+\end{verbatim}
+\term{Tiny storage contract}:
+\begin{verbatim}
+contract Store {
+  uint public value;
+  event Changed(uint oldValue, uint newValue);
+  function set(uint v) external {
+    emit Changed(value, v);
+    value = v;
+  }
+  function get() external view returns(uint) {
+    return value;
+  }
+}
+\end{verbatim}
+\term{Owner-only pattern}:
+\begin{verbatim}
+address public owner;
+constructor(){ owner = msg.sender; }
+modifier onlyOwner(){
+  require(msg.sender == owner, "NOT_OWNER");
+  _;
+}
+function setOwner(address n) external onlyOwner {
+  require(n != address(0), "ZERO");
+  owner = n;
+}
+\end{verbatim}
+\term{Checks-effects-interactions withdraw}:
+\begin{verbatim}
+mapping(address=>uint) public bal;
+function deposit() external payable {
+  bal[msg.sender] += msg.value;
+}
+function withdraw(uint a) external {
+  if (bal[msg.sender] < a) revert BadAmount();
+  bal[msg.sender] -= a;
+  (bool ok,) = msg.sender.call{value:a}("");
+  require(ok, "ETH_SEND_FAIL");
+}
+\end{verbatim}
+\term{Reentrancy guard}:
+\begin{verbatim}
+bool private locked;
+modifier nonReentrant(){
+  require(!locked,"REENTRANT");
+  locked=true; _; locked=false;
+}
+\end{verbatim}
+\term{Minimal payable vault}:
+\begin{verbatim}
+contract Vault {
+  mapping(address=>uint) public bal;
+  bool locked;
+  modifier nonReentrant(){ require(!locked); locked=true; _; locked=false; }
+  receive() external payable { bal[msg.sender] += msg.value; }
+  function deposit() external payable { bal[msg.sender] += msg.value; }
+  function withdraw(uint a) external nonReentrant {
+    require(bal[msg.sender] >= a, "BAL");
+    bal[msg.sender] -= a;
+    (bool ok,) = msg.sender.call{value:a}("");
+    require(ok, "SEND");
+  }
+}
+\end{verbatim}
+\term{ERC-20 style transfer}:
+\begin{verbatim}
+mapping(address=>uint) public balanceOf;
+event Transfer(address indexed from,address indexed to,uint value);
+function transfer(address to,uint amount) external returns(bool){
+  require(to != address(0), "ZERO_TO");
+  require(balanceOf[msg.sender] >= amount, "BAL");
+  balanceOf[msg.sender] -= amount;
+  balanceOf[to] += amount;
+  emit Transfer(msg.sender,to,amount);
+  return true;
+}
+\end{verbatim}
+\term{ERC-20 approve/transferFrom skeleton}:
+\begin{verbatim}
+mapping(address=>mapping(address=>uint)) public allowance;
+event Approval(address indexed owner,address indexed spender,uint value);
+function approve(address spender,uint amount) external returns(bool){
+  allowance[msg.sender][spender] = amount;
+  emit Approval(msg.sender, spender, amount);
+  return true;
+}
+function transferFrom(address from,address to,uint amount) external returns(bool){
+  require(balanceOf[from] >= amount, "BAL");
+  require(allowance[from][msg.sender] >= amount, "ALLOW");
+  allowance[from][msg.sender] -= amount;
+  balanceOf[from] -= amount; balanceOf[to] += amount;
+  emit Transfer(from, to, amount);
+  return true;
+}
+\end{verbatim}
+\term{Allowance pattern}: \texttt{approve(spender, amount)} sets allowance and emits \texttt{Approval}; \texttt{transferFrom(from,to,amount)} checks allowance and balance, decreases allowance unless max uint, moves balances, emits \texttt{Transfer}. Race warning: nonzero-to-nonzero approve can be front-run; prefer increase/decrease allowance or set 0 first.
+
+\term{What to write when stuck}: 1. declare state variables; 2. declare events/errors; 3. constructor sets owner or initial supply; 4. each function starts with \texttt{require}; 5. update storage; 6. emit event; 7. do external call last. \term{Receive/fallback}: \texttt{receive() external payable \{\}} handles empty calldata ETH; \texttt{fallback() external payable \{\}} handles unknown selector or calldata. \term{Access control}: use \texttt{onlyOwner} for admin setters, pausing, minting, withdrawals. \term{Events}: emit after state changes; index searchable fields. \term{Storage vs memory}: mappings/contract state in storage; external array/string args often \texttt{calldata}; temporary structs/arrays \texttt{memory}. \term{Exam checklist}: validate inputs, enforce permissions, update state before external calls, handle return values, emit events, avoid unbounded loops, avoid \texttt{tx.origin}, avoid block randomness.
+
+\subsection{Monero and Pedersen Answer Skeleton}
+\term{One-time address trace}: write Bob public keys; Alice random $r$; compute $P=H_s(rP_1)G+P_2$, publish $R=rG$; Bob tests $H_s(x_1R)G+P_2$; spend key $H_s(x_1R)+x_2$. \term{LSAG trace}: compute/recompute $(L_i,R_i,c_{i+1})$ around ring and check closure to $c_0$; duplicate key image means double spend. \term{Balance proof}: subtract output commitments and fee from input commitments; if amounts balance, difference is pure $xG$, so signature under difference proves knowledge of blinding.
+
+\section{Worked Examples}
+\subsection{EC Arithmetic over $\F_7$}
+Curve $y^2=x^3+x+6$. Check $(2,3)$: $3^2=9\equiv2$, $2^3+2+6=16\equiv2\pmod7$. Negation: $-(2,3)=(2,-3)=(2,4)$. Doubling:
+\[
+\lambda=\frac{3\cdot4+1}{2\cdot3}=\frac{13}{6},\quad 6^{-1}=6,\quad \lambda=13\cdot6\equiv1.
+\]
+$x_3=1^2-2-2=-3\equiv4$; $y_3=1(2-4)-3=-5\equiv2$. Result $2(2,3)=(4,2)$. Group order pattern: enumerate $x=0,\ldots,6$, compute RHS, count $y$ roots for quadratic residues, add point at infinity.
+
+\subsection{EC List All Points}
+Example $E:y^2=x^3+x+6$ over $\F_7$. First square table: $y=0,1,2,3,4,5,6$ gives $y^2=\{0,1,4,2,2,4,1\}$, so residues map $0:\{0\}$, $1:\{1,6\}$, $2:\{3,4\}$, $4:\{2,5\}$. Now compute RHS:
+\[
+\begin{array}{c|ccccccc}
+x&0&1&2&3&4&5&6\\
+\hline
+x^3+x+6\bmod7&6&1&2&1&4&3&4
+\end{array}
+\]
+Match RHS to square table: $x=0$ none; $x=1\to y=1,6$; $x=2\to y=3,4$; $x=3\to y=1,6$; $x=4\to y=2,5$; $x=5$ none; $x=6\to y=2,5$. Points:
+\[
+(1,1),(1,6),(2,3),(2,4),(3,1),(3,6),(4,2),(4,5),(6,2),(6,5),\mathcal O.
+\]
+Total $|E(\F_7)|=11$. Exam trick: always add point at infinity $\mathcal O$.
+
+\subsection{RLP Examples}
+\term{\texttt{"dog"}}: bytes \texttt{64 6f 67}, length 3; prefix $128+3=131=\texttt{0x83}$; result \texttt{83 64 6f 67}. \term{\texttt{["cat","dog"]}}: \texttt{cat -> 83 63 61 74}, \texttt{dog -> 83 64 6f 67}; payload 8 bytes; list prefix $192+8=200=\texttt{0xc8}$; result \texttt{c8 83 63 61 74 83 64 6f 67}.
+
+\subsection{Pedersen Balance}
+Inputs $3,5,2$ with blinds $x_1,x_2,x_3$; outputs $4,5$ with blinds $y_1,y_2$; fee $f=1$ blind 0. Balance $3+5+2=4+5+1=10$. Commitment check:
+\[
+C(3,x_1)+C(5,x_2)+C(2,x_3)-C(4,y_1)-C(5,y_2)-C(1,0)=C(0,x)
+\]
+where $x=x_1+x_2+x_3-y_1-y_2$. A signature verifiable under this difference as public key proves balance.
+
+\subsection{Ring Signature Trace}
+Ring size 3, signer index $j=1$, key image $I=x_1H_p(P_1)$. Verify: $L_0=s_0G+c_0P_0$, $R_0=s_0H_p(P_0)+c_0I$, $c_1=H_s(m,L_0,R_0)$; $L_1=s_1G+c_1P_1$, $R_1=s_1H_p(P_1)+c_1I$, $c_2=H_s(m,L_1,R_1)$; $L_2=s_2G+c_2P_2$, $R_2=s_2H_p(P_2)+c_2I$; check $H_s(m,L_2,R_2)=c_0$.
+
+\subsection{HP Encoding Examples}
+Extension path $[1,2,3,4,5]$ odd: first nibble 1; first byte \texttt{0x11}; remaining \texttt{23 45}; result \texttt{11 23 45}. Leaf path $[0,f,1,c,b,8]$ even: first nibble 2, padding 0; first byte \texttt{20}; remaining \texttt{0f 1c b8}; result \texttt{20 0f 1c b8}.
+
+\subsection{circom R1CS Trace}
+Circuit \texttt{out = in1*in2*in2} is cubic, so split: \texttt{tmp <== in1*in2} then \texttt{out <== tmp*in2}; both quadratic. AND with $a=1,b=0$: $a(1-a)=1\cdot0=0$, $b(1-b)=0\cdot1=0$, output $a b=0$.
+
+\subsection{Casper Trace}
+Epochs $N,N+1,N+2$. If $C_N$ justified and $>2/3$ vote $C_N\to C_{N+1}$, then $C_{N+1}$ justified and $C_N$ finalized by direct-child rule. If $>2/3$ then vote $C_{N+1}\to C_{N+2}$, then $C_{N+2}$ justified and $C_{N+1}$ finalized. Slash example: votes $C_2\to C_5$ and $C_3\to C_4$ satisfy $2<3<4<5$, a surround vote.
+
+\subsection{Tendermint Consistency}
+Round $r$: $>n/3$ honest set $S$ casts stage-2 votes for $B^*$. Their $Q_i$ is stage-1 QC for $(h,r,1)$ supporting $B^*$. Any later leader must use newest QC; nodes in $S$ vote only for blocks with QC at least as recent as $Q_i$. All round-$r$ QCs support $B^*$, so $S$ only votes $B^*$; no $B\ne B^*$ can get $>2n/3$ because $|S|>n/3$.
+
+\subsection{ECDSA Nonce Reuse}
+Same $k$: $s_1=k^{-1}(z_1+rd)$, $s_2=k^{-1}(z_2+rd)$. Subtract: $s_1-s_2=k^{-1}(z_1-z_2)$. Thus
+\[
+k=(z_1-z_2)(s_1-s_2)^{-1}\bmod n,\quad d=(s_1k-z_1)r^{-1}\bmod n.
+\]
+Private key recovered; never reuse $k$.
+
+\subsection{Tornado Withdrawal Statement}
+Public inputs: Merkle root, nullifierHash, recipient, relayer, fee. Private witness: nullifier, secret, Merkle path. Circuit proves commitment $=\mathrm{Pedersen}(\mathrm{nullifier},\mathrm{secret})$, commitment is leaf under root, and nullifierHash $=\mathrm{Pedersen}(\mathrm{nullifier})$. Soundness: only depositor knows note. Privacy: commitment hidden, so deposit not linked. Anti-double-spend: nullifierHash stored on-chain.
+
+\section{Mini Drills with Answers}
+\subsection{Compute Drills}
+\term{EC}: if denominator is $d\bmod p$, find $d^{-1}$ first; if $y=0$ when doubling, tangent vertical so $2P=\mathcal O$. \term{Nonce reuse}: same $r$ usually means same $k$; compute $k=(z_1-z_2)/(s_1-s_2)$ then $d=(s_1k-z_1)/r$. \term{RLP}: \texttt{0x7f -> 7f}, \texttt{0x00 -> 00}, \texttt{0x01 -> 01}, \texttt{0x8180} decodes to byte string \texttt{80}. \term{HP}: leaf odd path starts with flag nibble 3; extension even starts \texttt{00}.
+
+\subsection{Trace Drills}
+\term{Casper}: votes $A_1\to A_4$ and $A_2\to A_5$ are not surround because targets not nested; same target epoch is double vote even if sources differ. \term{Tendermint}: if a node is locked on $B$ at round $r$, it may vote for different $B'$ only if proposal carries QC newer than its lock. \term{Dolev-Strong}: a value first appearing too late cannot collect enough distinct signatures by final round.
+
+\subsection{Proof Hooks}
+\term{Quorum intersection}: two sets of size $>2n/3$ intersect in $>n/3$ nodes; since at most $n/3$ Byzantine, at least one honest is in intersection. Use this for Tendermint/PBFT/Casper safety. \term{Pedersen binding}: if $xG+aH=x'G+a'H$ with $a\ne a'$, then $H=((x-x')/(a'-a))G$, revealing $\log_GH$. \term{Ring privacy}: verifier sees a closed challenge cycle, not which response was programmed using secret key.
+
+\subsection{Solidity Micro-Snippets}
+\term{Checks-effects-interactions}: check balance/permission; update storage; then external call. \term{Guard}: \texttt{require(!locked); locked=true; \_; locked=false;} in modifier. \term{ERC20 transfer invariant}: require sender balance $\ge amount$; decrement sender; increment receiver; emit \texttt{Transfer}; return true. \term{Approve race}: changing nonzero allowance to another nonzero allowance can be front-run; set to 0 first or use increase/decrease allowance.
+
+\subsection{MPT and Ethereum State}
+\term{MPT proof}: decode RLP node; use path nibbles; branch consumes one nibble and chooses child; extension consumes shared prefix; leaf must match remaining path and contains value. If encoded child $<32$ bytes it is inline RLP; otherwise look up by Keccak hash. \term{Receipt}: status/root, cumulativeGasUsed, logsBloom, logs. \term{Event log}: address + topics + data; topic0 is Keccak event signature unless anonymous.
+
+\subsection{BLS and Aggregation Pitfalls}
+Same-message aggregation verifies with aggregated public key. Different-message aggregation needs product of pairings $\prod e(pk_i,H(m_i))$; avoid rogue-key attack by proof-of-possession or coefficient weighting. Pairing bilinearity is the whole trick: exponents multiply inside target group.
+
+\subsection{Tornado and Privacy Edge Cases}
+Anonymity set is only deposits of same denomination/tree/root. Relayer hides withdrawal gas payer but recipient is public. Nullifier hash must be public to stop double withdrawal; nullifier itself remains private. If user withdraws to linked address, zk proof still valid but privacy lost off-chain.
+
+\section{Source Coverage Checklist}
+\begin{itemize}
+\item \texttt{HashFunctions.pdf}: hash definitions, SHA-256, collision/preimage, hash pointers.
+\item \texttt{GroupTheory.pdf}: groups, cyclic groups, modular arithmetic, finite fields, Lagrange/QR.
+\item \texttt{BitcoinIntroduction.pdf}: Bitcoin workflow, decentralization, P2P, blocks, UTXO.
+\item \texttt{BitcoinECC.pdf}: EC group law, secp256k1, keygen, ECDSA/Schnorr.
+\item \texttt{BitcoinTransactions.pdf}: transaction format, scripts, P2PKH/P2SH/multisig/SegWit/timelocks/coinbase.
+\item \texttt{MiningMisc.pdf}: nonce space, extranonce, difficulty, mining pools, selfish mining, mempool, Lightning.
+\item \texttt{EthereumIntroduction.pdf}: Ethereum history, accounts, gas, smart contracts, ERC-20.
+\item \texttt{EthereumDataEncoding.pdf}: RLP, MPT, HP encoding, tries, Keccak, blooms.
+\item \texttt{EthereumTransactions.pdf}: world state, tx types, EIP-1559, signing, execution, contract calls.
+\item \texttt{EVM.pdf}: stack/memory/storage/code, opcodes, gas, call frames.
+\item \texttt{EthereumBlocks.pdf}: Eth1/Eth2 headers, ommers, GHOST, Merge fields.
+\item \texttt{SolidityTutorial.pdf}: Solidity syntax/types/functions/events/inheritance/calls/reentrancy/ERC20/ERC721.
+\item \texttt{JavascriptTutorial.pdf}: JS/Node essentials, promises, CLI, ethers.js.
+\item \texttt{TornadoCash.pdf}: mixer protocol, commitments, zkSNARK withdrawal, Groth16, OFAC.
+\item \texttt{circom.pdf}: R1CS, boolean gates, signals/operators, mux, zero check, bit decomposition, comparator, Tornado circuits.
+\item \texttt{Consensus.pdf}: SMR, BB, Dolev-Strong, synchrony/FLP/thresholds.
+\item \texttt{Tendermint.pdf}: rounds, leaders, two-stage voting, locks, consistency/liveness.
+\item \texttt{EthereumConsensus.pdf}: deposits, slots/epochs, committees, BLS, RANDAO, LMD-GHOST, Casper FFG, slashing.
+\item \texttt{Monero.pdf}: stealth addresses, ring/LSAG, key images, Pedersen commitments, range proofs, RingCT.
+\item \texttt{blockchain\_notes.pdf} and \texttt{EE465\_quiz\_cheatsheet.pdf}: integrated throughout as course-wide summaries.
+\end{itemize}
+
+\end{multicols*}
+\end{document}

@@ -1,0 +1,1361 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{booktabs}
+\setlist[enumerate]{itemsep=0.35em,topsep=0.25em}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\EE}{\mathbb{E}}
+\newcommand{\1}{\mathbf{1}}
+\newcommand{\R}{\mathbb{R}}
+
+\begin{document}
+
+\title{IE 622 Complete Solutions\\(from \texttt{ps1\_merged.pdf} and \texttt{Quiz1\_merged.pdf})}
+\author{}
+\date{\today}
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Practice Problem Set 1}
+
+\subsection*{Q1}
+Because $\mathcal F$ is a $\sigma$-field, it is closed under complements and countable unions. Hence
+\[
+\bigcap_{i\ge 1} A_i = \left(\bigcup_{i\ge 1} A_i^c\right)^c \in \mathcal F.
+\]
+So $\cap_i A_i$ is an event.
+
+\subsection*{Q2}
+Let $A_n\uparrow A$.
+\begin{enumerate}[label=(\alph*)]
+\item $A=\lim_n A_n=\bigcup_{n\ge1}A_n\in\mathcal F$ (closure under countable unions).
+\item Define $B_1=A_1$, $B_n=A_n\setminus A_{n-1}$ for $n\ge2$. Then $(B_n)$ are disjoint,
+\[
+A_n=\bigcup_{k=1}^n B_k,\qquad A=\bigcup_{k=1}^\infty B_k.
+\]
+By countable additivity,
+\[
+\PP(A_n)=\sum_{k=1}^n\PP(B_k)\uparrow\sum_{k=1}^\infty\PP(B_k)=\PP(A).
+\]
+Hence $\PP(A_n)\uparrow\PP(A)$.
+\item If $(E_k)$ are disjoint and $A_n=\cup_{k=1}^nE_k$, then $A_n\uparrow\cup_{k\ge1}E_k$.
+Using part (b),
+\[
+\PP\!\left(\bigcup_{k\ge1}E_k\right)=\lim_{n\to\infty}\PP(A_n)=\lim_{n\to\infty}\sum_{k=1}^n\PP(E_k)=\sum_{k\ge1}\PP(E_k),
+\]
+which is countable additivity.
+\end{enumerate}
+
+\subsection*{Q3}
+For any event $A$, the collection $\{\varnothing,\Omega,A,A^c\}$ contains $\varnothing,\Omega$, is closed under complement, and closed under countable unions (there are only finitely many sets to check). Hence it is a $\sigma$-field, i.e. $\sigma(A)=\{\varnothing,\Omega,A,A^c\}$.
+
+\subsection*{Q4}
+Take $\Omega=\{1,2,3,4\}$ with uniform probability and define
+\[
+E_1=\{1,2\},\quad E_2=\{1,3\},\quad E_3=\{1,4\}.
+\]
+Each has probability $1/2$, and each pairwise intersection has probability $1/4=(1/2)(1/2)$, so they are pairwise independent. But
+\[
+\PP(E_1\cap E_2\cap E_3)=\PP(\{1\})=\frac14\neq\frac18=\prod_{i=1}^3\PP(E_i),
+\]
+so they are not mutually independent.
+
+\subsection*{Q5}
+If $X\sim \mathrm{Exp}(\lambda)$:
+\begin{enumerate}[label=(\alph*)]
+\item $f_X(x)=\lambda e^{-\lambda x}\,\1_{\{x\ge0\}}$.
+\item $\PP(X>t)=e^{-\lambda t}$ for $t>0$.
+\item
+\[
+\PP(X>t+s\mid X>s)=\frac{\PP(X>t+s)}{\PP(X>s)}=\frac{e^{-\lambda(t+s)}}{e^{-\lambda s}}=e^{-\lambda t}.
+\]
+\end{enumerate}
+
+\subsection*{Q6}
+If $F$ is continuous and $U=F(X)$, then for $u\in[0,1]$,
+\[
+\PP(U\le u)=\PP(F(X)\le u)=\PP(X\le F^{-1}(u))=u.
+\]
+So $U\sim \mathrm{Unif}(0,1)$.
+
+\subsection*{Q7}
+\begin{enumerate}[label=(\alph*)]
+\item For $R=X/Y$ (assuming a continuous joint density):
+\[
+f_R(r)=\int_{-\infty}^{\infty}|y|\,f_{X,Y}(ry,y)\,dy.
+\]
+For the standard bivariate normal density
+\[
+f_{X,Y}(x,y)=\frac1{2\pi}e^{-(x^2+y^2)/2},
+\]
+this gives
+\[
+f_R(r)=\frac1{\pi(1+r^2)},
+\]
+i.e. $R\sim \mathrm{Cauchy}(0,1)$.
+\item If $(X,Y)$ is standard bivariate normal with independent components, then
+\[
+X+Y\sim N(0,2).
+\]
+\item Let $U=\min\{X,Y\}$ and $V=\max\{X,Y\}$. For $u\le v$,
+\[
+f_{U,V}(u,v)=f_{X,Y}(u,v)+f_{X,Y}(v,u),
+\]
+and $f_{U,V}(u,v)=0$ for $u>v$.
+\end{enumerate}
+
+\subsection*{Q8}
+\begin{enumerate}[label=(\alph*)]
+\item If $X\sim \mathrm{Poi}(\lambda)$ and $Y\sim \mathrm{Poi}(\mu)$ are independent,
+\[
+\PP(X+Y=n)=\sum_{k=0}^n e^{-\lambda}\frac{\lambda^k}{k!}\,e^{-\mu}\frac{\mu^{n-k}}{(n-k)!}
+=e^{-(\lambda+\mu)}\frac{(\lambda+\mu)^n}{n!}.
+\]
+So $X+Y\sim\mathrm{Poi}(\lambda+\mu)$.
+\item If $X\sim\mathrm{Bin}(n,p)$ and $Y\sim\mathrm{Bin}(m,p)$ independent,
+\[
+\PP(X+Y=r)=\sum_k\binom{n}{k}\binom{m}{r-k}p^r(1-p)^{m+n-r}
+=\binom{m+n}{r}p^r(1-p)^{m+n-r},
+\]
+so $X+Y\sim\mathrm{Bin}(m+n,p)$.
+\item For independent integer-valued $X,Y$ with pmfs $f,g$,
+\[
+\PP(X+Y=n)=\sum_{k\in\mathbb Z}\PP(X=k,Y=n-k)=\sum_{k\in\mathbb Z}f(k)g(n-k).
+\]
+\end{enumerate}
+
+\section{Practice Problem Set 2}
+
+\subsection*{Q1}
+\begin{enumerate}[label=(\alph*)]
+\item $\sigma(X)=\{X^{-1}(B):B\in\mathcal B(\R)\}$ is a $\sigma$-field since preimages preserve $\varnothing$, complements, and countable unions.
+\item If $X=\1_B$, then $\sigma(X)=\{\varnothing,\Omega,B,B^c\}$. If $X=\1_A+\1_B$ with $A\cap B=\varnothing$, then $X=\1_{A\cup B}$, so
+\[
+\sigma(X)=\{\varnothing,\Omega,A\cup B,(A\cup B)^c\}.
+\]
+\item
+\[
+\sigma(X_1,X_2)=\sigma\big((X_1,X_2)^{-1}(\mathcal B(\R^2))\big).
+\]
+More generally,
+\[
+\sigma(X_1,\dots,X_m)=\sigma\big((X_1,\dots,X_m)^{-1}(\mathcal B(\R^m))\big).
+\]
+\end{enumerate}
+
+\subsection*{Q2}
+For $0<m<n$, by Markov factorization,
+\[
+\PP(X_m=y\mid X_i=x_i,\ i\neq m)=\frac{p_{x_{m-1},y}p_{y,x_{m+1}}}{\sum_{z}p_{x_{m-1},z}p_{z,x_{m+1}}},
+\]
+which depends only on $(x_{m-1},x_{m+1})$. Hence
+\[
+\PP(X_m=y\mid X_i=x_i,\ i\neq m)=\PP(X_m=y\mid X_{m-1}=x_{m-1},X_{m+1}=x_{m+1}).
+\]
+
+\subsection*{Q3}
+For $n_1<\cdots<n_k$,
+\[
+\PP(X_{n_1}=i_{n_1},\dots,X_{n_k}=i_{n_k})
+=\big(\lambda P^{n_1}\big)_{i_{n_1}}\prod_{r=2}^k p^{(n_r-n_{r-1})}_{i_{n_{r-1}},i_{n_r}}.
+\]
+Thus all such finite-dimensional distributions are defined from path probabilities.
+
+\subsection*{Q4}
+Let $S_n=\sum_{m=1}^nX_m$, $Y_n=X_n+X_{n-1}$, $Z_n=\sum_{m=1}^nS_m$.
+\begin{enumerate}[label=(\alph*)]
+\item $(S_n)$ is a DTMC (random walk with i.i.d. increments).
+\item $(S_{2n})$ is also a DTMC (increments are i.i.d. $X_{2n+1}+X_{2n+2}$).
+\item $(Y_n)$ is generally \emph{not} Markov (knowledge of $Y_n$ does not determine distribution of $Y_{n+1}$).
+\item $(Z_n)$ is generally \emph{not} Markov (next step depends on $S_{n+1}$, not determined by $Z_n$ alone).
+\item $((S_n,Z_n))$ \emph{is} a DTMC, since
+\[
+S_{n+1}=S_n+X_{n+1},\qquad Z_{n+1}=Z_n+S_{n+1},
+\]
+and $X_{n+1}$ is independent of past.
+\end{enumerate}
+
+\subsection*{Q5}
+A first-order Markov model is obtained by the 2-bit state
+\[
+W_n=(Y_{n-1},Y_n)\in\{00,01,10,11\},\ n\ge1.
+\]
+Transitions:
+\begin{itemize}
+\item $00\to01$ with prob. $1$,
+\item $11\to10$ with prob. $1$,
+\item $01\to10$ with prob. $1-p$, and $01\to11$ with prob. $p$,
+\item $10\to00$ with prob. $1-p$, and $10\to01$ with prob. $p$.
+\end{itemize}
+With order $(00,01,10,11)$,
+\[
+P=
+\begin{pmatrix}
+0&1&0&0\\
+0&0&1-p&p\\
+1-p&p&0&0\\
+0&0&1&0
+\end{pmatrix}.
+\]
+
+\subsection*{Q6 (fill in)}
+One valid line: ``Past and future talk to each other only through the present.''
+
+\section{Practice Problem Set 3}
+
+\subsection*{Q1}
+For $H^A=\inf\{n\ge0:X_n\in A\}$,
+\[
+\{H^A\le n\}=\bigcup_{k=0}^n\{X_k\in A\}\in\mathcal F.
+\]
+Hence $H^A$ is measurable, so it is a random variable.
+
+\subsection*{Q2}
+\begin{enumerate}[label=(\alph*)]
+\item $\min\{S,T\}$ is a stopping time since $\{\min(S,T)\le n\}=\{S\le n\}\cup\{T\le n\}$.
+\item $S-1$ is generally \emph{not} a stopping time (depends on one-step-ahead information).
+\item $T+1$ is a stopping time since $\{T+1\le n\}=\{T\le n-1\}\in\mathcal F_n$.
+\item ``Last visit time'' is \emph{not} a stopping time (needs future knowledge).
+\item A constant $k$ is a stopping time.
+\end{enumerate}
+
+\subsection*{Q3}
+\begin{enumerate}[label=(\alph*)]
+\item Each $T_m$ is a stopping time (proved recursively from stopping-time closure and adaptedness of $X_n$).
+\item $Y_m:=X_{T_m}$ is a DTMC by the strong Markov property at $T_m$. Its state space is the subset of $A$ that can be entered from $A^c$ (typically all of $A$ in irreducible finite chains).
+\end{enumerate}
+
+\subsection*{Q4}
+\begin{enumerate}[label=(\alph*)]
+\item Classes are $\{1,2,5\}$ and $\{3,4\}$. Closed class: $\{3,4\}$. Not irreducible.
+\item For the $6\times6$ matrix: classes are $\{1,2,3\}$, $\{4\}$, and $\{5,6\}$. Closed class: $\{5,6\}$ only. Not irreducible.
+\end{enumerate}
+
+\subsection*{Q5}
+\begin{enumerate}[label=(\alph*)]
+\item If $C$ is closed ($p_{ij}=0$ for $i\in C,j\notin C$), then any path starting in $C$ cannot leave $C$, so $i\to j$ with $i\in C$ implies $j\in C$. Conversely, if this implication holds and some $p_{ij}>0$ with $i\in C,j\notin C$, then $i\to j$ contradicts the implication.
+\item Finite state-space: communication classes form a finite DAG; every finite DAG has a sink class, which is closed. Example with no closed class (infinite state-space): $p_{i,i+1}=1$ on $\mathbb N$.
+\end{enumerate}
+
+\subsection*{Q6 (fill in)}
+One valid line: ``Use the present wisely, and even stopping times become milestones.''
+
+\section{Practice Problem Set 4}
+
+\subsection*{Q1 (Gambler's ruin)}
+Let $p=0.4$, $q=0.6$, start $i=3$, target $N=8$.
+\begin{enumerate}[label=(\alph*)]
+\item Timid strategy ($\pm1$ walk):
+\[
+\PP_i(\tau_N<\tau_0)=\frac{1-(q/p)^i}{1-(q/p)^N}
+=\frac{1-1.5^3}{1-1.5^8}\approx0.09643.
+\]
+\item Bold strategy:
+\[
+B_4=0.4,\quad B_6=0.4+0.6B_4=0.64,\quad B_3=0.4B_6=0.256.
+\]
+\item Bold is better: $0.256>0.09643$.
+\end{enumerate}
+
+\subsection*{Q2 (Pattern waiting times)}
+Using standard automaton-state equations:
+\[
+\EE[T_{\text{HTH}}]=10,\qquad \EE[T_{\text{HHH}}]=14,\qquad \EE[T_{\text{THTH}}]=20.
+\]
+
+\subsection*{Q3}
+Reading assignment item; no derivation requested.
+
+\subsection*{Q4}
+If $i$ is recurrent and $f_{ij}>0$, then from repeated returns to $i$ and Markov property, $f_{ij}=1$. If $f_{ji}<1$, then starting at $i$ there is positive probability to hit $j$ and then never return to $i$, contradicting recurrence of $i$. Hence $f_{ji}=1$. Therefore
+\[
+f_{jj}\ge f_{ji}f_{ij}=1,
+\]
+so $j$ is recurrent.
+
+\subsection*{Q5}
+Let $N_i=\sum_{n\ge0}\1_{\{X_n=i\}}$. Then
+\[
+\{X_n=i\ \text{i.o.}\}=\{N_i=\infty\}.
+\]
+State $i$ is recurrent iff $\PP_i(N_i=\infty)=1$, and transient iff $\PP_i(N_i<\infty)=1$, equivalently
+\[
+\text{transient }\Longleftrightarrow \PP_i(X_n=i\ \text{i.o.})=0.
+\]
+
+\subsection*{Q6}
+Let $T_j=\inf\{n\ge1:X_n=j\}$ and $N_j=\sum_{n\ge1}\1_{\{X_n=j\}}$.
+Condition on whether $j$ is ever hit:
+\[
+\EE_i[N_j]=f_{ij}\cdot\EE_j[N_j\text{ after a visit}] = f_{ij}\cdot\frac1{1-f_{jj}}.
+\]
+Hence
+\[
+\EE_i[N_j]=\frac{f_{ij}}{1-f_{jj}}.
+\]
+
+\subsection*{Q7}
+\begin{enumerate}[label=(\alph*)]
+\item For matrix (a), recurrent states: $\{3,4\}$ (closed class). Transient: $\{1,2,5\}$.
+Stationary distribution:
+\[
+\pi=(0,0,4/5,1/5,0).
+\]
+\item For matrix (b), closed class is $\{5,6\}$, so $5,6$ recurrent and $1,2,3,4$ transient.
+Stationary distribution:
+\[
+\pi=(0,0,0,0,1/2,1/2).
+\]
+\end{enumerate}
+
+\subsection*{Q8 (Umbrellas)}
+With $N$ umbrellas total, stationary distribution for umbrellas at departure location is
+\[
+\pi_0=\frac{1-p}{N+1-p},\qquad \pi_i=\frac1{N+1-p},\ i=1,\dots,N.
+\]
+You get wet iff it rains and there are $0$ umbrellas at departure location, so
+\[
+\PP(\text{wet})=p\pi_0=\frac{p(1-p)}{N+1-p}.
+\]
+For the given $N=4$:
+\[
+\PP(\text{wet})=\frac{p(1-p)}{5-p}.
+\]
+If $p=0.6$, this is $0.24/4.4\approx0.0545$.
+To make wet probability $<0.1$ when $p=0.6$:
+\[
+\frac{0.24}{N+0.4}<0.1\iff N>2,
+\]
+so minimum is $N=3$ umbrellas.
+
+\subsection*{Q9 (Knight walk)}
+\begin{enumerate}[label=(\alph*)]
+\item Markov: next move depends only on current square.
+\item State space: 64 squares.
+\item Irreducible: yes (knight graph on $8\times8$ board is connected).
+\item Stationary distribution:
+\[
+\pi(v)=\frac{\deg(v)}{\sum_u \deg(u)}=\frac{\deg(v)}{336}.
+\]
+Interpretation: long-run fraction of time on square $v$.
+\item Most likely squares: degree $8$ (center region), each with probability $1/42$.
+Least likely: corners (degree $2$), each with probability $1/168$.
+\end{enumerate}
+
+\subsection*{Q10}
+For increments $+2$ (prob. $p$) and $-1$ (prob. $1-p$), mean drift is
+\[
+\mu=2p-(1-p)=3p-1.
+\]
+The walk is recurrent only at zero drift ($p=1/3$). For $p\ne1/3$, it is transient.
+
+\subsection*{Q11}
+Example:
+\[
+P=\begin{pmatrix}
+1&0&0\\
+0&1&0\\
+1/2&1/2&0
+\end{pmatrix}.
+\]
+Then every
+\[
+\pi=(\alpha,1-\alpha,0),\quad \alpha\in[0,1],
+\]
+is stationary. So non-irreducible chains can have infinitely many stationary distributions.
+
+\subsection*{Q12 (fill in)}
+One valid line: ``I move by local rules, but in the long run the board writes the law.''
+
+\section{Practice Problem Set 5}
+
+\subsection*{Q1 (Elevator chain)}
+From state $0$, jump to height $K\ge1$ with $\PP(K=k)=q_k$; then descend deterministically to $0$.
+\begin{enumerate}[label=(\alph*)]
+\item Recurrent: return to $0$ occurs almost surely in finite time each cycle.
+\item Mean return time:
+\[
+\EE_0[T_0^+]=1+\EE[K]=1+\sum_{k\ge1}kq_k.
+\]
+So positive recurrence iff $\sum_{k\ge1}kq_k<\infty$.
+\end{enumerate}
+
+\subsection*{Q2 (Limit of $P^n$)}
+Closed classes: $\{1\}$ and $\{2,4\}$ (with stationary distribution on $\{2,4\}$ equal to $(1/3,2/3)$). States $3,5$ are transient.
+Absorption probabilities into state $1$:
+\[
+a_1=1,\ a_2=0,\ a_3=1/3,\ a_4=0,\ a_5=2/3.
+\]
+Hence
+\[
+\lim_{n\to\infty}p^{(n)}_{i1}=a_i,\quad
+\lim_{n\to\infty}p^{(n)}_{i2}=\frac{1-a_i}{3},\quad
+\lim_{n\to\infty}p^{(n)}_{i4}=\frac{2(1-a_i)}{3},
+\]
+and limits to states $3,5$ are $0$. Rows:
+\[
+\begin{aligned}
+& i=1:(1,0,0,0,0),\\
+& i=2:(0,1/3,0,2/3,0),\\
+& i=3:(1/3,2/9,0,4/9,0),\\
+& i=4:(0,1/3,0,2/3,0),\\
+& i=5:(2/3,1/9,0,2/9,0).
+\end{aligned}
+\]
+
+\subsection*{Q3}
+Given
+\[
+P=\begin{pmatrix}
+r&1-r&0\\
+q&0&p\\
+0&s&1-s
+\end{pmatrix},\quad p+q=1,
+\]
+start from $0$, and $N_j=\sum_{k=0}^{T_0-1}\1_{\{X_k=j\}}$.
+\begin{enumerate}[label=(\alph*)]
+\item
+\[
+\gamma_{00}=\EE_0[N_0]=1,
+\qquad
+\gamma_{10}=\frac{1-r}{q},
+\qquad
+\gamma_{20}=\frac{p(1-r)}{sq}.
+\]
+\item Stationary distribution:
+\[
+\pi_1=\frac{1-r}{q}\pi_0,\qquad \pi_2=\frac{p(1-r)}{sq}\pi_0,
+\]
+\[
+\pi_0=\left(1+\frac{1-r}{q}+\frac{p(1-r)}{sq}\right)^{-1}.
+\]
+So indeed
+\[
+\pi_j=\frac{\gamma_{j0}}{\gamma_{00}+\gamma_{10}+\gamma_{20}},\quad j=0,1,2.
+\]
+\end{enumerate}
+
+\subsection*{Q4 (Durrett 1.74)}
+For chain with $p_{i,i+1}=q_i$ and $p_{i,0}=1-q_i$, define
+\[
+a_n:=\prod_{k=0}^{n-1}q_k,\quad n\ge1,\qquad a_0:=1.
+\]
+Then
+\[
+\PP_0(T_0>n)=a_n,
+\]
+so recurrence is equivalent to
+\[
+\PP_0(T_0<\infty)=1\iff \lim_{n\to\infty}a_n=0\iff \prod_{k=0}^\infty q_k=0.
+\]
+Mean return time:
+\[
+\EE_0[T_0]=\sum_{n\ge0}\PP_0(T_0>n)=\sum_{n\ge0}a_n.
+\]
+Hence positive recurrence iff $\sum_{n\ge0}a_n<\infty$.
+When positive recurrent,
+\[
+\pi_i=\pi_0 a_i,\qquad
+\pi_0=\left(\sum_{n\ge0}a_n\right)^{-1}.
+\]
+
+\subsection*{Q5}
+If $i\leftrightarrow j$, choose $m,n$ with $p^{(m)}_{ij}>0$, $p^{(n)}_{ji}>0$. For any $t$ with $p^{(t)}_{ii}>0$, we have $p^{(m+t+n)}_{jj}>0$. Thus $d(j)$ divides all numbers $m+t+n$, so $d(j)\mid d(i)$. Symmetrically $d(i)\mid d(j)$. Hence $d(i)=d(j)$.
+
+\subsection*{Q6}
+\begin{enumerate}[label=(\alph*)]
+\item For the first matrix (6 states), all states communicate. Return cycles of lengths $3$ (via $1\to2\to3\to1$) and $4$ (via $3\to4\to5\to6\to3$) exist; gcd$(3,4)=1$. So all states have period $1$ (aperiodic).
+\item For the second matrix, classes are $\{1,2,3\}$ and $\{4,5\}$. In $\{1,2,3\}$, return lengths include $3$ and $5$, so period $1$. In $\{4,5\}$ both states have self-loops, so period $1$. Hence all states are aperiodic.
+\end{enumerate}
+
+\section{Practice Problem Set 6}
+
+\subsection*{Q1}
+Given
+\[
+X_{n+1}=(X_n+Y_{n+1})^+,
+\quad \PP(Y_{n}=2)=p,\ \PP(Y_n=-1)=1-p.
+\]
+\begin{enumerate}[label=(\alph*)]
+\item DTMC on $\{0,1,2,\dots\}$ with transitions
+\[
+0\to 0\ (1-p),\ 0\to2\ (p),\qquad i\ge1:\ i\to i-1\ (1-p),\ i\to i+2\ (p).
+\]
+\item Transition diagram follows directly from the above arrows.
+\item With $V(x)=x$, for $i\ge1$,
+\[
+\Delta V(i)=\EE[X_{n+1}-X_n\mid X_n=i]=2p-(1-p)=3p-1.
+\]
+So a sufficient condition for positive recurrence is $p<1/3$ (negative drift outside a finite set).
+\item For $p<1/3$ (positive recurrent), use ergodic theorem/renewal reward:
+\[
+\frac1n\EE[Z_n]\to \pi_0=\frac1{\EE_0[T_0^+]},
+\]
+where $\pi_0$ is stationary mass at $0$.
+\end{enumerate}
+
+\subsection*{Q2}
+Here $p_{0i}=\alpha/i^2$ ($i\ge1$) with $\sum_{i\ge1}\alpha/i^2=1$, and for $i\ge1$, $p_{i,i+1}=p$, $p_{i,i-1}=q=1-p$, $p<1/2$.
+\begin{enumerate}[label=(\alph*)]
+\item Diagram: from $0$ jump to $i\ge1$ with probability $\alpha/i^2$; from each $i\ge1$, move to $i+1$ with $p$ and to $i-1$ with $q$.
+\item With $V(i)=i$, for $i\ge1$,
+\[
+\Delta V(i)=p-q=-(q-p)<0.
+\]
+Foster recurrence criterion gives $f_{00}=1$.
+\item There exists $\varepsilon=q-p>0$ such that
+\[
+\EE[X_{n+1}-X_n\mid X_n=i]=-(q-p)\le-\varepsilon,\quad i\ge1.
+\]
+Yet the chain is null recurrent: from $i\ge1$, $\EE_i[T_0]=i/(q-p)$ (solve one-step recursion), so
+\[
+\EE_0[T_0^+]=1+\sum_{i\ge1}\frac{\alpha}{i^2}\cdot\frac{i}{q-p}
+=1+\frac{\alpha}{q-p}\sum_{i\ge1}\frac1i=\infty.
+\]
+Thus recurrent but not positive recurrent.
+\item No violation. Positive-recurrence Lyapunov theorem requires additional hypotheses (notably finite $\EE[V(X_{n+1})\mid X_n=x]$ on a finite set). Here at $x=0$, with $V(i)=i$, that expectation is infinite due harmonic divergence.
+\end{enumerate}
+
+\subsection*{Q3 (Reversibility)}
+\begin{enumerate}[label=(\alph*)]
+\item
+\[
+P=\begin{pmatrix}
+0&p&1-p\\
+1-p&0&p\\
+p&1-p&0
+\end{pmatrix}
+\]
+is reversible iff Kolmogorov cycle products match:
+\[
+p^3=(1-p)^3 \iff p=1/2.
+\]
+\item Any finite nearest-neighbor (birth-death) chain on $\{0,1,\dots,N\}$ is reversible (construct $\pi$ recursively by detailed balance).
+\item If $p_{ij}=p_{ji}$ for all $i,j$, then chain is reversible with respect to uniform $\pi$ (finite state-space).
+\item For $p_{01}=1$, $p_{i,i+1}=p$, $p_{i,i-1}=1-p$ ($i\ge1$), detailed balance gives
+\[
+\pi_{i+1}=\frac{p}{1-p}\pi_i,\ i\ge1,\qquad \pi_1=\frac{1}{1-p}\pi_0.
+\]
+A normalizable stationary distribution exists iff $p<1/2$. Hence reversible (as a probability chain) iff $p<1/2$.
+\end{enumerate}
+
+\subsection*{Q4}
+\begin{enumerate}[label=(\alph*)]
+\item For simple random walk on connected undirected graph,
+\[
+\pi_i=\frac{d_i}{2|E|},\qquad P_{ij}=\frac1{d_i}\ \text{if }(i,j)\in E,
+\]
+so
+\[
+\pi_iP_{ij}=\frac1{2|E|}=\pi_jP_{ji}
+\]
+on edges, and both sides are $0$ off edges. So detailed balance holds.
+\item For knight walk on chessboard,
+\[
+\pi(v)=\frac{\deg(v)}{336}.
+\]
+Hence per-square probabilities by degree are: $2/336,3/336,4/336,6/336,8/336$.
+\end{enumerate}
+
+\subsection*{Q5 (fill in)}
+One valid line: ``Reverse me in time and I still obey detailed balance.''
+
+\section{Practice Problem Set 7}
+
+\subsection*{Q1}
+\begin{enumerate}[label=(\alph*)]
+\item If $\PP(A_n)=1$ for all $n$, then
+\[
+\PP\Big(\bigcap_n A_n\Big)=1-\PP\Big(\bigcup_n A_n^c\Big)\ge1-\sum_n\PP(A_n^c)=1.
+\]
+Also $\PP(\cup_n A_n)=1$.
+\item If $\PP(B)=1$, then
+\[
+\PP(A\mid B)=\frac{\PP(A\cap B)}{\PP(B)}=\PP(A\cap B)=\PP(A)
+\]
+since $\PP(B^c)=0$.
+\item If $\EE|X|<\infty$, then $\PP(|X|=\infty)=0$; otherwise $|X|$ would be infinite on a set of positive probability and expectation would be infinite.
+\end{enumerate}
+
+\subsection*{Q2}
+\begin{enumerate}[label=(\alph*)]
+\item
+\[
+\limsup A_n=\bigcap_{m\ge1}\bigcup_{n\ge m}A_n,\qquad
+\liminf A_n=\bigcup_{m\ge1}\bigcap_{n\ge m}A_n,
+\]
+so both are in $\mathcal F$.
+\item Immediate from definitions: $\liminf A_n\subseteq \limsup A_n$.
+\item
+\[
+\{\lim X_n=X\}=\bigcap_{k\ge1}\bigcup_{N\ge1}\bigcap_{n\ge N}\{|X_n-X|<1/k\}\in\mathcal F.
+\]
+\item For each $\omega$, $\limsup\1_{A_n}(\omega)=1$ iff $\omega\in A_n$ infinitely often, i.e. iff $\omega\in\limsup A_n$. Hence
+\[
+\1_{\limsup A_n}(\omega)=\limsup_n\1_{A_n}(\omega).
+\]
+\end{enumerate}
+
+\subsection*{Q3 (Infinite monkeys)}
+Let $E_m$ be the event that positions $6m+1$ to $6m+6$ spell BANANA. Then
+\[
+\PP(E_m)=26^{-6}>0,
+\]
+and $(E_m)$ are independent (disjoint blocks). Since
+\[
+\sum_m\PP(E_m)=\infty,
+\]
+Borel--Cantelli (II) gives $\PP(E_m\ \text{i.o.})=1$. Therefore BANANA appears infinitely often almost surely.
+
+\subsection*{Q4 (Online dating)}
+Assume independent daily picks and deterministic member counts.
+Let $M_n$ be male count, $F_n$ female count on day $n$.
+\begin{enumerate}[label=(\alph*)]
+\item If Bob only dates when Alice picks him,
+\[
+\PP(\text{meet on day }n)=\frac1{M_n},\quad M_n=M_0+50n.
+\]
+Since $\sum_n1/M_n=\infty$ and events are independent across days, they meet infinitely often a.s.; they do \emph{not} eventually stop meeting.
+\item If both must pick each other,
+\[
+\PP(\text{meet on day }n)=\frac1{M_nF_n},\quad F_n=F_0+40n.
+\]
+Now $\sum_n 1/(M_nF_n)<\infty$ (order $1/n^2$), so meetings occur only finitely many times a.s.; they eventually stop meeting.
+\item If male count grows by $1\%$ daily, $M_n\approx M_0(1.01)^n$, then
+\[
+\sum_n\frac1{M_n}<\infty,
+\]
+so meetings are finite a.s.; they eventually stop meeting.
+\end{enumerate}
+
+\subsection*{Q5}
+Counterexample on a common space: let $Y\sim\mathrm{Bernoulli}(1/2)$ and define $Y_n=1-Y$ for all $n$.
+Then $Y_n\stackrel d=Y$ for every $n$, so $Y_n\xrightarrow d Y$. But
+\[
+\PP(|Y_n-Y|>0)=1,
+\]
+so $Y_n\not\xrightarrow{\PP}Y$.
+
+\subsection*{Q6}
+\begin{enumerate}[label=(\alph*)]
+\item If $X_n$ are i.i.d. with $\EE|X_1|<\infty$ and $Y_n=\1_{\{|X_n|\le n\}}X_n$, then
+\[
+\EE[Y_n]=\EE[X_1\1_{\{|X_1|\le n\}}]\to\EE[X_1]
+\]
+by dominated convergence.
+\item Not true without i.i.d. Counterexample:
+\[
+X_n=
+\begin{cases}
+n^2,&\text{with prob. }1/n,\\
+-n,&\text{with prob. }1-1/n.
+\end{cases}
+\]
+Then $\EE[X_n]=1=\EE[X_1]$ for all $n$, but
+\[
+Y_n=\1_{\{|X_n|\le n\}}X_n=
+\begin{cases}
+0,&X_n=n^2,\\
+-n,&X_n=-n,
+\end{cases}
+\]
+so $\EE[Y_n]=-(n-1)\not\to1$.
+\end{enumerate}
+
+\subsection*{Q7 (fill in)}
+One valid line: ``If your typing chance stays positive, I appear infinitely often.''
+
+\section{Practice Problem Set 8}
+
+\subsection*{Q1}
+For right-continuous paths on discrete state space,
+\[
+\{X_t=i\ \forall t\in[t_1,t_2]\}=\bigcap_{q\in\mathbb Q\cap[t_1,t_2]}\{X_q=i\}.
+\]
+Hence
+\[
+\PP(X_t=i\ \forall t\in[t_1,t_2])
+=\PP\Big(\bigcap_{q\in\mathbb Q\cap[t_1,t_2]}\{X_q=i\}\Big),
+\]
+which is the limit of probabilities of finite rational-grid intersections (finite-dimensional distributions).
+
+\subsection*{Q2 (Exponential properties)}
+Let $S_i\sim\mathrm{Exp}(\lambda_i)$ independent.
+\begin{enumerate}[label=(\alph*)]
+\item For $t\ge0$,
+\[
+\PP(\lambda_1S_1>t)=\PP(S_1>t/\lambda_1)=e^{-t},
+\]
+so $\lambda_1S_1\sim\mathrm{Exp}(1)$.
+\item
+\[
+\PP\Big(\min_{1\le i\le n}S_i>t\Big)=\prod_{i=1}^n e^{-\lambda_it}=e^{-(\lambda_1+\cdots+\lambda_n)t}.
+\]
+\item
+\[
+\PP\Big(S_1<\min_{2\le i\le n}S_i\mid\min_i S_i>t\Big)=\frac{\lambda_1}{\lambda_1+\cdots+\lambda_n}.
+\]
+So this event is independent of $\{\min_iS_i>t\}$.
+\item If $\sum_n\lambda_n^{-1}<\infty$, then
+\[
+\EE\Big[\sum_n S_n\Big]=\sum_n\EE[S_n]=\sum_n\frac1{\lambda_n}<\infty,
+\]
+thus $\sum_n S_n<\infty$ a.s.
+\item If $\sum_n\lambda_n^{-1}=\infty$, for any $u>0$,
+\[
+\EE\left[e^{-u\sum_{n=1}^N S_n}\right]=\prod_{n=1}^N\frac{\lambda_n}{\lambda_n+u}.
+\]
+As $N\to\infty$, product tends to $0$ (since $\sum_n\log(1+u/\lambda_n)=\infty$), so
+\[
+\EE\left[e^{-u\sum_n S_n}\right]=0.
+\]
+Hence $\sum_nS_n=\infty$ a.s.
+\end{enumerate}
+
+\subsection*{Q3}
+For Poisson process $(X_t)$ of rate $\lambda$,
+\[
+p_0(t+h)=\PP(X_{t+h}=0)=\PP(X_t=0)\PP(X_{t+h}-X_t=0)=p_0(t)e^{-\lambda h}.
+\]
+So
+\[
+\frac{p_0(t+h)-p_0(t)}{h}=p_0(t)\frac{e^{-\lambda h}-1}{h}\to-\lambda p_0(t),
+\]
+thus $p_0'(t)=-\lambda p_0(t)$.
+
+\subsection*{Q4}
+For $0\le t_1<\cdots<t_n$ and integers $0\le x_1\le\cdots\le x_n$,
+\[
+\PP(X_{t_1}=x_1,\dots,X_{t_n}=x_n)
+=\frac{e^{-\lambda t_1}(\lambda t_1)^{x_1}}{x_1!}
+\prod_{k=2}^n
+\frac{e^{-\lambda(t_k-t_{k-1})}\big(\lambda(t_k-t_{k-1})\big)^{x_k-x_{k-1}}}{(x_k-x_{k-1})!}.
+\]
+(If $x_1\le\cdots\le x_n$ fails, probability is $0$.) These formulas determine all fdds.
+
+\subsection*{Q5}
+If $N_t$ is Poisson with rate $2$:
+\begin{enumerate}[label=(\alph*)]
+\item
+\[
+\PP(N_3=4\mid N_1=1)=\PP(N_3-N_1=3)=e^{-4}\frac{4^3}{3!}.
+\]
+\item Given $N_3=4$, $N_1\sim\mathrm{Bin}(4,1/3)$, so
+\[
+\PP(N_1=1\mid N_3=4)=\binom41\left(\frac13\right)\left(\frac23\right)^3=\frac{32}{81}.
+\]
+\end{enumerate}
+
+\subsection*{Q6}
+Assume $t\ge s$. Then $N_t=N_s+(N_t-N_s)$ with independent increment $N_t-N_s$ independent of $N_s$. Hence
+\[
+\mathrm{Cov}(N_t,N_s)=\mathrm{Cov}(N_s,N_s)=\mathrm{Var}(N_s)=\lambda s=\lambda\min\{t,s\}.
+\]
+
+\section{Quiz 1}
+
+\subsection*{Q1--Q5 (True/False with justification)}
+\begin{enumerate}
+\item \textbf{True.} For decreasing $A_n$, continuity from above gives
+\[
+\PP(A_n)\downarrow\PP\Big(\bigcap_{n\ge1}A_n\Big).
+\]
+\item \textbf{False in general.} The convolution pmf formula needs independence of $X$ and $Y$.
+\item \textbf{False.} $\EE[XY]=\EE[X]\EE[Y]$ does not imply independence in general.
+\item \textbf{False.} For exponential,
+\[
+\PP(X>t+s\mid X>s)=\PP(X>t),
+\]
+not strictly smaller.
+\item \textbf{True.} For $Y=1-e^{-X}$ with $X\sim\mathrm{Exp}(1)$,
+\[
+\PP(Y\le y)=\PP(X\le -\log(1-y))=y,\quad y\in[0,1].
+\]
+So $Y\sim\mathrm{Unif}(0,1)$.
+\end{enumerate}
+
+\section{Quiz 2}
+
+Use state $S_n=(Y_{n-2},Y_{n-1},Y_n)\in\{0,1\}^3$, $n\ge2$.
+Define
+\[
+r:=\PP(Y_{n+1}=1\mid Y_n=Y_{n-1}\ne Y_{n-2})
+=\PP(B\oplus X_{n+1}=1)=2p(1-p),
+\]
+where $B\sim\mathrm{Bernoulli}(p)$ is the extra flip coin in the rule.
+Then transitions are:
+\[
+\begin{array}{c|c}
+\text{state }abc & \text{next-state probabilities for }(bc\,d)\\\hline
+000 & 001\ (1)\\
+001 & 010\ (1-p),\ 011\ (p)\\
+010 & 100\ (1-p),\ 101\ (p)\\
+011 & 110\ (1-r),\ 111\ (r)\\
+100 & 000\ (1-r),\ 001\ (r)\\
+101 & 010\ (1-p),\ 011\ (p)\\
+110 & 100\ (1-p),\ 101\ (p)\\
+111 & 110\ (1)
+\end{array}
+\]
+Initial distribution: $S_2=(X_0,X_1,X_2)$ with i.i.d. Bernoulli$(p)$ bits.
+
+\section{Quiz 3}
+
+For the given 5-state matrix:
+\begin{enumerate}
+\item Communicating classes are $\{1,2,5\}$ and $\{3,4\}$. A closed class is $C=\{3,4\}$.
+\item Hitting probabilities of $C$:
+\[
+h_i^C=1\ \text{for all }i\in\{1,2,3,4,5\}.
+\]
+\item With $D=I\setminus C=\{1,2,5\}$,
+\[
+h_i^D=1\ (i\in D),\qquad h_3^D=h_4^D=0.
+\]
+\item For $i,j\in D$, $i\ne j$:
+\[
+h_{1}^{\{2\}}=0.9,\quad h_{1}^{\{5\}}=1,
+\]
+\[
+h_{2}^{\{1\}}=1,\quad h_{2}^{\{5\}}=1,
+\]
+\[
+h_{5}^{\{1\}}=0.1,\quad h_{5}^{\{2\}}=0.1.
+\]
+\end{enumerate}
+
+\section{Quiz 4}
+
+Let $N_{j\to k}$ be the total number of $j\to k$ transitions, start from $X_0=j$.
+\[
+\EE_j[N_{j\to k}]
+=\sum_{n\ge0}\PP_j(X_n=j,X_{n+1}=k)
+=\sum_{n\ge0}\PP_j(X_n=j)p_{jk}
+=p_{jk}\sum_{n\ge0}\PP_j(X_n=j).
+\]
+Using $\sum_{n\ge0}\PP_j(X_n=j)=1/(1-f_{jj})$,
+\[
+\EE_j[N_{j\to k}]=\frac{p_{jk}}{1-f_{jj}}.
+\]
+
+\section{Quiz 5}
+
+Chain: from $i\ge1$, move to $i-1$ deterministically; from $0$, jump to $k\ge0$ with probability $q_k$.
+\begin{enumerate}
+\item Recurrent: from any state, state $0$ is hit in finite time almost surely, and this regenerates forever.
+\item First return time from 0 is $T_0^+=K+1$ where $\PP(K=k)=q_k$. So
+\[
+\EE_0[T_0^+]=1+\sum_{k\ge1}kq_k.
+\]
+Positive recurrence iff $\sum_{k\ge1}kq_k<\infty$.
+\item When positive recurrent,
+\[
+\pi_0=\frac1{\EE_0[T_0^+]}=\frac1{1+\sum_{k\ge1}kq_k}.
+\]
+\item Since $q_0>0$, $p_{00}=q_0>0$, so period of $0$ is 1. By irreducibility (all $q_k>0$), all states are aperiodic.
+\item If $q_{2m}=0$ for all $m$ (only odd jumps), then return times to $0$ are $k+1$ with odd $k$, hence all even. So $d(0)=2$.
+For state $10$, any return length is also even, hence $d(10)=2$.
+\end{enumerate}
+
+\section{Quiz 6}
+
+For $i\ge1$: $p_{i,i+2}=p$, $p_{i,i-1}=1-p$; and at 0: $p_{0,2}=q$, $p_{0,0}=1-q$.
+
+Using $V(x)=x$:
+\[
+\Delta V(i)=\EE[X_{n+1}-X_n\mid X_n=i]=3p-1,\quad i\ge1.
+\]
+So a sufficient condition for positive recurrence is
+\[
+p<1/3.
+\]
+
+Using $V'(x)=x^2$:
+\[
+\Delta V'(i)=p\big((i+2)^2-i^2\big)+(1-p)\big((i-1)^2-i^2\big)
+=(6p-2)i+(3p+1).
+\]
+This is negative for all sufficiently large $i$ iff $p<1/3$. So $V'$ gives the same threshold (no improvement in parameter condition).
+
+\section{Quiz 7}
+
+\begin{enumerate}
+\item
+\[
+\liminf A_n=\bigcup_{m\ge1}\bigcap_{n\ge m}A_n\in\mathcal F.
+\]
+\item For every $\omega$,
+\[
+\1_{\liminf A_n}(\omega)=\liminf_n\1_{A_n}(\omega).
+\]
+\item By Fatou on indicators,
+\[
+\PP(\liminf A_n)=\EE[\1_{\liminf A_n}]
+=\EE[\liminf\1_{A_n}]
+\le\liminf\EE[\1_{A_n}]
+=\liminf\PP(A_n).
+\]
+\end{enumerate}
+
+%% ============================================================
+\section{Practice Problem Set 9}
+
+\subsection*{Q1}
+Reading assignment: Theorem 2.4.6 in Norris. (No derivation required.)
+
+\subsection*{Q2 (Splitting of a Poisson process)}
+Let $\Lambda=\lambda_1+\lambda_2$ where $\lambda_1=p\lambda$, $\lambda_2=(1-p)\lambda$.
+For any non-negative integers $m,n$, independence of $(\theta_k)$ from $(X_t)$ gives
+\[
+\PP(X^1_t=m,\,X^2_t=n)
+=\PP(X_t=m{+}n)\binom{m+n}{m}p^m(1-p)^n
+=\frac{e^{-\lambda t}(\lambda t)^{m+n}}{(m+n)!}\cdot\frac{(m+n)!}{m!\,n!}p^m(1-p)^n
+\]
+\[
+=\frac{e^{-p\lambda t}(p\lambda t)^m}{m!}\cdot\frac{e^{-(1-p)\lambda t}((1-p)\lambda t)^n}{n!}.
+\]
+This factors as $\PP(\mathrm{Poi}(p\lambda t)=m)\cdot\PP(\mathrm{Poi}((1-p)\lambda t)=n)$, so $X^1_t$ and $X^2_t$ are independent for each $t$.
+For the full independence of the two processes, note that joint finite-dimensional distributions of $(X^1_{t_1},\ldots,X^1_{t_k},X^2_{s_1},\ldots,X^2_{s_\ell})$ factor because the labeling $\theta_n$ is i.i.d.\ and independent of $X$: conditioning on $X$ and the inter-arrival structure and applying the same Binomial-splitting calculation to each increment interval yields the factored product form.
+
+\subsection*{Q3 (First jump time from the infinitesimal definition)}
+Let $p_0(t)=\PP(J_1>t)=\PP(X_t=0)$.  By independent increments and the infinitesimal characterisation,
+\[
+p_0(t+h)=\PP(X_t=0)\PP(X_{t+h}-X_t=0)=p_0(t)(1-\lambda h+o(h)).
+\]
+Rearranging: $p_0'(t)=-\lambda p_0(t)$ with $p_0(0)=1$, giving $p_0(t)=e^{-\lambda t}$.
+Hence $J_1\sim\mathrm{Exp}(\lambda)$.
+
+\subsection*{Q4}
+Let $(X_t)$ be a Poisson process of rate $\lambda$ and set $N^1_t=X_t$, $N^2_t=X_t$.  Both are Poisson($\lambda$), but $N^1_t+N^2_t=2X_t$ takes only even values, whereas any Poisson process of positive rate assigns positive probability to odd integers.  Hence the superposition is not a Poisson process.
+
+\subsection*{Q5}
+Write $\lfloor t\rfloor=n$.  By the SLLN applied to the i.i.d.\ increments $N_k=X_k-X_{k-1}\sim\mathrm{Poi}(\lambda)$,
+\[
+\frac{X_n}{n}=\frac{1}{n}\sum_{k=1}^n N_k\xrightarrow{\text{a.s.}}\lambda.
+\]
+Monotonicity of paths gives $X_n\le X_t\le X_{n+1}$ for $n\le t<n+1$, so
+\[
+\frac{X_n}{t}\le\frac{X_t}{t}\le\frac{X_{n+1}}{t}.
+\]
+As $t\to\infty$, $n/t\to1$ and $(n+1)/t\to1$, so both bounds converge a.s.\ to $\lambda$ by the above.  Hence $X_t/t\xrightarrow{\text{a.s.}}\lambda$.
+
+\subsection*{Q6}
+Since $N^{(1)}$ and $N^{(2)}$ are independent and have no simultaneous jumps a.s., the combined process $(N^{(1)}_t,N^{(2)}_t)$ can be viewed as a single Poisson process of rate $\lambda_1+\lambda_2$ in which each event is independently labelled ``type 1'' with probability $p=\lambda_1/(\lambda_1+\lambda_2)$ or ``type 2'' with probability $1-p$.  The state $(i,j)$ is visited if and only if among the first $i+j$ combined events exactly $i$ are type 1, giving
+\[
+\PP\!\left(\text{process visits }(i,j)\right)=\binom{i+j}{i}\left(\frac{\lambda_1}{\lambda_1+\lambda_2}\right)^i\!\left(\frac{\lambda_2}{\lambda_1+\lambda_2}\right)^j.
+\]
+
+\subsection*{Q7 (Two-salesman CTMC)}
+States: $0$ (nobody on phone), $1$ (salesman 1 only), $2$ (salesman 2 only), $12$ (both).
+\[
+Q=\bordermatrix{
+ & 0 & 1 & 2 & 12 \cr
+0 & -(\lambda_1{+}\lambda_2) & \lambda_1 & \lambda_2 & 0 \cr
+1 & \mu_1 & -(\mu_1{+}\lambda_2) & 0 & \lambda_2 \cr
+2 & \mu_2 & 0 & -(\mu_2{+}\lambda_1) & \lambda_1 \cr
+12 & 0 & \mu_2 & \mu_1 & -(\mu_1{+}\mu_2)
+}.
+\]
+
+\subsection*{Q8 (Explosion)}
+Since the chain only jumps from $i$ to $i+1$, the inter-jump times $S_i\sim\mathrm{Exp}(\lambda(i))$ are independent and $\zeta=\sum_{i=0}^\infty S_i$.  From Practice Set 8 Q2:
+\begin{enumerate}[label=(\roman*)]
+\item $\PP(\zeta<\infty)=1$ if and only if $\displaystyle\sum_{i=0}^\infty\frac{1}{\lambda(i)}<\infty$.
+\item $\PP(\zeta=\infty)=1$ if and only if $\displaystyle\sum_{i=0}^\infty\frac{1}{\lambda(i)}=\infty$.
+\end{enumerate}
+
+%% ============================================================
+\section{Practice Problem Set 10}
+
+\subsection*{Q1 (M/M/1/K queue)}
+\begin{enumerate}[label=(\alph*)]
+\item Model as a CTMC on $\{0,1,\ldots,K\}$ with $q_{i,i+1}=\lambda$ for $0\le i<K$ and $q_{i,i-1}=\mu$ for $1\le i\le K$.
+\item Let $\rho=\lambda/\mu$.  Detailed balance gives $\pi_i=\pi_0\rho^i$.  Normalising,
+\[
+\pi_0=\frac{1-\rho}{1-\rho^{K+1}}\quad(\rho\ne1),\qquad \pi_0=\frac{1}{K+1}\quad(\rho=1).
+\]
+The fraction of time the server is free is $\pi_0$.
+\end{enumerate}
+
+\subsection*{Q2 (Machine with two parts)}
+Let $T_1,T_2,T_3$ be the times of the first type-1, type-2, type-3 shock respectively, with $T_i\sim\mathrm{Exp}(\lambda_i)$ independent.  Part 1 fails at $U=\min(T_1,T_3)$ and part 2 at $V=\min(T_2,T_3)$.
+\begin{enumerate}[label=(\alph*)]
+\item For $s,t\ge0$,
+\[
+\PP(U>s,V>t)=\PP(T_1>s)\PP(T_2>t)\PP(T_3>\max(s,t))
+=e^{-\lambda_1 s}e^{-\lambda_2 t}e^{-\lambda_3\max(s,t)}.
+\]
+\item Marginals: $U\sim\mathrm{Exp}(\lambda_1+\lambda_3)$, $V\sim\mathrm{Exp}(\lambda_2+\lambda_3)$.  If $U,V$ were independent, $\PP(U>s,V>t)$ would equal $e^{-(\lambda_1+\lambda_3)s}e^{-(\lambda_2+\lambda_3)t}$.  Since $e^{-\lambda_3\max(s,t)}\ne e^{-\lambda_3(s+t)}$ whenever $\lambda_3>0$, $U$ and $V$ are \emph{not} independent when $\lambda_3>0$.
+\end{enumerate}
+
+\subsection*{Q3 (N-component repair system)}
+\begin{enumerate}[label=(\alph*)]
+\item From state $i$ (number functioning): failures occur at total rate $i\lambda$, repairs at total rate $(N-i)\cdot 1$.
+\[
+Q_{i,i-1}=i\lambda\ (i\ge1),\quad Q_{i,i+1}=N-i\ (i\le N-1),\quad Q_{ii}=-(i\lambda+N-i).
+\]
+\item Detailed balance $\pi_i\cdot i\lambda=\pi_{i-1}(N-i+1)$ gives $\pi_i=\pi_0\binom{N}{i}(1/\lambda)^i$.  Normalising,
+\[
+\pi_0=\left(1+\frac{1}{\lambda}\right)^{-N},\quad
+\pi_i=\binom{N}{i}\left(\frac{1}{1+\lambda}\right)^i\left(\frac{\lambda}{1+\lambda}\right)^{N-i}.
+\]
+So $X_t\sim\mathrm{Bin}\!\left(N,\tfrac{1}{1+\lambda}\right)$ in stationarity.
+\end{enumerate}
+
+\subsection*{Q4}
+The Markov property of $(X_t)$ gives independence of $X_{t+h}$ from $(X_s,s\le t)$ given $X_t$.  By the semigroup $P(h)=e^{Qh}=I+Qh+O(h^2)$,
+\[
+\PP(X_{t+h}=j\mid X_t=i)=\delta_{i,j}+q_{i,j}h+o(h)\quad\text{uniformly in }t.
+\]
+
+\subsection*{Q5}
+\begin{enumerate}[label=(\alph*)]
+\item If $i\to j$ in $(X_t)$ there is a sequence of states and positive-rate jumps leading from $i$ to $j$; these same jumps correspond to transitions in $\{Y_n\}$, so $i\to j$ in $\{Y_n\}$.
+\item If $i$ is recurrent for $\{Y_n\}$, the embedded chain returns to $i$ infinitely often.  Each return cycle contributes at least the holding time at $i$, which is $\mathrm{Exp}(q_i)>0$.  Hence $J_n\ge\sum_{\text{returns}}H_i\to\infty$ a.s., so $\zeta=\infty$ a.s.
+\end{enumerate}
+
+\subsection*{Q6}
+\begin{enumerate}[label=(\alph*)]
+\item State $i$ is recurrent iff $q_i=0$ (absorbing, trivially returns) or $\PP_i(T_i<\infty)=1$ (a.s.\ return after leaving).
+\item State $i$ is transient iff $q_i>0$ and $\PP_i(T_i<\infty)<1$.
+\end{enumerate}
+
+\subsection*{Q7 (Pos.\ recurrence discrepancy)}
+\begin{enumerate}[label=(\alph*)]
+\item \emph{CTMC positive recurrent, embedded DTMC null recurrent.}
+Take $\mathbb{Z}_+$ with $q_{i,i+1}=q_{i,i-1}=i^3$ for $i\ge1$ and $q_{0,1}=1$.  The embedded DTMC is the symmetric nearest-neighbour walk on $\mathbb{Z}_+$ (reflected at $0$), which is null recurrent.  In continuous time, the holding time at state $i$ is $\mathrm{Exp}(2i^3)$, so $\EE_1[T_0]\le 1/i^2\to0$, giving $\EE_0[T_0^+]<\infty$ and positive recurrence.
+\item \emph{Embedded DTMC positive recurrent, CTMC null recurrent.}
+Take $\mathbb{Z}_+$ with $q_{0,i}=1/i^2$ (for $i\ge1$, so $q_0=\pi^2/6$) and $q_{i,0}=1/i^2$ for $i\ge1$.  The embedded DTMC returns to $0$ in exactly $2$ steps (pos.\ recurrent).  The CTMC mean return time is $\EE_0[T_0^+]=1/q_0+\sum_{i\ge1}p_{0i}/q_i\ge\sum_{i\ge1}(6/\pi^2 i^2)\cdot i^2=\infty$.
+\end{enumerate}
+
+\subsection*{Q8 (M/M/1 positive recurrence)}
+The M/M/1 queue is an irreducible birth--death chain on $\mathbb{Z}_+$.  The stationary equation $\pi Q=0$ and detailed balance give $\pi_i=\rho^i\pi_0$ where $\rho=\lambda/\mu$.  Normalisation $\sum_{i\ge0}\pi_i=1$ holds iff $\rho<1$, i.e.\ $\lambda<\mu$.  When $\rho<1$, $\pi_0=1-\rho>0$ and the chain is positive recurrent.  When $\rho\ge1$, no probability distribution satisfies $\pi Q=0$ with $\sum\pi_i=1$, so the chain is null recurrent or transient.
+
+\subsection*{Q9}
+Irreducibility of $Q$ implies $P_t(i,j)>0$ for all $t>0$ and all $i,j$; in particular $P_{nh}(i,j)>0$ for some $n$, so $\{Z_n\}$ is irreducible.  Aperiodicity: $P_h(i,i)=e^{-q_i h}+\cdots>0$ for all $i$ and $h>0$, giving $p^{(1)}_{ii}>0$ in $\{Z_n\}$, hence period $1$.
+
+\subsection*{Q10 (Impatient customers)}
+\begin{enumerate}[label=(\alph*)]
+\item From state $n\ge2$: arrivals at rate $\lambda$ ($n\to n+1$); service completion at rate $\mu$ ($n\to n-1$); each of $n-1$ waiting customers abandons at rate $\delta$, total $\to n-1$ at rate $\mu+(n-1)\delta$.  From state $1$: $1\to0$ at rate $\mu$; $1\to2$ at rate $\lambda$.  From $0$: $0\to1$ at rate $\lambda$.
+\item For $\delta=\mu$: the rate from $n$ to $n-1$ becomes $\mu+(n-1)\mu=n\mu$.  Detailed balance $\lambda\pi_n=n\mu\,\pi_{n+1}$ gives $\pi_{n+1}=(\lambda/(n+1)\mu)\pi_n=(\rho/(n+1))\pi_n$.  By induction $\pi_n=\pi_0\rho^n/n!$.  Normalising, $\pi_0 e^{\rho}=1$, so
+\[
+\pi_n=e^{-\rho}\frac{\rho^n}{n!},\quad\rho=\lambda/\mu.
+\]
+The stationary distribution is $\mathrm{Poisson}(\rho)$.
+\end{enumerate}
+
+\subsection*{Q11}
+The chain is irreducible (path $0\to1\to2\to0$ exists with positive rates), so the limit equals the stationary probability $\pi_2$.  Solving $\pi Q=0$:
+\[
+-3\pi_0+2\pi_2=0\implies\pi_2=\tfrac{3}{2}\pi_0;\quad
+\pi_0-\pi_1=0\implies\pi_1=\pi_0.
+\]
+Normalisation: $\pi_0+\pi_0+\tfrac{3}{2}\pi_0=\tfrac{7}{2}\pi_0=1$, so $\pi_0=2/7$ and
+\[
+\lim_{t\to\infty}\PP(X_t=2\mid X_0=1)=\pi_2=\frac{3}{7}.
+\]
+
+%% ============================================================
+\section{Practice Problem Set 11}
+
+\subsection*{Q1}
+Reading assignment: Example 3.5.4 in Norris.
+
+\subsection*{Q2 (Output of stationary M/M/1)}
+Let $\rho=\lambda/\mu<1$.  The departure rate at time $t$ is $\mu\cdot\1_{\{X_t\ge1\}}$.  Under stationarity, $\EE[\mu\1_{\{X_t\ge1\}}]=\mu(1-\pi_0)=\mu\rho=\lambda$.
+
+To show the departure process $\{Y_t\}$ is Poisson($\lambda$) without reversibility: use the Markov property and stationarity to show the increments $Y_{t_2}-Y_{t_1}$ are independent across disjoint intervals.  Given $X_s$ starts from $\pi$ at time $s$, the future evolution is stationary, so each inter-departure interval has the same distribution.  A departure epoch restarts the queue in state $X_{\tau-}-1$ which, under stationarity, has distribution $\pi_{k-1}\propto(1-\rho)\rho^{k-1}$.  A careful computation via the Kolmogorov forward equations shows the counting process has Laplace functional equal to that of a Poisson($\lambda$) process; the key is that the stationary rate is $\lambda$ and the process has no memory.
+
+\subsection*{Q3 ($M/M/\infty$ queue)}
+\begin{enumerate}[label=(\alph*)]
+\item Each of the $n$ occupied lines completes at rate $\mu$, so $q_{n,n-1}=n\mu$; arrivals give $q_{n,n+1}=\lambda$.
+\item Detailed balance $\pi_n\cdot n\mu=\pi_{n-1}\cdot\lambda$ gives $\pi_n=(\lambda/\mu)^n/(n!)\cdot\pi_0$.  Normalisation: $\pi_0 e^{\lambda/\mu}=1$, so
+\[
+\pi_n=e^{-\lambda/\mu}\frac{(\lambda/\mu)^n}{n!}\sim\mathrm{Poisson}(\lambda/\mu).
+\]
+\item By Burke's theorem (or time-reversal), the departure process in stationarity is Poisson($\lambda$), so $Y_t\sim\mathrm{Poisson}(\lambda t)$.
+\end{enumerate}
+
+\subsection*{Q4 (Restricted CTMC)}
+For $x,y\in A$, detailed balance for $(X_t)$ gives $\pi(x)q_{x,y}=\pi(y)q_{y,x}$.  Since $\bar q_{x,y}=q_{x,y}$ for $x,y\in A$,
+\[
+\nu(x)\bar q_{x,y}=\frac{\pi(x)}{C}q_{x,y}=\frac{\pi(y)}{C}q_{y,x}=\nu(y)\bar q_{y,x}.
+\]
+So $\nu$ satisfies detailed balance for $\{Y_t\}$.  Since $\sum_{x\in A}\nu(x)=1$, $\nu$ is the stationary distribution.
+
+\subsection*{Q5 (Tandem queues)}
+\begin{enumerate}[label=(\alph*)]
+\item By Burke's theorem, the output of a stable M/M/1 queue is Poisson at the input rate.  The output of queue 1 is Poisson($\lambda$); thinning it by $p$ gives arrivals to queue 2 as Poisson($p\lambda$).
+\item Stability requires $\lambda<\mu_1$ and $p\lambda<\mu_2$.  Let $\rho_1=\lambda/\mu_1$, $\rho_2=p\lambda/\mu_2$.  By Jackson's theorem (or the product-form result for tandem queues with independent routing),
+\[
+\pi(n_1,n_2)=(1-\rho_1)\rho_1^{n_1}(1-\rho_2)\rho_2^{n_2},\quad n_1,n_2\ge0.
+\]
+\end{enumerate}
+
+\subsection*{Q6 (Jackson network)}
+\begin{enumerate}[label=(\alph*)]
+\item Write the traffic equations as $(I-P^\top)\beta=\lambda$ where $P_{ij}$ is the routing probability from $j$ to $i$.  Since the network is open (all customers eventually exit), the spectral radius of $P$ is strictly less than 1, so $(I-P^\top)$ is invertible with non-negative inverse.  Hence $\beta=(I-P^\top)^{-1}\lambda$ is the unique non-negative solution.
+\item If $\rho_i=\beta_i/\mu_i<1$ for all $i$, one verifies that $\pi(\mathbf n)=\prod_{i=1}^K(1-\rho_i)\rho_i^{n_i}$ satisfies the global balance equations $\pi Q=0$, using the fact that the routing structure decouples the queues in stationarity.
+\end{enumerate}
+
+\subsection*{Q7 (Conditional expectation from joint density)}
+$Y(\omega)$ is $\sigma(Z)$-measurable since it is a function of $Z(\omega)$.  For any $B=\{Z\in C\}\in\sigma(Z)$,
+\[
+\EE[Y\1_B]=\int_C\frac{\int g(x)f(x,z)\,dx}{\int f(x,z)\,dx}\int f(x,z)\,dx\,dz
+=\int_C\!\int g(x)f(x,z)\,dx\,dz=\EE[g(X)\1_B].
+\]
+Hence $Y$ is a version of $\EE[g(X)\mid Z]$.
+
+\subsection*{Q8}
+For any $A\in\mathcal G$ with $A\subseteq B$,
+\[
+\EE[\EE[X_1\mid\mathcal G]\1_A]=\EE[X_1\1_A]=\EE[X_2\1_A]=\EE[\EE[X_2\mid\mathcal G]\1_A].
+\]
+Since $A\in\mathcal G$, $A\subseteq B$ are generating sets for $\mathcal G$ restricted to $B$, the a.s.\ equality $\EE[X_1\mid\mathcal G]=\EE[X_2\mid\mathcal G]$ holds on $B$.
+
+\subsection*{Q9}
+\begin{enumerate}[label=(\alph*)]
+\item \textbf{Linearity.} For any $A\in\mathcal G$,
+\[
+\EE[(\alpha\EE[X_1\mid\mathcal G]+\beta\EE[X_2\mid\mathcal G])\1_A]
+=\alpha\EE[X_1\1_A]+\beta\EE[X_2\1_A]=\EE[(\alpha X_1+\beta X_2)\1_A].
+\]
+The left side is $\mathcal G$-measurable, confirming it is the conditional expectation.
+\item \textbf{Positivity.} Let $D=X_2-X_1\ge0$.  For any $A\in\mathcal G$,
+$\EE[\EE[D\mid\mathcal G]\1_A]=\EE[D\1_A]\ge0$.
+A non-negative $\mathcal G$-measurable function integrating to $\ge0$ over every $A\in\mathcal G$ must be a.s.\ non-negative.  Hence $\EE[X_1\mid\mathcal G]\le\EE[X_2\mid\mathcal G]$ a.s.
+\end{enumerate}
+
+\subsection*{Q10 (Wald's equations)}
+\begin{enumerate}[label=(\alph*)]
+\item Conditioning on $N$: $\EE[X]=\EE[\EE[X\mid N]]=\EE[N\EE[Y_1]]=\mu\EE[N]$.
+\item $\EE[X^2]=\EE[\EE[({\textstyle\sum_{i=1}^N Y_i})^2\mid N]]$.  Given $N=n$, the sum has variance $n\sigma^2$ and mean $n\mu$, so $\EE[(\sum Y_i)^2\mid N]=N\sigma^2+N^2\mu^2$.  Thus
+\[
+\mathrm{Var}(X)=\EE[X^2]-(\EE[X])^2=\sigma^2\EE[N]+\mu^2\EE[N^2]-\mu^2(\EE[N])^2=\sigma^2\EE[N]+\mu^2\mathrm{Var}(N).
+\]
+\end{enumerate}
+
+%% ============================================================
+\section{Practice Problem Set 12}
+
+\subsection*{Q1 (Conditional expectation on partition)}
+Define $Y=\sum_{i\ge1}\frac{\EE[X\1_{B_i}]}{\PP(B_i)}\1_{B_i}$.  Clearly $Y$ is $\mathcal G$-measurable.  For any $A\in\mathcal G$ write $A=\bigcup_{i\in I}B_i$ (disjoint union for some index set $I$):
+\[
+\EE[Y\1_A]=\sum_{i\in I}\frac{\EE[X\1_{B_i}]}{\PP(B_i)}\PP(B_i)=\sum_{i\in I}\EE[X\1_{B_i}]=\EE[X\1_A].
+\]
+Hence $Y=\EE[X\mid\mathcal G]$, and $Y=\EE[X\1_{B_i}]/\PP(B_i)$ on $B_i$.
+
+\subsection*{Q2}
+Since $\mathcal G_n\subseteq\mathcal F_n$ and $\EE[X_{n+1}\mid\mathcal F_n]=X_n$,
+\[
+\EE[X_{n+1}\mid\mathcal G_n]=\EE[\EE[X_{n+1}\mid\mathcal F_n]\mid\mathcal G_n]=\EE[X_n\mid\mathcal G_n]=X_n,
+\]
+since $X_n$ is $\mathcal G_n$-measurable.  So $\{X_n\}$ is a martingale w.r.t.\ $\{\mathcal G_n\}$.
+
+\subsection*{Q3 (Generator martingale)}
+\begin{align*}
+\EE[Y_{n+1}\mid\sigma(X_0,\ldots,X_n)]
+&=\EE[f(X_{n+1})\mid X_n]-f(X_0)-\sum_{i=0}^{n-1}(\mathcal Lf)(X_i)-(\mathcal Lf)(X_n)\\
+&=\sum_y p_{X_n,y}f(y)-f(X_0)-\sum_{i=0}^{n-1}(\mathcal Lf)(X_i)-(\mathcal Lf)(X_n)\\
+&=\bigl[f(X_n)+(\mathcal Lf)(X_n)\bigr]-f(X_0)-\sum_{i=0}^{n-1}(\mathcal Lf)(X_i)-(\mathcal Lf)(X_n)=Y_n.
+\end{align*}
+
+\subsection*{Q4 (Galton--Watson martingale)}
+\[
+\EE\!\left[\mu^{-(n+1)}X_{n+1}\mid\sigma(Z^1,\ldots,Z^n)\right]
+=\mu^{-(n+1)}\EE[X_{n+1}\mid X_n]
+=\mu^{-(n+1)}\cdot\mu X_n=\mu^{-n}X_n.
+\]
+
+\subsection*{Q5 (Superharmonic function)}
+\[
+\EE[X_{n+1}\mid S_1,\ldots,S_n]
+=\EE[f(S_n+Z_{n+1})\mid S_n]
+=\frac{1}{\mathrm{vol}(B(0,1))}\int_{B(S_n,1)}f(y)\,dy\le f(S_n)=X_n,
+\]
+where the inequality is superharmonicity.  Hence $\{X_n\}$ is a supermartingale.
+
+\subsection*{Q6}
+\[
+\EE[\lambda^{-(n+1)}f(X_{n+1})\mid X_0,\ldots,X_n]
+=\lambda^{-(n+1)}\sum_y p_{X_n,y}f(y)
+\le\lambda^{-(n+1)}\cdot\lambda f(X_n)=\lambda^{-n}f(X_n).
+\]
+Hence $\{\lambda^{-n}f(X_n)\}$ is a supermartingale.
+
+\subsection*{Q7 (P\'olya's urn)}
+\begin{enumerate}[label=(\alph*)]
+\item $\EE[Y_{n+1}\mid R_1,\ldots,R_n]=\EE\!\left[\frac{R_{n+1}}{n+1+r+b}\,\bigg|\,R_n\right]
+=\frac{R_n\cdot(n+r+b+1)/(n+r+b)}{n+r+b+1}=\frac{R_n}{n+r+b}=Y_n$.
+\item With $r=b=1$: $Y_n=R_n/(n+2)$ is a bounded martingale and $T<\infty$ a.s.\ (since $\sum P(T=k)=\sum 1/(k(k+1))=1$).  At time $T$ (first blue draw), $R_T=T$ (one started with 1 red and $T-1$ red balls were added), so $Y_T=T/(T+2)$.  By the optional stopping theorem,
+\[
+\EE[Y_T]=Y_0=\frac{1}{2}\implies\EE\!\left[\frac{T}{T+2}\right]=\frac{1}{2}\implies1-\EE\!\left[\frac{2}{T+2}\right]=\frac{1}{2}\implies\EE\!\left[(T+2)^{-1}\right]=\frac{1}{4}.
+\]
+\end{enumerate}
+
+\subsection*{Q8 (Symmetric random walk hitting time)}
+\begin{enumerate}[label=(\alph*)]
+\item Since $\{X_n\}$ is a martingale and $T<\infty$ a.s.\ (bounded stopping time in the limit), OST gives $\EE[X_T]=0$.  With $p=\PP(X_T=-a)$,
+\[
+b(1-p)+(-a)p=0\implies p=\frac{b}{a+b}.
+\]
+\item $\{X_n^2-n\}$ is a martingale.  OST gives $\EE[X_T^2]=\EE[T]$.  Now
+\[
+\EE[X_T^2]=b^2\cdot\frac{a}{a+b}+a^2\cdot\frac{b}{a+b}=\frac{ab(a+b)}{a+b}=ab.
+\]
+Hence $\EE[T]=ab$.
+\end{enumerate}
+
+%% ============================================================
+\section{Practice Problem Set 13}
+
+\subsection*{P1 (Hitting probability is harmonic / martingale)}
+Define $g(i)=\PP_i(\tau_N^+<\infty)$ with $\tau_N^+=\inf\{m\ge1:X_m=N\}$.  First-step analysis gives
+\[
+g(i)=\sum_j p_{ij}g(j)\quad\text{for every state }i.
+\]
+Hence
+\[
+\EE[g(X_{n+1})\mid\mathcal F_n]=\sum_j p_{X_n,j}g(j)=g(X_n),
+\]
+so $\{g(X_n)\}$ is a martingale w.r.t.\ $\{\mathcal F_n\}$.
+
+\subsection*{P2 (Wald's lemma counterexample)}
+Let $X_n$ be i.i.d.\ Rademacher: $\PP(X_n=\pm1)=\tfrac12$, so $\EE[X_1]=0$.  Define
+\[
+N=\begin{cases}1,&X_2=1,\\2,&X_2=-1.\end{cases}
+\]
+Then $\EE[N]=\tfrac32$ and $\EE[N]\EE[X_1]=0$.  But
+\[
+\EE\!\left[\sum_{n=1}^NX_n\right]=\EE[X_1]+\EE[\1_{\{X_2=-1\}}X_2]=0+(-1)\cdot\tfrac12=-\tfrac12\ne0.
+\]
+Wald's lemma fails because $N$ depends on the future value $X_2$, so $N$ is not a stopping time.
+
+\subsection*{P3 (Convex inequality)}
+For any $x\in[-a,b]$, write $x=\frac{b-x}{a+b}(-a)+\frac{a+x}{a+b}b$ as a convex combination.  Convexity of $f$ gives $f(x)\le\frac{b-x}{a+b}f(-a)+\frac{a+x}{a+b}f(b)$.  Taking expectations and using $\EE[X]=0$:
+\[
+\EE[f(X)]\le\frac{b-\EE[X]}{a+b}f(-a)+\frac{a+\EE[X]}{a+b}f(b)=\frac{bf(-a)+af(b)}{a+b}.
+\]
+
+\subsection*{P4 (Critical Galton--Watson dies out)}
+Let $\phi(s)=\EE[s^Z]$ be the offspring pgf with $\phi'(1)=\mu=1$.  The extinction probability $q$ is the smallest fixed point of $\phi$ in $[0,1]$.  Define $h(s)=\phi(s)-s$; then $h(1)=0$ and $h'(1)=0$.  Since $\PP(Z=1)<1$ and $\EE[Z]=1$, there must be offspring mass at $k\ge2$, giving $\phi''(s)=\EE[Z(Z-1)s^{Z-2}]>0$ for $s\in(0,1)$.  So $\phi$ is strictly convex, and $h(s)>0$ for all $s\in[0,1)$.  Hence $\phi(s)>s$ for $s<1$, meaning $q=1$.
+
+\subsection*{P5 (Concentration for shortest path)}
+The points lie on the unit circle, so arranging them cyclically and connecting consecutive arcs gives a Hamiltonian cycle of length $\le2\pi$.  Deleting the longest edge gives a path through all $n$ points of length $\le2\pi$.  Hence $0\le T\le2\pi<8$.  Applying Hoeffding's inequality with range $[0,2\pi]$:
+\[
+\PP(|T-\EE[T]|\ge a)\le2\exp\!\left(-\frac{2a^2}{(2\pi)^2}\right)\le2\exp\!\left(-\frac{a^2}{32}\right).
+\]
+
+\subsection*{P6 (McDiarmid for Hamming distance)}
+Define $f(x_1,\ldots,x_n)=\min_{y\in A}d_H(x,y)$.  Changing one coordinate of $x$ changes $d_H(x,y)$ by at most 1 for every fixed $y$, so $|f(x)-f(x')|\le1$ whenever $x,x'$ differ in one coordinate.  By McDiarmid's inequality with $c_i=1$:
+\[
+\PP(D\ge a)=\PP(D-\mu\ge a-\mu)\le\exp\!\left(-\frac{2(a-\mu)^2}{n}\right),\quad a>\mu.
+\]
+
+\subsection*{P7 (Poisson branching process)}
+Given $X_{n-1}=k$, $X_n\sim\mathrm{Poisson}(k)=\sum_{i=1}^k Y_i$ with $Y_i\overset{\text{i.i.d.}}{\sim}\mathrm{Poisson}(1)$.  So $\{X_n\}$ is a Galton--Watson process with offspring $Z\sim\mathrm{Poisson}(1)$: mean $\mu=1$, $\PP(Z=1)=e^{-1}<1$.  By P4, the extinction probability is $q=1$, so $X_n\to0$ a.s.  In fact $\PP(X_n=0)\to1$.  Note that $\EE[X_n]=1$ for all $n$ (the process is a martingale), illustrating that a.s.\ extinction coexists with constant mean.
+
+%% ============================================================
+\section{Quiz 8}
+
+\subsection*{P1 (True/False)}
+\begin{enumerate}
+\item \textbf{False.} $X_s$ and $X_t$ are not independent: $X_t=X_s+(X_t-X_s)$ implies $X_t\ge X_s$, so $\PP(X_t<X_s)=0$ yet $\PP(X_t<5)>0$ unconditionally when $X_s=5$.
+\item \textbf{False.} $X_t-X_s$ and $X_{t-s}$ are identically distributed (both $\mathrm{Poisson}(\lambda(t-s))$ by stationary increments) but are \emph{not the same random variable}: $X_t-X_s$ counts arrivals in $(s,t]$ while $X_{t-s}$ counts arrivals in $(0,t-s]$.
+\end{enumerate}
+
+\subsection*{P2 (Finite-dimensional distributions)}
+For $0=t_0<t_1<\cdots<t_n$ and $0\le x_1\le\cdots\le x_n$ (integers):
+\[
+\PP(X_{t_1}=x_1,\ldots,X_{t_n}=x_n)
+=\prod_{i=1}^n\PP(X_{t_i}-X_{t_{i-1}}=x_i-x_{i-1})
+=e^{-\lambda t_n}\prod_{i=1}^n\frac{(\lambda(t_i-t_{i-1}))^{x_i-x_{i-1}}}{(x_i-x_{i-1})!}.
+\]
+This closed-form formula in terms of $\lambda$, $t_i$, and $x_i$ alone shows that all finite-dimensional distributions of a Poisson($\lambda$) process are completely determined.
+
+%% ============================================================
+\section{Quiz 9}
+
+\subsection*{P1}
+For fixed $t>0$, write $X_{nt}=\sum_{k=1}^n(X_{kt}-X_{(k-1)t})$.  The increments are i.i.d.\ $\mathrm{Poisson}(\lambda t)$ with mean $\lambda t$.  By the SLLN,
+\[
+\frac{X_{nt}}{n}=\frac{1}{n}\sum_{k=1}^n(X_{kt}-X_{(k-1)t})\xrightarrow{\text{a.s.}}\lambda t.
+\]
+
+\subsection*{P2 (True/False)}
+\begin{enumerate}
+\item \textbf{False.} The even arrivals form a \emph{renewal process} but not a Poisson process.  The inter-event times for the even-arrival subsequence are sums of two independent $\mathrm{Exp}(\lambda)$ variables ($\mathrm{Gamma}(2,\lambda)$), which are not exponential.
+\item \textbf{False.} The locations of arrivals in $[s,t]$ are \emph{not} uniformly distributed on $[s,t]$.  Conditioned on the number of arrivals in $[s,t]$, the locations are uniform on $(s,t]$, but the unconditional statement is false: there are no arrivals in $[s,t]$ with probability $e^{-\lambda(t-s)}>0$.
+\end{enumerate}
+
+\subsection*{P3 (Fill in the blanks)}
+\begin{enumerate}
+\item The holding time in state $i$ has exponential distribution with parameter $\mathbf{q_i=|q_{ii}|}$ (the total rate out of state $i$).
+\item In the embedded chain of an M/M/1 queue, from state 1 the chain jumps to 2 (arrival before service) with probability $\mathbf{\lambda/(\lambda+\mu)}$.
+\end{enumerate}
+
+%% ============================================================
+\section{Quiz 10}
+
+\subsection*{P1}
+The CTMC with $Q=[(-3,2,1);(0,-1,1);(1,0,-1)]$ is irreducible (path $0\to1\to2\to0$), so $\lim_{t\to\infty}\PP(X_t=2\mid X_0=1)=\pi_2$.  Solving $\pi Q=0$:
+\[
+-3\pi_0+\pi_2=0\implies\pi_2=3\pi_0;\quad 2\pi_0-\pi_1=0\implies\pi_1=2\pi_0.
+\]
+Normalisation: $6\pi_0=1$, giving $\pi_0=1/6$ and $\pi_2=1/2$.
+
+\subsection*{P2 (True/False)}
+\begin{enumerate}
+\item \textbf{True.} For a finite irreducible CTMC, the stationary distribution $\pi$ has $\pi_i>0$ for all $i$.  The mean return time in continuous time is $1/(\pi_i v_i)<\infty$ (where $v_i=q_i$), and the embedded DTMC has stationary distribution $y_i\propto\pi_i v_i>0$, so it is also positive recurrent.  The two notions are equivalent for finite irreducible chains.
+\item \textbf{False.} A time-sampled process $Z_n=X_{T_n}$ need not be Markov if $(T_n)$ are not fixed multiples of $h$ but instead depend on the path.  Counterexample: let $T_3$ depend on $Z_1$; then $P(Z_3=j\mid Z_2=i, Z_1=k)$ need not equal $P(Z_3=j\mid Z_2=i)$.
+\end{enumerate}
+
+%% ============================================================
+\section{Quiz 11}
+
+\subsection*{P1 (Positivity of conditional expectation)}
+Let $D=X_2-X_1\ge0$.  By linearity, $\EE[X_2\mid\mathcal G]-\EE[X_1\mid\mathcal G]=\EE[D\mid\mathcal G]$.  For any $A\in\mathcal G$,
+\[
+\EE[\EE[D\mid\mathcal G]\1_A]=\EE[D\1_A]\ge0.
+\]
+A $\mathcal G$-measurable random variable whose integral over every $A\in\mathcal G$ is $\ge0$ must be a.s.\ non-negative.  Hence $\EE[X_1\mid\mathcal G]\le\EE[X_2\mid\mathcal G]$ a.s.
+
+\subsection*{P2}
+\begin{enumerate}
+\item \textbf{Two-state CTMC is reversible.}  Let the states be $\{1,2\}$ with rates $q_{12}=\alpha$, $q_{21}=\beta$.  The stationary distribution satisfies $\pi_1\alpha=\pi_2\beta$ (flow balance), i.e.\ $\pi_1 q_{12}=\pi_2 q_{21}$.  This is exactly the detailed balance condition, so the chain is reversible w.r.t.\ $\pi$.
+\item \textbf{Example of irreducible non-reversible CTMC.}  Take states $\{1,2,3\}$ with $q_{12}=q_{23}=q_{31}=1$ and all other off-diagonal rates $0$.  The unique stationary distribution is uniform $(\pi_i=1/3)$.  The Kolmogorov cycle condition requires $q_{12}q_{23}q_{31}=q_{13}q_{32}q_{21}$; the left side equals 1, the right side equals 0.  Hence the chain is not reversible.
+\end{enumerate}
+
+%% ============================================================
+\section{Quiz 12}
+
+\subsection*{P1}
+Use the martingale $\{X_n\}$ (symmetric random walk is a martingale).  Since $T<\infty$ a.s.\ and $\{X_{T\wedge n}\}$ is bounded in $L^1$, OST gives $\EE[X_T]=X_0=0$.  Let $p=\PP(X_T=-a)$:
+\[
+b(1-p)+(-a)p=0\implies\PP(X_T=-a)=\frac{b}{a+b}.
+\]
+
+\subsection*{P2 (True/False)}
+\begin{enumerate}
+\item \textbf{True.} For any $A\in\mathcal F_n$,
+$\EE[(X_{n+1}+Y_{n+1})\mid\mathcal F_n]=\EE[X_{n+1}\mid\mathcal F_n]+\EE[Y_{n+1}\mid\mathcal F_n]\ge X_n+Y_n$,
+so $\{X_n+Y_n\}$ is a submartingale.
+\item \textbf{False} in general.  The correct statement requires $H_n\ge0$.  Counterexample: $X_n=n$ (deterministic submartingale) and $H_n=-1$ (predictable, negative).  Then $(H\cdot X)_n=-n$ satisfies $\EE[(H\cdot X)_{n+1}\mid\mathcal F_n]=-(n+1)<-n=(H\cdot X)_n$, so it is a \emph{supermartingale}, not a submartingale.
+\end{enumerate}
+
+%% ============================================================
+\section{Quiz 13}
+
+\subsection*{P1}
+See Practice Problem Set 13, P7.  The sequence $\{X_n\}$ is a Galton--Watson branching process with offspring distribution $\mathrm{Poisson}(1)$ (critical, non-degenerate).  Extinction probability $q=1$, so $X_n\to0$ a.s.\ and $\PP(X_n=0)\to1$.  The mean remains $\EE[X_n]=1$ for all $n$.
+
+\subsection*{P2 (True/False)}
+\begin{enumerate}
+\item \textbf{False.} The correct statement requires $\varphi$ to be convex \emph{and non-decreasing}.  Counterexample: $X_n=n$ (deterministic submartingale), $\varphi(x)=(x-3)^2$ (convex but not monotone).  Then $\varphi(X_1)=4$ but $\varphi(X_2)=1$, so $\EE[\varphi(X_2)\mid\mathcal F_1]=1<4=\varphi(X_1)$: not a submartingale.
+\item \textbf{False.} Uniform integrability is needed for $L^1$ convergence.  Counterexample: Let $X_n=2^n\1_{U\le2^{-n}}$ where $U\sim\mathrm{Unif}(0,1)$.  Then $\{X_n\}$ is a martingale with $\EE[|X_n|]=1$ for all $n$, so $\sup_n\EE[|X_n|]=1<\infty$.  But $X_n\to0$ a.s.\ while $\EE[|X_n-0|]=1\not\to0$, so $X_n$ does not converge in $L^1$.
+\end{enumerate}
+
+\end{document}

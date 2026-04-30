@@ -1,0 +1,537 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\setlist[enumerate]{leftmargin=*,itemsep=0.4em,topsep=0.2em}
+\setlist[itemize]{leftmargin=*,itemsep=0.3em,topsep=0.2em}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Pp}{\mathbb{P}}
+\newcommand{\1}{\mathbf{1}}
+\newcommand{\xx}{\mathbf{x}}
+\newcommand{\ww}{\mathbf{w}}
+\newcommand{\bb}{\mathbf{b}}
+\newcommand{\argmin}{\mathop{\mathrm{arg\,min}}}
+
+\title{IE206 Advanced Question Bank: Detailed Solutions}
+\author{}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Linear Regression}
+
+\subsection*{Q1. Laplace Noise and MLE Objective}
+Assume the model
+\[
+y_i = \xx_i^\top\beta + \varepsilon_i,\qquad \varepsilon_i\stackrel{i.i.d.}{\sim}\text{Laplace}(0,b).
+\]
+The Laplace density is
+\[
+f_{\varepsilon}(e)=\frac{1}{2b}\exp\!\left(-\frac{|e|}{b}\right).
+\]
+Hence the likelihood is
+\[
+L(\beta,b)=\prod_{i=1}^n \frac{1}{2b}\exp\!\left(-\frac{|y_i-\xx_i^\top\beta|}{b}\right),
+\]
+and the negative log-likelihood is
+\[
+-\log L(\beta,b)=n\log(2b)+\frac{1}{b}\sum_{i=1}^n |y_i-\xx_i^\top\beta|.
+\]
+For fixed $b$, MLE for $\beta$ is
+\[
+\hat\beta_{\text{MLE}}=\argmin_\beta\sum_{i=1}^n|y_i-\xx_i^\top\beta|,
+\]
+not least squares. So under Laplace noise, \emph{L1 regression} (LAD) is the correct MLE objective.
+
+Robustness comparison:
+\begin{itemize}
+\item L2 loss penalizes residual $r$ as $r^2$; outliers get very large influence.
+\item L1 loss penalizes residual as $|r|$; influence grows much slower.
+\item Therefore Laplace-MLE/L1 is more robust than Gaussian-MLE/L2 to heavy tails/outliers.
+\end{itemize}
+
+\subsection*{Q2. Perfect Collinearity}
+Let two features satisfy $\xx_{\cdot,2}=c\,\xx_{\cdot,1}$ exactly. Then columns of $X$ are linearly dependent, so $\operatorname{rank}(X)<p$ and
+\[
+X^\top X\ \text{is singular.}
+\]
+
+OLS objective:
+\[
+J(\beta)=\|y-X\beta\|_2^2.
+\]
+If $v\in\mathcal{N}(X)$ (null space), then $X(\beta+v)=X\beta$, so
+\[
+J(\beta+v)=J(\beta).
+\]
+Hence minimizers are not unique: infinitely many $\beta$ give the same fit.
+
+Geometrically, moving along null directions does not change projection $X\beta$ in data space.
+
+Ridge solves
+\[
+\hat\beta_\lambda=\argmin_\beta\|y-X\beta\|_2^2+\lambda\|\beta\|_2^2,
+\]
+with closed form
+\[
+\hat\beta_\lambda=(X^\top X+\lambda I)^{-1}X^\top y.
+\]
+For $\lambda>0$, $X^\top X+\lambda I\succ0$, so solution is unique.
+As $\lambda\to0^+$, $\hat\beta_\lambda$ approaches the minimum-norm OLS solution $X^+y$ (Moore--Penrose pseudoinverse solution).
+
+\subsection*{Q3. High $R^2$ but Bad Test Error}
+Example construction:
+\begin{itemize}
+\item Training data: $x_i\in[-1,1]$, $y_i=\sin(\pi x_i)+\epsilon_i$ with small noise.
+\item Fit a very high-degree polynomial (e.g., degree $n-1$ interpolation).
+\end{itemize}
+Training $R^2$ can be extremely high (often near $1$), but test error is poor because the learned curve has high oscillation between training points (high variance).
+
+Bias--variance view at a test point $x$:
+\[
+\E\big[(Y-\hat f(x))^2\big]
+=\underbrace{\sigma^2}_{\text{noise}}+\underbrace{\big(\E[\hat f(x)]-f(x)\big)^2}_{\text{bias}^2}+\underbrace{\operatorname{Var}(\hat f(x))}_{\text{variance}}.
+\]
+Over-parameterized models can have low bias and high variance, so generalization degrades despite high training $R^2$.
+
+\subsection*{Q4. Hat Matrix and Influence}
+For full-column-rank $X\in\R^{n\times p}$,
+\[
+H=X(X^\top X)^{-1}X^\top.
+\]
+We need $\sum_i h_{ii}=p$.
+
+Use trace:
+\[
+\sum_{i=1}^n h_{ii}=\operatorname{tr}(H)
+=\operatorname{tr}\big(X(X^\top X)^{-1}X^\top\big)
+=\operatorname{tr}\big((X^\top X)^{-1}X^\top X\big)
+=\operatorname{tr}(I_p)=p.
+\]
+
+Interpretation: total leverage equals number of fitted parameters. So $\operatorname{tr}(H)$ behaves like model complexity (effective degrees of freedom).
+
+Why high leverage points distort fit:
+\begin{itemize}
+\item $\hat y=Hy$, so $\hat y_i=\sum_j h_{ij}y_j$.
+\item Large $h_{ii}$ means point $i$ strongly controls its own fitted value.
+\item If such a point is extreme in feature space (and/or has large residual), it can rotate/shift the regression hyperplane disproportionately.
+\end{itemize}
+
+\section{Logistic Regression}
+
+\subsection*{Q5. Convexity of Logistic Loss}
+Binary labels $y_i\in\{0,1\}$, scores $z_i=\xx_i^\top\beta$, probabilities $p_i=\sigma(z_i)=1/(1+e^{-z_i})$.
+Negative log-likelihood:
+\[
+\ell(\beta)=\sum_{i=1}^n\left[\log(1+e^{z_i})-y_i z_i\right].
+\]
+Gradient:
+\[
+\nabla \ell(\beta)=X^\top(p-y).
+\]
+Hessian:
+\[
+\nabla^2\ell(\beta)=X^\top W X,
+\quad W=\operatorname{diag}(p_i(1-p_i)).
+\]
+Each $p_i(1-p_i)\ge0$, so for any $v$,
+\[
+v^\top\nabla^2\ell(\beta)v=(Xv)^\top W(Xv)=\sum_i w_i(Xv)_i^2\ge0.
+\]
+Hence Hessian is PSD and logistic loss is convex.
+
+Convexity implies every local minimum is global. If Hessian is PD on feasible directions (e.g., full rank plus no complete separation), minimizer is unique.
+
+\subsection*{Q6. Decision Boundary and Feature Maps}
+Logistic model:
+\[
+\Pp(y=1\mid x)=\sigma(\ww^\top x+b).
+\]
+Decision rule at threshold $0.5$:
+\[
+\sigma(\ww^\top x+b)\ge0.5\iff \ww^\top x+b\ge0.
+\]
+So boundary is linear in original features.
+
+If we use transformed features $\phi(x)$,
+\[
+\Pp(y=1\mid x)=\sigma(\ww^\top\phi(x)+b).
+\]
+Boundary is linear in $\phi$-space but can be nonlinear in original $x$-space. So logistic regression remains a linear classifier in the chosen feature representation.
+
+\subsection*{Q7. Extreme Class Imbalance (99\% class 0)}
+\textbf{Why accuracy misleads:}
+Predicting always class $0$ gives 99\% accuracy but 0 recall for class $1$.
+
+\textbf{Behavior of logistic regression:}
+MLE emphasizes likelihood across all points; with severe imbalance, intercept tends strongly negative and predicted probabilities often stay below 0.5.
+
+\textbf{Decision threshold effect:}
+Default threshold 0.5 usually yields many false negatives. In deployment one should tune threshold by costs/ROC/PR curve.
+
+\textbf{Optimal threshold under unequal costs:}
+Let $\eta(x)=\Pp(Y=1\mid x)$.
+\begin{itemize}
+\item Cost of predicting 1: $C_{FP}\Pp(Y=0\mid x)=C_{FP}(1-\eta)$.
+\item Cost of predicting 0: $C_{FN}\Pp(Y=1\mid x)=C_{FN}\eta$.
+\end{itemize}
+Predict class 1 when
+\[
+C_{FP}(1-\eta)\le C_{FN}\eta
+\iff
+\eta\ge\frac{C_{FP}}{C_{FP}+C_{FN}}.
+\]
+Equivalent likelihood-ratio form:
+\[
+\frac{p(x\mid1)}{p(x\mid0)}\ge\frac{C_{FP}}{C_{FN}}\frac{\pi_0}{\pi_1}.
+\]
+
+\section{Perceptron}
+
+\subsection*{Q8. Non-Separable Data}
+Perceptron update on mistakes:
+\[
+\ww_{t+1}=\ww_t+y_i\xx_i.
+\]
+If algorithm stopped after finite steps, then no future mistakes occur, so final hyperplane correctly classifies all training points. That implies separability, contradiction. Therefore for non-separable data, perceptron keeps making mistakes forever.
+
+Asymptotic behavior: weights generally do not converge to a fixed point; they keep moving among conflicting constraints, often with growing norm and oscillating direction.
+
+Soft-margin SVM comparison:
+\begin{itemize}
+\item Perceptron optimizes no regularized convex objective in non-separable case.
+\item Soft-margin SVM solves convex optimization with slack, always well-posed and convergent.
+\item SVM returns a controlled margin/error tradeoff; perceptron does not.
+\end{itemize}
+
+\subsection*{Q9. Mistake Bound and Scaling}
+Classical bound for separable data:
+\[
+T\le\left(\frac{R}{\gamma}\right)^2,
+\]
+where $R=\max_i\|\xx_i\|$ and $\gamma$ is geometric margin. This is equivalent to $T\le(RB)^2$ with $B=1/\gamma$.
+
+Effects of scaling:
+\begin{itemize}
+\item Uniform scaling $\xx\mapsto a\xx$ scales both $R$ and $\gamma$ by $a$, so ratio $R/\gamma$ unchanged.
+\item Non-uniform scaling can increase $R$ and shrink effective margin, worsening bound.
+\item Feature normalization tends to control $R$ and improve practical convergence speed.
+\end{itemize}
+
+Can bad scaling cause divergence?
+\begin{itemize}
+\item If data is linearly separable, perceptron still converges theoretically (finite mistakes), though may be extremely slow numerically.
+\item For non-separable data, it does not converge regardless of scaling.
+\end{itemize}
+
+\section{Support Vector Machines}
+
+\subsection*{Q10. Hard vs Soft Margin Limits}
+Soft-margin primal:
+\[
+\min_{\ww,b,\xi\ge0}\frac12\|\ww\|^2+C\sum_{i=1}^n\xi_i,
+\quad y_i(\ww^\top x_i+b)\ge1-\xi_i.
+\]
+
+If data is separable, there exist feasible points with $\xi_i=0$. As $C\to\infty$, any nonzero slack becomes very expensive, so optimizer approaches zero-slack solution, i.e. hard-margin SVM.
+
+As $C\to0$, slack is nearly free, objective mainly minimizes $\|\ww\|^2$, so $\ww\to0$ (trivial classifier tendency), with many margin violations tolerated.
+
+\subsection*{Q11. KKT Interpretation for Soft-Margin SVM}
+Dual constraints: $0\le\alpha_i\le C$.
+KKT:
+\[
+\alpha_i\big(y_if_i-1+\xi_i\big)=0,
+\quad (C-\alpha_i)\xi_i=0,
+\quad f_i=\ww^\top x_i+b.
+\]
+
+Cases:
+\begin{enumerate}
+\item $\alpha_i=0$: then $\xi_i=0$ and $y_if_i\ge1$ (typically outside margin). Not a support vector.
+\item $0<\alpha_i<C$: then $\xi_i=0$ and $y_if_i=1$. Exactly on margin (support vector).
+\item $\alpha_i=C$: on/inside margin. Usually $y_if_i\le1$; if $y_if_i<1$ then inside margin, and if $y_if_i<0$ point is misclassified.
+\end{enumerate}
+
+\subsection*{Q12. Margin Geometry}
+Canonical separating hyperplanes:
+\[
+\ww^\top x+b=1\quad\text{and}\quad \ww^\top x+b=-1.
+\]
+Distance between parallel hyperplanes $\ww^\top x+b=c_1$ and $c_2$ is
+\[
+\frac{|c_1-c_2|}{\|\ww\|}.
+\]
+Hence margin width is
+\[
+\frac{|1-(-1)|}{\|\ww\|}=\frac{2}{\|\ww\|}.
+\]
+So maximizing margin is equivalent to minimizing $\|\ww\|$, or equivalently minimizing $\frac12\|\ww\|^2$.
+
+\subsection*{Q13. Why the Dual Uses Inner Products; PSD Requirement}
+Soft/hard SVM dual objective has form
+\[
+\max_\alpha\sum_i\alpha_i-\frac12\sum_{i,j}\alpha_i\alpha_j y_i y_j\langle x_i,x_j\rangle,
+\]
+so data appears only through pairwise inner products. Replacing
+$\langle x_i,x_j\rangle$ by $K(x_i,x_j)$ gives kernel SVM.
+
+If $K$ is not PSD, Gram matrix can be indefinite. Then the dual is not guaranteed concave (optimization may become non-convex with local optima), and no valid RKHS/Mercer interpretation is guaranteed.
+
+\section{KNN and Bayes}
+
+\subsection*{Q14. Curse of Dimensionality Distance Concentration}
+Let $X,Y\sim\text{Unif}([0,1]^d)$ independent. Define
+\[
+D^2=\|X-Y\|_2^2=\sum_{j=1}^d (X_j-Y_j)^2.
+\]
+Each term is bounded and i.i.d. with mean $1/6$. By law of large numbers,
+\[
+\frac{D^2}{d}\to\frac16\quad\text{(in probability)}.
+\]
+So pairwise distances concentrate around $\sqrt{d/6}$. Spread is order $\sqrt d$, mean is order $d$ in squared distance, so relative spread shrinks as $1/\sqrt d$.
+
+Therefore nearest and farthest neighbor distances become similar in relative terms, i.e.
+\[
+\frac{D_{\max}-D_{\min}}{D_{\min}}\to0,
+\]
+which breaks ``nearest means similar'' intuition and hurts KNN.
+
+\subsection*{Q15. Bayes Error vs 1-NN; Bayes Consistency}
+At a point $x$, let $\eta(x)=\Pp(Y=1\mid X=x)$.
+
+Bayes conditional error:
+\[
+R^*(x)=\min\{\eta(x),1-\eta(x)\}.
+\]
+As sample size grows, the nearest neighbor label behaves like an independent Bernoulli draw with parameter $\eta(x)$. Then 1-NN conditional error tends to
+\[
+R_{1NN}(x)=2\eta(x)(1-\eta(x)).
+\]
+Since $2\eta(1-\eta)\le2\min\{\eta,1-\eta\}$,
+\[
+R_{1NN}(x)\le 2R^*(x).
+\]
+This gives the standard bound intuition.
+
+Why $k\to\infty$ with $k/n\to0$ is Bayes-consistent:
+\begin{itemize}
+\item $k\to\infty$: enough neighbors to average labels, reducing variance.
+\item $k/n\to0$: neighbor radius shrinks to $0$, so local class probability estimate is asymptotically unbiased.
+\end{itemize}
+Hence risk converges to Bayes risk.
+
+\subsection*{Q16. Scaling Trap Construction}
+Let training set (for 1-NN):
+\[
+(0,1000)\to0,\ (0,900)\to0,\ (1,0)\to1,\ (1,100)\to1.
+\]
+Query: $q=(1,950)$ (informative feature is first coordinate, so true class should be 1).
+
+Without normalization:
+\[
+d(q,(0,900))=\sqrt{1+50^2}\approx50.01,
+\]
+\[
+d(q,(1,100))=850,
+\]
+so nearest neighbor is class 0 (wrong).
+
+After min-max normalization per feature:
+\[
+x_1\in[0,1],\quad x_2\in[0,1000],
+\]
+query becomes $(1,0.95)$, and
+\[
+d((1,0.95),(1,0.1))=0.85,
+\]
+\[
+d((1,0.95),(0,0.9))\approx1.001,
+\]
+so nearest is class 1 (correct). This shows distance domination by large-scale irrelevant features.
+
+\section{Decision Trees and Random Forest}
+
+\subsection*{Q17. Perfect Feature and Information Gain}
+Information gain for feature $X$:
+\[
+IG(Y,X)=H(Y)-H(Y\mid X).
+\]
+If $X$ perfectly determines $Y$, then each split child is pure, so
+\[
+H(Y\mid X)=0.
+\]
+Therefore
+\[
+IG(Y,X)=H(Y).
+\]
+So gain equals initial entropy.
+
+\subsection*{Q18. Why Unrestricted Trees Have Infinite VC Dimension}
+Take any $m$ distinct real points $x_1<\cdots<x_m$ on $\R$.
+A deep enough axis-aligned tree can place split thresholds between consecutive points to isolate each point in its own leaf. Then assign each leaf label 0 or 1 arbitrarily. So every labeling of these $m$ points is realizable.
+Since $m$ is arbitrary, VC dimension is infinite.
+
+\subsection*{Q19. Why Bagging Reduces Variance but Not Bias}
+Let $\hat f_b(x)$ be predictor from bootstrap sample $b$, and ensemble
+\[
+\bar f_M(x)=\frac1M\sum_{b=1}^M\hat f_b(x).
+\]
+For squared loss:
+\[
+\text{MSE}=\underbrace{\big(\E[\bar f_M]-f\big)^2}_{\text{bias}^2}+\underbrace{\operatorname{Var}(\bar f_M)}_{\text{variance}}+\sigma^2.
+\]
+Averaging mostly affects variance. If base learners have variance $\sigma_f^2$ and pairwise correlation $\rho$,
+\[
+\operatorname{Var}(\bar f_M)=\rho\sigma_f^2+\frac{1-\rho}{M}\sigma_f^2.
+\]
+As $M$ grows, second term vanishes, first remains. Bias comes from model class and is not fundamentally removed by averaging.
+
+\subsection*{Q20. Why Small Feature Subset Size in RF Reduces Correlation}
+If all trees can always use strongest predictors, many trees split similarly, increasing correlation $\rho$.
+Random feature subsampling forces diverse split choices, decreasing $\rho$ in
+\[
+\operatorname{Var}(\bar f_M)=\rho\sigma_f^2+\frac{1-\rho}{M}\sigma_f^2.
+\]
+Lower $\rho$ lowers ensemble variance substantially. Tradeoff: very small subset size may weaken each tree (slightly higher bias).
+
+\section{Model Evaluation}
+
+\subsection*{Q21. Accuracy Paradox Example}
+Confusion matrix (1000 samples, 5\% positives):
+\[
+\begin{array}{c|cc}
+&\hat y=1&\hat y=0\\\hline
+y=1&0&50\\
+y=0&0&950
+\end{array}
+\]
+Accuracy $=(950+0)/1000=95\%$.
+Model is useless for positive class (recall $=0$).
+
+\subsection*{Q22. Higher Accuracy but Lower F1}
+Assume 1000 samples, 100 positives.
+
+Model A:
+\[
+TP=10,\ FP=0,\ FN=90,\ TN=900.
+\]
+Accuracy $=91\%$,
+\[
+F1_A=\frac{2\cdot1\cdot0.1}{1+0.1}=0.1818.
+\]
+
+Model B:
+\[
+TP=70,\ FP=120,\ FN=30,\ TN=780.
+\]
+Accuracy $=85\%$,
+\[
+\text{Precision}=\frac{70}{190}=0.3684,\quad
+\text{Recall}=0.7,
+\quad F1_B\approx0.4828.
+\]
+So B has lower accuracy but much better F1 and is preferable when catching positives matters.
+
+\subsection*{Q23. LOOCV and High Leverage}
+Given
+\[
+\hat y_i^{(-i)}=\frac{\hat y_i-h_{ii}y_i}{1-h_{ii}}.
+\]
+Then LOOCV residual is
+\[
+e_i^{(-i)}=y_i-\hat y_i^{(-i)}
+=\frac{y_i-\hat y_i}{1-h_{ii}}=\frac{e_i}{1-h_{ii}}.
+\]
+So LOOCV squared error term scales as
+\[
+\big(e_i^{(-i)}\big)^2=\frac{e_i^2}{(1-h_{ii})^2}.
+\]
+If $h_{ii}\approx1$, denominator is tiny and contribution explodes. This is why highly leveraged points can dominate LOOCV error.
+
+\section{Multiclass Classification}
+
+\subsection*{Q24. One-vs-All Failure Case}
+Construct 3-class data in $\R^2$:
+\begin{itemize}
+\item Class A near $(-2,0)$, many points.
+\item Class B near $(2,0)$, many points.
+\item Class C near $(0,0)$, very few points.
+\end{itemize}
+For OvA classifier of class C (C vs A+B), negatives dominate and are on both sides of C; with linear model and imbalance, optimal score for C can be negative almost everywhere. Then argmax over OvA scores never predicts C, so the class disappears.
+
+Why joint multiclass SVM helps: it learns all class scores together with constraints
+\[
+\ww_{y_i}^\top x_i-\ww_j^\top x_i\ge1-\xi_i,\quad \forall j\neq y_i,
+\]
+forcing C examples to beat all other classes by margin. This coupling prevents trivial elimination of a class.
+
+\subsection*{Q25. All-Pairs (OvO) Complexity}
+For $k$ classes:
+\begin{itemize}
+\item OvA: train $k$ classifiers.
+\item OvO: train $k(k-1)/2$ classifiers.
+\end{itemize}
+So training/model storage is $O(k^2)$ for OvO.
+
+When infeasible: large $k$ (e.g., $k=1000$ gives $499{,}500$ classifiers; $k=10{,}000$ gives about $50$ million).
+
+When OvO may be better than OvA:
+\begin{itemize}
+\item each binary problem is smaller and often better balanced,
+\item pairwise boundaries may be simpler,
+\item can improve accuracy despite more models.
+\end{itemize}
+Prediction cost is also heavier for OvO (often $O(k^2)$ voting, unless structured decoding like DAG is used).
+
+\section{Very Advanced}
+
+\subsection*{Q26. Bias--Variance for Regression; Why Classification is Harder}
+Let
+\[
+Y=f(x)+\varepsilon,\quad \E[\varepsilon\mid x]=0,\quad \operatorname{Var}(\varepsilon\mid x)=\sigma^2.
+\]
+For estimator $\hat f_D(x)$ (random over dataset $D$):
+\[
+\E_{D,\varepsilon}\big[(Y-\hat f_D(x))^2\mid x\big]
+=\sigma^2+\big(\E_D[\hat f_D(x)]-f(x)\big)^2+\operatorname{Var}_D(\hat f_D(x)).
+\]
+This is exact decomposition for squared loss.
+
+For classification with 0--1 loss, risk uses indicator
+$\1\{\hat y\neq y\}$, which is discontinuous/non-quadratic. There is no equally clean additive bias+variance decomposition in general. One typically uses surrogate losses, margin analysis, or approximate decompositions.
+
+\subsection*{Q27. VC Dimension Comparison}
+\begin{itemize}
+\item Linear classifiers in $\R^d$: $\mathrm{VC}=d+1$.
+\item Decision trees of depth $k$ (axis-aligned, in $\R^d$): capacity grows exponentially with depth; typical bounds are on the order of $O(2^k\log d)$ (and at least $\Omega(2^k)$). Unrestricted depth gives infinite VC dimension.
+\item SVM with RBF kernel: without norm regularization, effective VC dimension is infinite (can shatter arbitrarily many points). Regularization controls effective capacity in practice.
+\end{itemize}
+
+\subsection*{Q28. Perceptron vs Logistic vs Hard SVM}
+\begin{center}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.18\linewidth} >{\raggedright\arraybackslash}p{0.25\linewidth} >{\raggedright\arraybackslash}p{0.22\linewidth} >{\raggedright\arraybackslash}p{0.27\linewidth}}
+\toprule
+Method & Loss / Objective & Margin behavior & Convergence / Robustness \\
+\midrule
+Perceptron & Minimize mistakes implicitly via updates on misclassified points (non-convex objective surrogate) & No explicit max-margin objective; in separable case finds some separator & Converges only for separable data; unstable on non-separable; sensitive to scaling/outliers \\
+\addlinespace
+Logistic regression & Convex log-loss $\sum\log(1+e^{-y f(x)})$ (often with L2/L1 regularization) & Encourages large positive margins smoothly but not max-margin exactly & Global optimum (convex); probabilistic outputs; more robust optimization than perceptron \\
+\addlinespace
+Hard-margin SVM & $\min \frac12\|w\|^2$ s.t. $y_if_i\ge1$ & Explicitly maximizes geometric margin & Convex QP with unique $w$ for separable data; sensitive to label noise/outliers (no slack) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Bottom-line comparison.}
+Perceptron is simplest but least robust outside separability. Logistic is probabilistic and convex. Hard SVM gives strongest geometric margin but requires clean separability; soft-margin SVM is the practical compromise.
+
+\end{document}

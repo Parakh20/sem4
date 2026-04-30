@@ -1,0 +1,3544 @@
+% ============================================================
+% Cryptocurrency and Blockchain Technology
+% EE465 – IIT Bombay
+% Prof. Saravanan Vijayakumaran
+% ============================================================
+\documentclass[12pt,a4paper,openany]{book}
+
+% ---------- packages ----------
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage[margin=1in]{geometry}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=cyan,citecolor=green]{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric,arrows.meta,positioning,calc,trees}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage[most]{tcolorbox}
+\usepackage{fancyhdr}
+\usepackage[protrusion=true,expansion=false]{microtype}
+\usepackage{mathtools}
+\usepackage{mdframed}
+
+% ---------- page style ----------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE,RO]{\thepage}
+\fancyhead[LO]{\nouppercase{\rightmark}}
+\fancyhead[RE]{\nouppercase{\leftmark}}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ---------- theorem environments ----------
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[chapter]
+\newtheorem{example}{Example}[chapter]
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+% ---------- coloured boxes ----------
+\tcbuselibrary{skins,breakable}
+
+\newtcolorbox{keyinsight}[1][Key Insight]{
+  enhanced, breakable,
+  colback=blue!5!white, colframe=blue!60!black,
+  fonttitle=\bfseries, title=#1,
+  before skip=6pt, after skip=6pt
+}
+
+\newtcolorbox{exambox}[1][Exam Note]{
+  enhanced, breakable,
+  colback=yellow!10!white, colframe=orange!80!black,
+  fonttitle=\bfseries, title=#1,
+  before skip=6pt, after skip=6pt
+}
+
+\newtcolorbox{definitionbox}[1][Definition]{
+  enhanced, breakable,
+  colback=green!4!white, colframe=green!60!black,
+  fonttitle=\bfseries, title=#1,
+  before skip=6pt, after skip=6pt
+}
+
+% ---------- listings ----------
+\definecolor{codebg}{rgb}{0.97,0.97,0.97}
+\definecolor{codeframe}{rgb}{0.7,0.7,0.7}
+\definecolor{kwcolor}{rgb}{0.0,0.0,0.8}
+\definecolor{strcolor}{rgb}{0.6,0.1,0.1}
+\definecolor{cmtcolor}{rgb}{0.4,0.4,0.4}
+
+\lstset{
+  backgroundcolor=\color{codebg},
+  frame=single, rulecolor=\color{codeframe},
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{kwcolor}\bfseries,
+  stringstyle=\color{strcolor},
+  commentstyle=\color{cmtcolor}\itshape,
+  numbers=left, numberstyle=\tiny\color{gray},
+  numbersep=6pt,
+  breaklines=true, breakatwhitespace=true,
+  tabsize=2, showstringspaces=false,
+  captionpos=b
+}
+
+\lstdefinelanguage{Solidity}{
+  keywords={pragma,solidity,contract,function,returns,public,private,
+            internal,external,view,pure,payable,memory,storage,calldata,
+            uint256,uint8,uint,int256,int,bool,address,bytes32,bytes,
+            string,mapping,struct,event,emit,require,revert,if,else,
+            for,while,return,new,delete,true,false,constructor,modifier,
+            interface,library,is,import,using,override,virtual,indexed},
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]"
+}
+
+\lstdefinelanguage{JavaScript}{
+  keywords={let,const,var,function,return,async,await,import,export,
+            default,from,class,new,this,typeof,instanceof,if,else,
+            for,while,do,break,continue,try,catch,throw,true,false,
+            null,undefined,of,in},
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]",
+  morestring=[b]',
+  morestring=[b]`
+}
+
+% ---------- misc ----------
+\setlength{\parskip}{4pt}
+
+% ============================================================
+\begin{document}
+% ============================================================
+
+% ---- title page ----
+\begin{titlepage}
+  \centering
+  \vspace*{3cm}
+  {\Huge\bfseries Cryptocurrency and\\ Blockchain Technology\par}
+  \vspace{0.8cm}
+  \rule{\textwidth}{1pt}\par
+  \vspace{0.6cm}
+  {\LARGE EE\,465 --- IIT Bombay\par}
+  \vspace{1.2cm}
+  {\large\itshape Prof.\ Saravanan Vijayakumaran\par}
+  {\large Department of Electrical Engineering\par}
+  {\large Indian Institute of Technology Bombay\par}
+  \vspace{1.2cm}
+  {\large 2026\par}
+  \vspace{2cm}
+  \begin{minipage}{0.85\textwidth}
+    \itshape
+    These lecture notes cover the complete EE\,465 course.  Topics span
+    Bitcoin (transactions, mining, scripting), cryptographic foundations
+    (hash functions, group theory, elliptic curve cryptography), Ethereum
+    (accounts, EVM, smart contracts, Solidity, data structures), privacy
+    mechanisms (Tornado Cash, zk-SNARKs), and consensus theory
+    (Byzantine broadcast, Tendermint, Ethereum Proof-of-Stake).
+  \end{minipage}
+\end{titlepage}
+
+\tableofcontents
+
+% ================================================================
+\chapter{Introduction to Bitcoin}
+\label{chap:bitcoin_intro}
+% ================================================================
+
+\section{What Is Bitcoin?}
+
+Bitcoin is a decentralised peer-to-peer electronic cash system introduced
+in 2008 by the pseudonymous \textbf{Satoshi Nakamoto}.  The core
+innovation is solving the \emph{double-spending problem} without a
+trusted central authority.
+
+\begin{keyinsight}
+  Bitcoin replaces institutional trust (a bank) with mathematical trust
+  (cryptographic proof) enforced by a distributed network of nodes
+  running identical validation rules.
+\end{keyinsight}
+
+\subsection{The Double-Spending Problem}
+
+In physical cash Alice hands Bob a \$20 note and can no longer spend it.
+Digital files can be copied trivially, so Alice could send the same
+digital coin to both Bob and Carol.  Traditional systems rely on a bank
+to prevent this.  Bitcoin prevents it through the \textbf{blockchain}: a
+public ledger whose ordering is agreed upon by \emph{proof of work}.
+
+\subsection{Network Participants}
+
+\begin{description}[leftmargin=2.2cm,style=sameline]
+  \item[Full node]   Downloads and validates every block and transaction.
+  \item[Miner]       Bundles transactions into blocks and solves PoW.
+  \item[Light client] Stores only block headers; uses Merkle proofs.
+  \item[Wallet]      Manages keys, creates and broadcasts transactions.
+\end{description}
+
+\section{Cryptographic Keys and Addresses}
+
+\subsection{Key Pair}
+
+\begin{itemize}
+  \item \textbf{Private key} $k$: uniformly random 256-bit integer in $[1,\,n-1]$.
+  \item \textbf{Public key} $K = k\cdot G$: a point on the secp256k1 curve
+        (Chapter~\ref{chap:ecc}).
+\end{itemize}
+
+\subsection{Bitcoin Address Derivation}
+
+\begin{align}
+  H_1 &= \mathrm{SHA256}(K) \\
+  H_2 &= \mathrm{RIPEMD160}(H_1) \quad (\text{20 bytes}) \\
+  \text{checksum} &= \mathrm{SHA256}(\mathrm{SHA256}(\texttt{0x00}\|H_2))[0:4] \\
+  \text{address} &= \mathrm{Base58Check}(\texttt{0x00}\|H_2\|\text{checksum})
+\end{align}
+
+\begin{exambox}
+  The address is a \emph{hash} of the public key, not the public key
+  itself.  The public key is revealed only when spending.  This gives
+  limited post-quantum resistance.
+\end{exambox}
+
+\section{The Blockchain}
+
+\subsection{Block Header}
+
+\begin{table}[h]
+\centering
+\caption{Bitcoin Block Header Fields (80 bytes total)}
+\begin{tabular}{llp{7cm}}
+\toprule
+\textbf{Field} & \textbf{Size} & \textbf{Description} \\
+\midrule
+\texttt{nVersion}      & 4 B  & Protocol version \\
+\texttt{hashPrevBlock} & 32 B & SHA256d of previous block header \\
+\texttt{hashMerkleRoot}& 32 B & Merkle root of all transactions \\
+\texttt{nTime}         & 4 B  & Unix timestamp \\
+\texttt{nBits}         & 4 B  & Compact target encoding \\
+\texttt{nNonce}        & 4 B  & Variable miners iterate to meet target \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[node distance=1.8cm,
+  blk/.style={rectangle,draw,thick,minimum width=2.8cm,
+              minimum height=0.9cm,font=\small}]
+  \node[blk] (b0) {Block $N\!-\!1$};
+  \node[blk,right=of b0] (b1) {Block $N$};
+  \node[blk,right=of b1] (b2) {Block $N\!+\!1$};
+  \draw[-{Stealth},thick] (b1.west) -- (b0.east)
+        node[midway,above,font=\footnotesize]{hashPrevBlock};
+  \draw[-{Stealth},thick] (b2.west) -- (b1.east)
+        node[midway,above,font=\footnotesize]{hashPrevBlock};
+\end{tikzpicture}
+\caption{Each block commits to its predecessor via a hash pointer.}
+\label{fig:chain}
+\end{figure}
+
+\subsection{Merkle Hash Tree}
+
+Transactions are hashed pairwise up a binary tree until a single
+\emph{Merkle root} remains:
+
+\begin{align}
+  h_{00} &= H(t_0),\quad h_{01} = H(t_1),\quad h_0 = H(h_{00}\|h_{01}) \\
+  h_{10} &= H(t_2),\quad h_{11} = H(t_3),\quad h_1 = H(h_{10}\|h_{11}) \\
+  \text{root} &= H(h_0\|h_1)
+\end{align}
+
+If the transaction count is not a power of two, the last hash is
+duplicated to pad the tree.
+
+\textbf{Merkle proofs.}  A light client can verify that $t_i$ is in a
+block using $O(\log n)$ sibling hashes, without downloading the full
+block.
+
+\subsection{Tamper Resistance and the 51\% Attack}
+
+Modifying any transaction in block $B_N$ changes $H(B_N)$, which breaks
+the hash pointer in $B_{N+1}$, forcing a re-mine of every subsequent
+block.  An attacker must outpace all honest miners:
+
+\begin{align}
+  \text{Current Bitcoin hashrate} &\approx 10^{21}\ \text{H/s} \\
+  \text{Cost of 50\% attack} &\approx \$7.5\ \text{billion in hardware}
+\end{align}
+
+\begin{keyinsight}
+  Bitcoin's security is economic: attacking the network costs more than
+  the potential gain, as long as no entity controls $\geq 50\%$ of the
+  hashrate.
+\end{keyinsight}
+
+\section{The Bitcoin P2P Network}
+
+Bitcoin has no central server.  Every full node maintains a copy of the
+entire blockchain ($\approx 600$~GB as of 2024) and communicates
+directly with other nodes.
+
+\subsection{Node Discovery}
+
+\begin{enumerate}
+  \item A new node starts by connecting to \textbf{DNS seeds} —
+        hard-coded domain names maintained by the Bitcoin community that
+        return IP addresses of well-connected nodes.
+  \item The node sends a \texttt{version} message to its peer, including
+        its best block height.
+  \item The peer responds with \texttt{verack} and its own
+        \texttt{version}.
+  \item They exchange \texttt{addr} messages to discover more peers.
+  \item A node typically maintains 8 outbound and up to 125 inbound
+        connections.
+\end{enumerate}
+
+\subsection{Transaction Propagation}
+
+When a user broadcasts a transaction:
+\begin{enumerate}
+  \item The wallet sends the transaction to a connected full node.
+  \item The node validates the transaction (correct signatures, UTXOs
+        exist, fee $\geq$ minimum relay fee).
+  \item If valid, the node adds it to its \textbf{mempool} and relays
+        an \texttt{inv} (inventory) message to its peers.
+  \item Peers that do not yet have the transaction respond with
+        \texttt{getdata}.
+  \item The transaction is forwarded; it reaches most of the network
+        within a few seconds.
+\end{enumerate}
+
+\subsection{Block Propagation and Orphan Blocks}
+
+When a miner finds a valid block:
+\begin{enumerate}
+  \item It broadcasts the block immediately.
+  \item Other nodes validate (check PoW, check all transactions) and
+        relay.
+  \item If two miners find valid blocks at the same height almost
+        simultaneously, a temporary \textbf{fork} occurs.
+  \item Nodes follow the \textbf{longest chain rule} (more precisely,
+        the chain with the most cumulative work).
+  \item The fork resolves when one branch gets the next block; nodes on
+        the shorter branch switch to the longer chain.
+  \item Blocks on the abandoned branch are called \textbf{orphan blocks}
+        (stale blocks).  Their transactions return to the mempool.
+\end{enumerate}
+
+\begin{keyinsight}
+  The longest-chain rule is not just about block count — it is about
+  cumulative proof-of-work (sum of difficulties).  A single block with
+  higher difficulty can outweigh two blocks with lower difficulty.
+\end{keyinsight}
+
+\subsection{Simplified Payment Verification (SPV)}
+
+Light clients implement \textbf{SPV}: they download only block headers
+(80 bytes each) rather than full blocks.
+
+\begin{itemize}
+  \item A block header contains the Merkle root of all transactions.
+  \item To verify that transaction $t_i$ is in block $B$, the SPV client
+        requests a \textbf{Merkle proof}: the sibling hashes on the path
+        from leaf $t_i$ to the root.
+  \item The client recomputes the root from $t_i$ and the proof and
+        checks it matches the \texttt{hashMerkleRoot} in the header.
+  \item This requires $O(\log n)$ hashes instead of downloading all $n$
+        transactions.
+  \item SPV trusts that the chain with the most PoW contains valid
+        transactions — it does not independently verify all transactions.
+\end{itemize}
+
+\section{The Genesis Block}
+
+The \textbf{genesis block} (block 0) was mined by Satoshi Nakamoto on
+January 3, 2009.  It is hard-coded into the Bitcoin software.
+
+\begin{itemize}
+  \item The coinbase transaction contains the famous message:
+        \emph{``The Times 03/Jan/2009 Chancellor on brink of second
+        bailout for banks.''} — a newspaper headline proving it was not
+        pre-mined before that date.
+  \item Its \texttt{hashPrevBlock} is all zeros (no predecessor).
+  \item The 50~BTC reward in the genesis block is unspendable due to an
+        original quirk in the Bitcoin software.
+\end{itemize}
+
+\section{The UTXO Set}
+
+At any point in time, the \textbf{UTXO set} is the complete collection
+of all unspent transaction outputs.
+
+\begin{itemize}
+  \item Every full node maintains the UTXO set in memory (or on a fast
+        database like LevelDB).
+  \item As of 2024, the UTXO set contains $\approx 100$ million UTXOs,
+        requiring $\approx 5$~GB of RAM.
+  \item When a transaction is processed:
+        \begin{enumerate}
+          \item Each input removes a UTXO from the set.
+          \item Each output adds a new UTXO to the set.
+        \end{enumerate}
+  \item A transaction is valid only if all its inputs reference UTXOs
+        currently in the UTXO set (and are properly signed).
+\end{itemize}
+
+\begin{exambox}
+  \textbf{Why not an account balance?}  The UTXO model enables parallel
+  transaction validation (non-conflicting UTXOs can be validated
+  simultaneously) and makes the state explicit: you can prove you have
+  coins by pointing to specific UTXOs, without trusting a running total.
+\end{exambox}
+
+\subsection{Key Takeaways}
+
+\begin{itemize}
+  \item Prevents double spending and tampering via blockchain + PoW.
+  \item Secure only if no party controls $\geq 50\%$ of hashrate.
+  \item Mining difficulty adjusts every 2016 blocks to target 10~min/block.
+  \item Block subsidy halves every 210\,000 blocks; total supply capped at
+        21\,000\,000~BTC.
+  \item The P2P network propagates transactions and blocks without any
+        central server.
+  \item The UTXO model is the fundamental accounting primitive: no
+        account balances, only unspent outputs.
+\end{itemize}
+
+
+% ================================================================
+\chapter{Cryptographic Hash Functions}
+\label{chap:hash}
+% ================================================================
+
+\section{Definition}
+
+\begin{definitionbox}
+  A \textbf{cryptographic hash function} is a map
+  $H:\{0,1\}^*\!\to\{0,1\}^n$ satisfying:
+  \begin{enumerate}
+    \item \textbf{Efficiency}: $H(x)$ is fast to compute for any $x$.
+    \item \textbf{Preimage resistance}: Given $h$, it is infeasible to
+          find any $x$ with $H(x)=h$.
+    \item \textbf{Second-preimage resistance}: Given $x$, it is infeasible
+          to find $x'\neq x$ with $H(x')=H(x)$.
+    \item \textbf{Collision resistance}: It is infeasible to find any
+          distinct pair $x\neq x'$ with $H(x)=H(x')$.
+  \end{enumerate}
+\end{definitionbox}
+
+\subsection{Security Hierarchy}
+
+Collision resistance $\Rightarrow$ Second-preimage resistance (roughly).
+The reverse does not hold in general.
+
+\subsection{Attack Complexities}
+
+\begin{table}[h]
+\centering
+\caption{Attack complexities for an $n$-bit hash}
+\begin{tabular}{lll}
+\toprule
+\textbf{Attack} & \textbf{Complexity} & \textbf{SHA-256 ($n=256$)} \\
+\midrule
+Brute-force preimage & $O(2^n)$ & $2^{256}$ \\
+Birthday collision   & $O(2^{n/2})$ & $2^{128}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Birthday paradox}: In a group of $\approx 1.2\sqrt{N}$ people,
+there is a $>50\%$ chance two share a birthday.  For hash collisions,
+$\approx 2^{n/2}$ evaluations suffice.
+
+\section{SHA-256}
+
+SHA-256 (Secure Hash Algorithm, 256-bit output) is a
+\textbf{Merkle--Damg\aa rd} construction:
+\begin{enumerate}
+  \item Pad message to a multiple of 512 bits.
+  \item Split into 512-bit blocks $M_1,\ldots,M_k$.
+  \item Iterate: $H_i = \text{compress}(H_{i-1},M_i)$ with $H_0$ = fixed IV.
+  \item Output $H_k$ (256 bits).
+\end{enumerate}
+
+The compression function performs 64 rounds of mixing using:
+bitwise operations (AND, OR, XOR, NOT), bit rotations/shifts, modular
+addition ($\bmod 2^{32}$), and a schedule of 64 derived 32-bit words.
+
+\subsection{Bitcoin Usage of SHA-256}
+
+\begin{table}[h]
+\centering
+\caption{SHA-256 in Bitcoin}
+\begin{tabular}{ll}
+\toprule
+\textbf{Purpose} & \textbf{Operation} \\
+\midrule
+Block hash / PoW & $\mathrm{SHA256}(\mathrm{SHA256}(\text{header}))$ \\
+Transaction ID & $\mathrm{SHA256}(\mathrm{SHA256}(\text{serialised tx}))$ \\
+Merkle tree nodes & $\mathrm{SHA256}(\mathrm{SHA256}(L\|R))$ \\
+Address step 1 & $\mathrm{SHA256}(\text{pubkey})$ \\
+Checksum & First 4 B of $\mathrm{SHA256}(\mathrm{SHA256}(\text{payload}))$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{SHA-256 Internal Structure in Detail}
+
+\subsection{Padding}
+
+Before hashing, the message $M$ of bit-length $L$ is padded to a
+multiple of 512 bits:
+\begin{enumerate}
+  \item Append a single bit `1'.
+  \item Append `0' bits until the length $\equiv 448 \pmod{512}$.
+  \item Append $L$ as a 64-bit big-endian integer.
+\end{enumerate}
+
+\textbf{Example}: hashing the 3-byte string \texttt{"abc"} ($L=24$~bits):
+\begin{lstlisting}[language={}]
+Message:   61 62 63
+Padding:   80 00...00 00 00 00 00 00 00 00 18
+                  (length = 24 = 0x18)
+Total: 512 bits (one block)
+\end{lstlisting}
+
+\subsection{The Compression Function}
+
+SHA-256 uses eight 32-bit state words $H_0,\ldots,H_7$ initialised to
+the fractional parts of the square roots of the first 8 primes:
+\[
+H_0 = \texttt{6a09e667},\quad H_1 = \texttt{bb67ae85},\quad\ldots
+\]
+
+For each 512-bit message block, 64 rounds are performed.  Each round
+uses one of 64 constants $K_i$ (derived from cube roots of the first 64
+primes) and the \textbf{message schedule} $W_0,\ldots,W_{63}$.
+
+\textbf{Message schedule} ($W_i$ for $i\geq 16$):
+\[
+W_i = \sigma_1(W_{i-2}) + W_{i-7} + \sigma_0(W_{i-15}) + W_{i-16}
+\]
+where $\sigma_0(x)=\mathrm{ROTR}^7(x)\oplus\mathrm{ROTR}^{18}(x)\oplus\mathrm{SHR}^3(x)$
+and $\sigma_1$ is similar with rotation amounts 17, 19, 10.
+
+\textbf{Round function}: let $a,b,c,d,e,f,g,h$ be the working variables
+(initialised from $H_0,\ldots,H_7$):
+\begin{align}
+  T_1 &= h + \Sigma_1(e) + \mathrm{Ch}(e,f,g) + K_i + W_i \\
+  T_2 &= \Sigma_0(a) + \mathrm{Maj}(a,b,c) \\
+  h&\gets g,\; g\gets f,\; f\gets e,\; e\gets d+T_1 \\
+  d&\gets c,\; c\gets b,\; b\gets a,\; a\gets T_1+T_2
+\end{align}
+
+\begin{align*}
+  \mathrm{Ch}(x,y,z)  &= (x\wedge y)\oplus(\neg x\wedge z) \\
+  \mathrm{Maj}(x,y,z) &= (x\wedge y)\oplus(x\wedge z)\oplus(y\wedge z) \\
+  \Sigma_0(x)         &= \mathrm{ROTR}^{2}(x)\oplus\mathrm{ROTR}^{13}(x)\oplus\mathrm{ROTR}^{22}(x) \\
+  \Sigma_1(x)         &= \mathrm{ROTR}^{6}(x)\oplus\mathrm{ROTR}^{11}(x)\oplus\mathrm{ROTR}^{25}(x)
+\end{align*}
+
+After 64 rounds, the block output is added back to $H_0,\ldots,H_7$
+modulo $2^{32}$.
+
+\subsection{Avalanche Effect}
+
+A one-bit change in the input propagates through the round function to
+affect (roughly) half the output bits within a few rounds.
+
+\begin{example}
+\begin{lstlisting}[language={}]
+SHA256("abc")    = ba7816bf 8f01cfea 414140de 5dae2ec7
+                   3b338c12 12133393 8e04d2eb 4bb6e54
+SHA256("abd")    = 3909e2e0 5f6dfb8b 6a6e1a3a 7b1a0b69
+                   e9e4f5c3 9b0e7aa4 f2c2e75b e8f5a9c2
+\end{lstlisting}
+One character changes (c$\to$d); every output byte is completely different.
+\end{example}
+
+\subsection{Length Extension Attacks}
+
+SHA-256's Merkle-Damg\aa rd construction is vulnerable to \textbf{length
+extension attacks}: given $H(m)$, an attacker can compute
+$H(m\|\text{padding}\|m')$ without knowing $m$.
+
+This is why Bitcoin uses \textbf{SHA256d} = SHA-256(SHA-256($\cdot$)):
+applying SHA-256 twice breaks the Merkle-Damg\aa rd chain and eliminates
+length extension vulnerability.
+
+\section{RIPEMD-160}
+
+RIPEMD-160 produces 20-byte output.  Combined with SHA-256, it
+compresses a public key hash to 20 bytes for use in Bitcoin addresses.
+Using two independent hash families gives defence-in-depth against
+weaknesses in either.
+
+\section{Hash Pointers}
+
+A \textbf{hash pointer} stores both a data pointer and $H(\text{data})$.
+Modifying the data invalidates the pointer.  Bitcoin's blockchain is a
+linked list of hash pointers:
+
+\begin{align}
+  \boxed{\texttt{hashPrevBlock} = \mathrm{SHA256d}(\text{previous header})}
+\end{align}
+
+
+% ================================================================
+\chapter{Group Theory and Modular Arithmetic}
+\label{chap:groups}
+% ================================================================
+
+\section{Groups}
+
+\begin{definitionbox}
+  A \textbf{group} $(G,\cdot)$ is a set $G$ with a binary operation
+  satisfying:
+  \begin{enumerate}[label=(\roman*)]
+    \item \textbf{Closure}: $a\cdot b\in G$ for all $a,b\in G$.
+    \item \textbf{Associativity}: $(a\cdot b)\cdot c = a\cdot(b\cdot c)$.
+    \item \textbf{Identity}: $\exists\,e$ s.t.\ $e\cdot a=a\cdot e=a$ for all $a$.
+    \item \textbf{Inverses}: $\forall\,a\;\exists\,a^{-1}$ s.t.\
+          $a\cdot a^{-1}=e$.
+  \end{enumerate}
+  If also $a\cdot b=b\cdot a$ for all $a,b$, the group is \textbf{abelian}.
+\end{definitionbox}
+
+\subsection{Examples Relevant to Cryptography}
+
+\begin{table}[h]
+\centering
+\caption{Common cryptographic groups}
+\begin{tabular}{llll}
+\toprule
+\textbf{Group} & \textbf{Operation} & \textbf{Order} & \textbf{Cyclic?}\\
+\midrule
+$(\mathbb{Z}_n,+)$ & Addition mod $n$ & $n$ & Yes \\
+$(\mathbb{Z}_p^*,\times)$ & Multiplication mod prime $p$ & $p-1$ & Yes \\
+$E(\mathbb{F}_p)$ & Point addition on curve & $\approx p$ & Yes (usually) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Cyclic Groups and the Discrete Logarithm}
+
+\begin{definitionbox}
+  $G$ is \textbf{cyclic} if $\exists\,g\in G$ (a \emph{generator}) such that
+  $G=\{g^0,g^1,\ldots,g^{|G|-1}\}$.
+\end{definitionbox}
+
+\textbf{Exponentiation} (easy): given $k$, compute $h=g^k$ in
+$O(\log k)$ group operations via double-and-add.
+
+\textbf{Discrete Logarithm Problem (DLP)}: given $h=g^k$, find $k$.
+Believed hard for suitable groups.
+
+\section{Modular Arithmetic}
+
+\[
+a \equiv b\pmod n \iff n\mid(a-b)
+\]
+
+\textbf{Modular inverse}: if $\gcd(a,n)=1$ then $a^{-1}\bmod n$ exists,
+computable via the Extended Euclidean Algorithm.
+
+\begin{theorem}[Fermat's Little Theorem]
+  For prime $p$ and $\gcd(a,p)=1$:
+  \[
+    \boxed{a^{p-1}\equiv 1\pmod p} \implies a^{-1}\equiv a^{p-2}\pmod p
+  \]
+\end{theorem}
+
+\section{Finite Fields}
+
+\begin{definitionbox}
+  $\mathbb{F}_p=\mathbb{Z}_p$ for prime $p$: the set $\{0,1,\ldots,p-1\}$
+  with addition and multiplication modulo $p$.  Every non-zero element has
+  a multiplicative inverse.
+\end{definitionbox}
+
+Elliptic curves in Bitcoin are defined over $\mathbb{F}_p$ for a 256-bit prime $p$.
+
+\subsection{The Extended Euclidean Algorithm}
+
+To find $a^{-1}\bmod n$, use the Extended Euclidean Algorithm (EEA):
+
+\begin{example}
+  Find $7^{-1}\bmod 11$:
+
+  Run $\gcd(7,11)$:
+  \[
+    11 = 1\cdot 7 + 4,\quad 7 = 1\cdot 4+3,\quad 4=1\cdot 3+1,\quad
+    3=3\cdot 1
+  \]
+  Back-substitute:
+  \[
+    1 = 4 - 1\cdot 3 = 4 - 1\cdot(7-4) = 2\cdot 4 - 7
+      = 2\cdot(11-7) - 7 = 2\cdot 11 - 3\cdot 7
+  \]
+  So $-3\cdot 7\equiv 1\pmod{11}$, i.e.\ $7^{-1}\equiv -3\equiv 8\pmod{11}$.
+
+  Verify: $7\times 8 = 56 = 5\times 11 + 1\equiv 1\pmod{11}$. \checkmark
+\end{example}
+
+\subsection{Worked Example: Discrete Logarithm in $\mathbb{Z}_{11}^*$}
+
+$\mathbb{Z}_{11}^* = \{1,2,3,4,5,6,7,8,9,10\}$ is a cyclic group of
+order 10.
+
+\textbf{Finding generators}: $g$ is a generator iff $\mathrm{ord}(g)=10$.
+
+\begin{table}[h]
+\centering
+\caption{Powers of $g=2$ in $\mathbb{Z}_{11}^*$}
+\begin{tabular}{cccccccccc}
+\toprule
+$2^1$ & $2^2$ & $2^3$ & $2^4$ & $2^5$ & $2^6$ & $2^7$ & $2^8$ & $2^9$ & $2^{10}$ \\
+\midrule
+2 & 4 & 8 & 5 & 10 & 9 & 7 & 3 & 6 & 1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+$g=2$ generates all of $\mathbb{Z}_{11}^*$, so it is a generator.
+
+\textbf{DLP example}: Given $h=7$, find $k$ such that $2^k\equiv 7\pmod{11}$.
+From the table: $2^7=7$, so $k=7$.
+
+In practice (with 256-bit groups), no efficient algorithm is known.
+
+\section{Lagrange's Theorem}
+
+\begin{theorem}
+  For finite group $G$ and subgroup $H\leq G$, $|H|$ divides $|G|$.
+\end{theorem}
+
+\textbf{Corollary}: The order of any $g\in G$ divides $|G|$, so
+$g^{|G|}=e$.
+
+\section{Quadratic Residues}
+
+$a\in\mathbb{F}_p^*$ is a \textbf{quadratic residue (QR)} if
+$\exists\,x$ with $x^2\equiv a$.
+
+\begin{theorem}[Euler's Criterion]
+  \[
+    a^{(p-1)/2}\equiv\begin{cases}1\pmod p & a \text{ is a QR}\\
+    -1\pmod p & a \text{ is a QNR}\end{cases}
+  \]
+\end{theorem}
+
+Exactly $(p-1)/2$ elements of $\mathbb{F}_p^*$ are QRs.
+
+
+% ================================================================
+\chapter{Elliptic Curve Cryptography in Bitcoin}
+\label{chap:ecc}
+% ================================================================
+
+\section{Elliptic Curves}
+
+\begin{definitionbox}
+  An \textbf{elliptic curve} over $\mathbb{F}_p$ is the set of points
+  $(x,y)\in\mathbb{F}_p^2$ satisfying
+  \begin{equation}
+    y^2 \equiv x^3+ax+b \pmod p, \quad \Delta=-16(4a^3+27b^2)\neq 0,
+  \end{equation}
+  together with a formal \emph{point at infinity} $\mathcal{O}$.
+\end{definitionbox}
+
+\subsection{Bitcoin's Curve: secp256k1}
+
+$a=0$, $b=7$:
+\begin{equation}
+  \boxed{y^2 \equiv x^3+7 \pmod p}
+\end{equation}
+\[
+  p = 2^{256}-2^{32}-977
+  = \texttt{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F}_{16}
+\]
+
+Group order:
+\[
+  n = \texttt{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141}_{16}
+\]
+
+\section{Group Law on Elliptic Curves}
+
+The set $E(\mathbb{F}_p)$ forms an abelian group under \emph{point addition}.
+
+\subsection{Point Addition: $P+Q$ with $P\neq\pm Q$}
+
+\begin{align}
+  \lambda &= \frac{y_2-y_1}{x_2-x_1}\pmod p \\
+  x_3 &= \lambda^2-x_1-x_2 \pmod p \\
+  y_3 &= \lambda(x_1-x_3)-y_1 \pmod p
+\end{align}
+
+Geometrically: draw the line through $P$ and $Q$, reflect the third
+intersection point over the $x$-axis.
+
+\subsection{Point Doubling: $P+P=2P$}
+
+\begin{align}
+  \lambda &= \frac{3x_1^2+a}{2y_1}\pmod p \quad (a=0\text{ for secp256k1})\\
+  x_3 &= \lambda^2-2x_1 \pmod p \\
+  y_3 &= \lambda(x_1-x_3)-y_1 \pmod p
+\end{align}
+
+\subsection{Identity and Inverse}
+
+\begin{itemize}
+  \item $P+\mathcal{O}=P$ \quad (identity is $\mathcal{O}$)
+  \item $-P=(x,-y\bmod p)$; \quad $P+(-P)=\mathcal{O}$
+\end{itemize}
+
+\section{Scalar Multiplication}
+
+\[
+  kP = \underbrace{P+P+\cdots+P}_{k}
+\]
+
+Efficient via \textbf{double-and-add} in $O(\log k)$ operations:
+
+\begin{lstlisting}[language={}]
+R = O (point at infinity)
+for bit b in binary(k) from MSB to LSB:
+    R = 2R         (doubling)
+    if b == 1:
+        R = R + P  (addition)
+return R
+\end{lstlisting}
+
+\section{Worked Example: Point Addition over $\mathbb{F}_{17}$}
+
+Consider the curve $E: y^2\equiv x^3+2x+2\pmod{17}$.
+
+\begin{example}
+  Let $P=(5,1)$ and $Q=(6,3)$ (both on the curve; verify:
+  $1^2=1\equiv 5^3+2\cdot5+2=137\equiv 1\pmod{17}$~\checkmark).
+
+  \textbf{Compute $P+Q$}:
+  \begin{align*}
+    \lambda &= \frac{y_2-y_1}{x_2-x_1} = \frac{3-1}{6-5} = \frac{2}{1} = 2 \\
+    x_3 &= 2^2 - 5 - 6 = 4-11 = -7\equiv 10\pmod{17} \\
+    y_3 &= 2(5-10)-1 = -10-1 = -11\equiv 6\pmod{17}
+  \end{align*}
+  So $P+Q = (10,6)$.
+\end{example}
+
+\begin{example}
+  \textbf{Compute $2P$} with $P=(5,1)$:
+  \begin{align*}
+    \lambda &= \frac{3\cdot5^2+2}{2\cdot1} = \frac{77}{2}
+             = \frac{9}{2}\pmod{17}
+             = 9\cdot 2^{-1}\pmod{17} \\
+    2^{-1}&\equiv 9\pmod{17} \quad(\text{since }2\cdot 9=18\equiv 1) \\
+    \lambda &= 9\cdot 9 = 81\equiv 13\pmod{17} \\
+    x_3 &= 13^2 - 2\cdot5 = 169-10 = 159\equiv 6\pmod{17} \\
+    y_3 &= 13(5-6)-1 = -13-1=-14\equiv 3\pmod{17}
+  \end{align*}
+  So $2P=(6,3)=Q$.  Hence $P+Q = 2P+P=3P$, meaning $Q=2P$.
+\end{example}
+
+\begin{example}
+  \textbf{Scalar multiplication $4P$}:
+  \[
+    2P=(6,3),\quad 4P=2(2P)=2(6,3)
+  \]
+  Compute $2(6,3)$: $\lambda=(3\cdot36+2)/(2\cdot3)=110/6$.
+  $6^{-1}\equiv 3\pmod{17}$ (since $6\cdot3=18\equiv1$).
+  $\lambda=110\cdot3\bmod17=330\bmod17=6$.
+  $x_3=36-12=24\equiv7$, $y_3=6(6-7)-3=-6-3=-9\equiv8\pmod{17}$.
+  So $4P=(7,8)$.
+\end{example}
+
+The point at infinity $\mathcal{O}$ is the additive identity.
+The curve over $\mathbb{F}_{17}$ has 18 points (including $\mathcal{O}$),
+forming a cyclic group of order 18.
+
+\section{Elliptic Curve Discrete Logarithm Problem (ECDLP)}
+
+\begin{definitionbox}
+  Given generator $G$ and point $Q=kG$, the \textbf{ECDLP} is to find $k$.
+\end{definitionbox}
+
+Best known attacks (Pollard's $\rho$) require $O(\sqrt{n})$ operations.
+For secp256k1: $\sqrt{n}\approx 2^{128}$ — computationally infeasible.
+
+\section{Key Generation}
+
+\begin{align}
+  k &\xleftarrow{\$} \{1,\ldots,n-1\} \quad\text{(private key)} \\
+  \boxed{K} &= \boxed{k\cdot G} \quad\text{(public key, 33 bytes compressed)}
+\end{align}
+
+\textbf{Compressed public key}: prefix \texttt{02} if $y$ is even,
+\texttt{03} if $y$ is odd, followed by $x$-coordinate (32 bytes).
+
+\section{ECDSA: Elliptic Curve Digital Signature Algorithm}
+
+\subsection{Signing}
+
+Given message $m$, private key $k$, generator $G$, group order $n$:
+\begin{enumerate}
+  \item $e = H(m)$ \quad (hash of message)
+  \item Choose random nonce $r\in[1,n-1]$
+  \item $R = r\cdot G = (x_R,y_R)$; set $r_{\text{sig}} = x_R\bmod n$
+  \item $s = r^{-1}(e + k\cdot r_{\text{sig}})\bmod n$
+  \item Signature: $(r_{\text{sig}},s)$
+\end{enumerate}
+
+\begin{equation}
+  \boxed{s = r^{-1}\!\bigl(H(m)+k\cdot r_{\text{sig}}\bigr)\bmod n}
+\end{equation}
+
+\subsection{Verification}
+
+Given $(r_{\text{sig}},s)$, public key $K$:
+\begin{enumerate}
+  \item $e = H(m)$
+  \item $u_1 = s^{-1}e\bmod n$, \quad $u_2 = s^{-1}r_{\text{sig}}\bmod n$
+  \item $R' = u_1 G + u_2 K$
+  \item Accept iff $R'_x\equiv r_{\text{sig}}\pmod n$
+\end{enumerate}
+
+\begin{exambox}[Security Warning]
+  \textbf{Never reuse the nonce $r$!}  If $r$ is reused for two messages
+  $m_1,m_2$, the private key can be recovered:
+  $k = (s_1-s_2)^{-1}(H(m_1)-H(m_2))\bmod n$.
+  This caused the PlayStation~3 key leak (2010).
+\end{exambox}
+
+\section{ECDSA Worked Conceptual Example}
+
+\begin{example}
+  \textbf{Why the verification equation works.}
+
+  We have signature $(r_{\text{sig}}, s)$ where
+  $s = r^{-1}(e + k\cdot r_{\text{sig}})\bmod n$.
+
+  During verification we compute $R' = u_1 G + u_2 K$ where
+  $u_1 = s^{-1}e\bmod n$ and $u_2 = s^{-1}r_{\text{sig}}\bmod n$.
+
+  \begin{align*}
+    R' &= u_1 G + u_2 K = s^{-1}e\cdot G + s^{-1}r_{\text{sig}}\cdot kG \\
+       &= s^{-1}(e + k\cdot r_{\text{sig}})\cdot G = s^{-1}\cdot s r\cdot G = r\cdot G = R
+  \end{align*}
+
+  So $R'_x = R_x = r_{\text{sig}}$.  The equation works because only
+  someone knowing $k$ can produce an $s$ that satisfies it.
+\end{example}
+
+\subsection{Schnorr Signatures (Taproot)}
+
+Bitcoin's Taproot upgrade (BIP\,340, activated November 2021) added
+\textbf{Schnorr signatures} as an alternative to ECDSA:
+
+\textbf{Signing}: Choose random nonce $r$, compute $R=r\cdot G$.
+\[
+  s = r + H(R\|K\|m)\cdot k \pmod n
+\]
+Signature: $(R, s)$.
+
+\textbf{Verification}: Check $s\cdot G = R + H(R\|K\|m)\cdot K$.
+
+\textbf{Advantages over ECDSA}:
+\begin{itemize}
+  \item \textbf{Linearity}: $n$ Schnorr signatures on the same message
+        can be aggregated into a single signature (MuSig).  This enables
+        efficient $n$-of-$n$ multisig and reduces blockchain footprint.
+  \item \textbf{Simpler security proof}: Provably secure in the random
+        oracle model via a tighter reduction.
+  \item \textbf{Batch verification}: $n$ signatures can be verified
+        faster than $n$ independent verifications.
+\end{itemize}
+
+\section{Parameter Summary}
+
+\begin{table}[h]
+\centering
+\caption{secp256k1 at a glance}
+\begin{tabular}{ll}
+\toprule
+Curve & $y^2=x^3+7\pmod p$ \\
+Field prime $p$ & $2^{256}-2^{32}-977$ (256 bits) \\
+Group order $n$ & $\approx 2^{256}$ \\
+Security level & $\approx 128$ bits \\
+Private key & 32 bytes (256 bits) \\
+Compressed public key & 33 bytes \\
+Uncompressed public key & 65 bytes \\
+Signature (DER) & 71--72 bytes \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+% ================================================================
+\chapter{Bitcoin Transactions}
+\label{chap:btctx}
+% ================================================================
+
+\section{The UTXO Model}
+
+\begin{definitionbox}
+  A \textbf{UTXO} (Unspent Transaction Output) is an output of a
+  previous transaction that has not yet been spent.  A wallet's
+  \emph{balance} is the sum of all UTXOs locked to its addresses.
+\end{definitionbox}
+
+Unlike the account model (Ethereum), Bitcoin has no notion of a running
+balance.  Every transaction explicitly consumes UTXOs as inputs and
+creates new UTXOs as outputs.
+
+\begin{keyinsight}
+  A UTXO is like a physical coin: you spend it whole.  If you pay 0.5~BTC
+  from a 1~BTC UTXO, you create a 0.5~BTC output to the recipient and a
+  change output back to yourself.  The difference is the miner fee.
+\end{keyinsight}
+
+\section{Transaction Structure}
+
+\begin{table}[h]
+\centering
+\caption{Bitcoin Transaction Fields}
+\begin{tabular}{lll}
+\toprule
+\textbf{Field} & \textbf{Size} & \textbf{Description} \\
+\midrule
+version     & 4 B & Format version \\
+vin\_count  & varint & Number of inputs \\
+vin[]       & variable & Array of inputs \\
+vout\_count & varint & Number of outputs \\
+vout[]      & variable & Array of outputs \\
+locktime    & 4 B & Earliest block/time for inclusion \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Input Fields}
+
+\begin{table}[h]
+\centering
+\caption{Transaction Input Fields}
+\begin{tabular}{lll}
+\toprule
+\textbf{Field} & \textbf{Size} & \textbf{Description} \\
+\midrule
+txid       & 32 B & TXID of the transaction being spent \\
+vout       & 4 B & Index of the output within that tx \\
+scriptSig  & variable & Unlocking script \\
+sequence   & 4 B & RBF / relative locktime \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Output Fields}
+
+\begin{table}[h]
+\centering
+\caption{Transaction Output Fields}
+\begin{tabular}{lll}
+\toprule
+\textbf{Field} & \textbf{Size} & \textbf{Description} \\
+\midrule
+value       & 8 B & Amount in satoshis ($10^8\ \text{sat}=1\ \text{BTC}$) \\
+scriptPubKey & variable & Locking script \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Implicit fee}:
+\[
+  \text{fee} = \sum\text{input values} - \sum\text{output values}
+\]
+
+\section{Bitcoin Script}
+
+Bitcoin uses a \textbf{stack-based} scripting language.
+
+\begin{itemize}
+  \item \textbf{scriptPubKey} (locking script): conditions to spend the output.
+  \item \textbf{scriptSig} (unlocking script): data that satisfies conditions.
+\end{itemize}
+
+A UTXO is spendable iff \texttt{scriptSig}\,$\|$\,\texttt{scriptPubKey}
+leaves \texttt{TRUE} on the stack.
+
+\subsection{Key Opcodes}
+
+\begin{table}[h]
+\centering
+\caption{Common Bitcoin Script opcodes}
+\begin{tabular}{ll}
+\toprule
+\textbf{Opcode} & \textbf{Effect} \\
+\midrule
+\texttt{OP\_DUP}          & Duplicate top stack item \\
+\texttt{OP\_HASH160}      & Apply SHA256 then RIPEMD160 \\
+\texttt{OP\_EQUAL}        & Pop two items; push 1 if equal \\
+\texttt{OP\_EQUALVERIFY}  & Like EQUAL but fail if not equal \\
+\texttt{OP\_CHECKSIG}     & Verify ECDSA signature \\
+\texttt{OP\_CHECKMULTISIG}& Verify $m$-of-$n$ multisignature \\
+\texttt{OP\_RETURN}       & Mark output unspendable (data) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{P2PKH — Pay to Public Key Hash}
+
+Most common transaction type; locks output to a Bitcoin address.
+
+\textbf{scriptPubKey}:
+\begin{lstlisting}[language={}]
+OP_DUP OP_HASH160 <PubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
+\end{lstlisting}
+
+\textbf{scriptSig}:
+\begin{lstlisting}[language={}]
+<Signature> <PublicKey>
+\end{lstlisting}
+
+\textbf{Execution trace}:
+\begin{enumerate}
+  \item Push \texttt{<Sig>}, \texttt{<PubKey>}.
+  \item \texttt{OP\_DUP}: duplicate \texttt{<PubKey>}.
+  \item \texttt{OP\_HASH160}: hash the copy $\to$ \texttt{<PubKeyHash'>}.
+  \item Push \texttt{<PubKeyHash>} from scriptPubKey.
+  \item \texttt{OP\_EQUALVERIFY}: assert \texttt{Hash'} $=$ \texttt{Hash}.
+  \item \texttt{OP\_CHECKSIG}: verify ECDSA signature. Stack: \texttt{[TRUE]}.
+\end{enumerate}
+
+\section{P2SH — Pay to Script Hash}
+
+Allows complex conditions (multisig, timelocks) to be encoded in a
+\emph{redeemScript}; the locking script only contains the hash.
+
+\textbf{scriptPubKey}:
+\begin{lstlisting}[language={}]
+OP_HASH160 <RedeemScriptHash> OP_EQUAL
+\end{lstlisting}
+
+\textbf{scriptSig}:
+\begin{lstlisting}[language={}]
+<Data...> <RedeemScript>
+\end{lstlisting}
+
+\section{Multisignature ($m$-of-$n$)}
+
+\begin{lstlisting}[language={}]
+// 2-of-3 redeemScript:
+OP_2 <PubKey1> <PubKey2> <PubKey3> OP_3 OP_CHECKMULTISIG
+
+// Unlocking:
+OP_0 <Sig1> <Sig2>
+\end{lstlisting}
+
+\texttt{OP\_0} compensates for a historical off-by-one bug in
+\texttt{OP\_CHECKMULTISIG}.
+
+\section{Worked Example: A Complete Bitcoin Transaction}
+
+\begin{example}
+  \textbf{Scenario}: Alice wants to pay Bob 0.3~BTC.  Alice has two
+  UTXOs:
+  \begin{itemize}
+    \item UTXO~A: 0.4~BTC from transaction \texttt{txid\,=\,aaa...}, output 0
+    \item UTXO~B: 0.2~BTC from transaction \texttt{txid\,=\,bbb...}, output 1
+  \end{itemize}
+  She decides to spend UTXO~A only (0.4~BTC $>$ 0.3~BTC payment).
+
+  \textbf{Transaction structure}:
+  \begin{itemize}
+    \item \textbf{Input}: UTXO~A (\texttt{aaa...}:0) with Alice's
+          signature and public key in \texttt{scriptSig}.
+    \item \textbf{Output 0}: 0.3~BTC locked to Bob's address
+          (P2PKH: \texttt{OP\_DUP OP\_HASH160 <Bob\_hash> OP\_EQUALVERIFY OP\_CHECKSIG}).
+    \item \textbf{Output 1}: 0.095~BTC locked to Alice's change address.
+    \item \textbf{Implicit fee}: $0.4 - 0.3 - 0.095 = 0.005$~BTC paid to miner.
+  \end{itemize}
+
+  \textbf{What happens to Alice's UTXO set?}
+  \begin{itemize}
+    \item UTXO~A (0.4~BTC) is \emph{removed} from the set (spent).
+    \item Two new UTXOs are \emph{added}: Bob's 0.3~BTC and Alice's change 0.095~BTC.
+    \item UTXO~B (0.2~BTC) is unaffected.
+  \end{itemize}
+\end{example}
+
+\section{P2WPKH: Pay-to-Witness-Public-Key-Hash}
+
+The SegWit equivalent of P2PKH.  The \texttt{scriptPubKey} is:
+\begin{lstlisting}[language={}]
+OP_0 <20-byte-pubkey-hash>
+\end{lstlisting}
+
+The witness data (signature + public key) is stored in the
+\texttt{witness} field, outside the transaction body used to compute the
+TXID.  This makes the TXID immutable with respect to signature changes
+(fixing transaction malleability).
+
+\section{Timelock Transactions}
+
+\textbf{Absolute timelocks}: \texttt{locktime} field specifies the
+earliest block height or timestamp when the transaction can be mined.
+
+\textbf{Relative timelocks} (BIP\,68): the \texttt{sequence} field
+specifies a minimum number of blocks or time since the referenced UTXO
+was created.
+
+\textbf{OP\_CHECKLOCKTIMEVERIFY (OP\_CLTV)}: a script opcode that fails
+if the current block height/time is less than the value on the stack.
+
+\textbf{Use case}: Hash Time-Locked Contracts (HTLCs) — the basis of
+the Lightning Network payment channels.  Alice pays Bob only if Bob
+reveals a secret $s$ such that $H(s)=h$ before a deadline.
+
+\begin{lstlisting}[language={}]
+// HTLC locking script:
+OP_IF
+    OP_SHA256 <h> OP_EQUALVERIFY OP_DUP OP_HASH160 <Bob_hash>
+OP_ELSE
+    <deadline> OP_CHECKLOCKTIMEVERIFY OP_DROP OP_DUP OP_HASH160 <Alice_hash>
+OP_ENDIF
+OP_EQUALVERIFY OP_CHECKSIG
+\end{lstlisting}
+
+\section{SegWit and Transaction Malleability}
+
+SegWit (BIP\,141, activated August 2017) moves witness data (signatures)
+outside the transaction ID hash:
+
+\begin{itemize}
+  \item Fixes \textbf{transaction malleability} (TXID could be changed by
+        modifying signatures).
+  \item Witness data discounted 75\% for fee calculation.
+  \item Enables the \textbf{Lightning Network}.
+\end{itemize}
+
+\section{Coinbase Transaction}
+
+Every block's first transaction is the \textbf{coinbase}:
+\begin{itemize}
+  \item Has no real inputs (creates new coins ex nihilo).
+  \item Pays miner: block subsidy + sum of all transaction fees.
+  \item Can embed arbitrary data in a special coinbase field.
+\end{itemize}
+
+\textbf{Block subsidy schedule} (halving every 210\,000 blocks):
+\[
+  \text{Total supply} = \sum_{k=0}^{\infty}210000\times\frac{50}{2^k}
+  = 21{,}000{,}000\ \text{BTC}
+\]
+
+
+% ================================================================
+\chapter{Mining Miscellanea}
+\label{chap:mining}
+% ================================================================
+
+\section{Proof of Work}
+
+\begin{equation}
+  \boxed{\mathrm{SHA256d}(\text{block header}) < T}
+\end{equation}
+
+Miners increment \texttt{nNonce} (and extra nonce in the coinbase) until
+the block hash falls below target $T$.
+
+\subsection{Difficulty and Adjustment}
+
+\[
+  D = \frac{T_{\text{genesis}}}{T_{\text{current}}}
+\]
+
+Every 2016 blocks ($\approx 2$ weeks) the target adjusts:
+\[
+  T_{\text{new}} = T_{\text{old}}
+  \times\frac{\text{actual time for 2016 blocks}}{2016\times10\,\text{min}}
+  \quad\text{(capped at factor of 4)}
+\]
+
+\subsection{Expected Hashes per Block}
+
+If each hash independently satisfies the target with probability
+$p=T/2^{256}$, the expected number of hashes is $1/p$.
+
+\section{Mining Hardware}
+
+\begin{table}[h]
+\centering
+\caption{Mining hardware evolution}
+\begin{tabular}{llll}
+\toprule
+\textbf{Era} & \textbf{Hardware} & \textbf{Typical rate} & \textbf{Efficiency}\\
+\midrule
+2009--10 & CPU  & 10~MH/s     & Poor \\
+2010--11 & GPU  & 100~MH/s    & Better \\
+2011--13 & FPGA & 1~GH/s      & Good \\
+2013+    & ASIC & $>$100~TH/s & Best \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+A modern Bitmain Antminer S19~XP delivers $\approx$140~TH/s at 3010~W.
+
+\section{Mining Pools}
+
+Solo mining variance is very high (expected time per solo miner: years).
+\textbf{Mining pools} aggregate hash power:
+
+\begin{itemize}
+  \item Pool sends members \emph{share targets} (easier than block target).
+  \item Members submit shares as proof of work.
+  \item When pool finds a block, reward is split by shares.
+  \item Common payout schemes: PPS (Pay-Per-Share), PPLNS.
+\end{itemize}
+
+\section{Why SHA256d and Not SHA256?}
+
+Bitcoin uses \textbf{double SHA-256} (\texttt{SHA256d}) for block
+hashing:
+\[
+  \text{block hash} = \mathrm{SHA256}(\mathrm{SHA256}(\text{header}))
+\]
+
+\textbf{Reason 1 — Length extension resistance}: SHA-256 has a length
+extension vulnerability.  Applying it twice breaks the Merkle-Damg\aa rd
+chain.
+
+\textbf{Reason 2 — Extra security margin}: Even if SHA-256 were reduced
+to a 128-bit effective security level, SHA256d provides an additional
+layer.
+
+\subsection{Nonce Space Exhaustion}
+
+The 4-byte \texttt{nNonce} field gives only $2^{32}\approx 4$ billion
+values.  At modern hashrates ($> 10^{18}$~H/s), a miner exhausts the
+entire nonce space in microseconds.
+
+\textbf{Solution}: Vary the \textbf{extra nonce} in the coinbase
+transaction (first input's \texttt{scriptSig} can hold up to 100 bytes).
+Changing the extra nonce changes the coinbase transaction, which changes
+the Merkle root, which changes the block header — giving the miner a
+fresh set of $2^{32}$ nonces to try.
+
+In practice: modern mining hardware also varies the \texttt{nTime}
+field (within $\pm 2$ hours of real time) for even more entropy.
+
+\section{Selfish Mining}
+
+A miner with $> 1/3$ of hashrate can mine a private chain, release it
+strategically, and earn revenue disproportionate to their share.
+
+\section{Transaction Lifecycle in the Mempool}
+
+\begin{enumerate}
+  \item User broadcasts transaction; nodes validate and add to \textbf{mempool}.
+  \item Miner selects transactions (highest fee/vbyte first) into a block.
+  \item Miner solves PoW; broadcasts block.
+  \item After $\approx$6 confirmations ($\approx$60 min) the transaction
+        is considered irreversible.
+\end{enumerate}
+
+\section{The Lightning Network}
+
+Second-layer protocol built on Bitcoin for fast, cheap payments:
+\begin{enumerate}
+  \item Two parties open a \textbf{payment channel} — a 2-of-2 multisig UTXO.
+  \item They exchange signed off-chain transactions (channel updates).
+  \item Either party can close by broadcasting the latest signed state.
+  \item Payments route through a network of channels (no direct channel needed).
+\end{enumerate}
+
+\section{Proof-of-Work vs.\ Alternatives}
+
+\begin{table}[h]
+\centering
+\caption{Consensus mechanism comparison}
+\begin{tabular}{p{2.5cm}p{3cm}p{3cm}p{3cm}}
+\toprule
+\textbf{Mechanism} & \textbf{Resource} & \textbf{Attack threshold} & \textbf{Examples} \\
+\midrule
+Proof of Work & Compute / energy & 50\% hashrate & Bitcoin \\
+Proof of Stake & Staked coins & 33\% of stake (BFT) & Ethereum, Cardano \\
+DPoS & Elected delegates & Delegate collusion & EOS, TRON \\
+Proof of Space & Disk storage & 51\% storage & Chia \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+% ================================================================
+\chapter{Introduction to Ethereum}
+\label{chap:eth_intro}
+% ================================================================
+
+\section{Ethereum vs.\ Bitcoin}
+
+\begin{table}[h]
+\centering
+\caption{Bitcoin vs.\ Ethereum}
+\begin{tabular}{lll}
+\toprule
+\textbf{Feature} & \textbf{Bitcoin} & \textbf{Ethereum} \\
+\midrule
+Primary purpose & Digital currency & Programmable platform \\
+State model & UTXO & Account-based \\
+Scripting & Limited (Script) & Turing-complete (EVM) \\
+Block time & $\approx$10 min & 12 s (post-merge) \\
+Consensus & PoW & PoS (since Sept 2022) \\
+Supply cap & 21M BTC & None (issuance $\to$ 0) \\
+Creator & Satoshi Nakamoto (2008) & Vitalik Buterin (2015) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Account Model}
+
+\subsection{Externally Owned Accounts (EOAs)}
+
+\begin{itemize}
+  \item Controlled by a private key (human user).
+  \item Can initiate transactions.
+  \item Fields: \texttt{nonce}, \texttt{balance}.
+  \item No code or storage.
+\end{itemize}
+
+\subsection{Contract Accounts}
+
+\begin{itemize}
+  \item Controlled by immutable EVM code.
+  \item Created by a deployment transaction.
+  \item Fields: \texttt{nonce}, \texttt{balance}, \texttt{storageRoot},
+        \texttt{codeHash}.
+  \item Executes when called by EOA or another contract.
+\end{itemize}
+
+\begin{align}
+  \text{Account state} = (\underbrace{\texttt{nonce}}_{\text{tx count}},\;
+  \underbrace{\texttt{balance}}_{\text{wei}},\;
+  \underbrace{\texttt{storageRoot}}_{\text{trie hash}},\;
+  \underbrace{\texttt{codeHash}}_{\text{keccak256(code)}})
+\end{align}
+
+\section{Ether and Wei}
+
+\begin{align}
+  1\;\text{ETH} &= 10^{18}\;\text{wei} \\
+  1\;\text{ETH} &= 10^{9}\;\text{gwei}
+\end{align}
+
+Gas prices are quoted in \textbf{gwei}.
+
+\section{Gas and Fees}
+
+Gas is the unit of computational work inside the EVM.
+
+\subsection{Why Gas?}
+
+\begin{itemize}
+  \item Prevents infinite loops (Turing halting problem) — execution stops
+        when gas exhausted.
+  \item Compensates validators for computation.
+  \item Creates a market for block space.
+\end{itemize}
+
+\subsection{EIP-1559 Fee Mechanism (Post-London 2021)}
+
+\begin{align}
+  \text{effective gas price} &= \min(\texttt{maxFeePerGas},\;
+    \texttt{baseFee}+\texttt{priorityFee}) \\
+  \text{fee paid} &= \text{gasUsed}\times\text{effective gas price}
+\end{align}
+
+\begin{itemize}
+  \item \textbf{Base fee}: Algorithmically set; \emph{burned} each block.
+  \item \textbf{Priority fee (tip)}: Given to the validator.
+  \item Base fee rises 12.5\% if previous block was full; falls 12.5\% if
+        empty (target: 50\% full).
+\end{itemize}
+
+\subsection{EIP-1559: Worked Fee Example}
+
+\begin{example}
+  \textbf{Given}: base fee = 20~gwei, user sets
+  \texttt{maxPriorityFeePerGas} = 2~gwei,
+  \texttt{maxFeePerGas} = 25~gwei.  Transaction uses 21\,000 gas
+  (simple ETH transfer).
+
+  \textbf{Step 1}: Effective gas price
+  = $\min(25, 20+2) = 22$~gwei.
+
+  \textbf{Step 2}: Fee paid = $21000\times22 = 462000$~gwei
+  $= 0.000462$~ETH.
+
+  \textbf{Step 3}: Base fee burned = $21000\times20 = 420000$~gwei.
+
+  \textbf{Step 4}: Validator tip = $21000\times2 = 42000$~gwei.
+
+  \textbf{Step 5}: Refund to user = $(25-22)\times21000 = 63000$~gwei.
+
+  \textbf{Summary}: User paid 0.000462~ETH; 0.000420~ETH was burned;
+  validator received 0.000042~ETH.
+\end{example}
+
+\begin{keyinsight}
+  \textbf{Deflationary effect}: Base fee is \emph{burned} (removed from
+  circulation) rather than given to validators.  During periods of high
+  activity, ETH supply decreases.  In 2021--2022 Ethereum was briefly
+  \emph{deflationary} (more ETH burned than issued).
+\end{keyinsight}
+
+\subsection{Account Nonce and Replay Protection}
+
+Every transaction from an EOA includes a \textbf{nonce} equal to the
+number of transactions previously sent from that address.
+
+\begin{itemize}
+  \item Prevents \textbf{replay attacks}: if Alice sends a transaction,
+        an attacker cannot replay the same transaction (the nonce would
+        be wrong).
+  \item Enforces \textbf{transaction ordering}: transactions from the
+        same sender are executed in nonce order.
+  \item If a nonce is skipped (e.g., nonce 3 but nonce 2 not yet
+        mined), the transaction is held in the mempool until its
+        predecessor arrives.
+\end{itemize}
+
+\textbf{EIP-155 replay protection}: The transaction includes
+\texttt{chainId} in its signature hash.  A transaction signed for
+Ethereum mainnet (chainId=1) cannot be replayed on Ethereum Classic
+(chainId=61) or any other chain.
+
+\section{Smart Contracts}
+
+\begin{definitionbox}
+  A \textbf{smart contract} is a program deployed on the blockchain that
+  executes deterministically on the EVM, has its own address/balance/
+  storage, is immutable once deployed, and is triggered by transactions.
+\end{definitionbox}
+
+\subsection{Representative Applications}
+
+\begin{description}
+  \item[DeFi] Uniswap (DEX), Aave/Compound (lending), MakerDAO (stablecoins).
+  \item[NFTs] ERC-721 unique digital assets.
+  \item[DAOs] On-chain governance (voting, treasury management).
+  \item[Privacy] Tornado Cash (Chapter~\ref{chap:tornado}).
+\end{description}
+
+\section{ERC-20 Token Standard}
+
+Standard interface for fungible tokens:
+\begin{itemize}
+  \item \texttt{totalSupply()} — total token supply.
+  \item \texttt{balanceOf(address)} — balance of an address.
+  \item \texttt{transfer(to, amount)} — transfer tokens.
+  \item \texttt{approve(spender, amount)} — allow delegation.
+  \item \texttt{transferFrom(from, to, amount)} — spend delegated tokens.
+  \item Events: \texttt{Transfer}, \texttt{Approval}.
+\end{itemize}
+
+
+% ================================================================
+\chapter{Ethereum Data Structures and Encoding}
+\label{chap:ethdata}
+% ================================================================
+
+\section{RLP Encoding}
+
+\textbf{Recursive Length Prefix (RLP)} is the canonical serialisation
+format in Ethereum for all data structures.
+
+\subsection{Encoding Rules}
+
+\textbf{Single byte $b$}:
+\begin{itemize}
+  \item $b\in[0x00,\,0x7f]$: encode as $b$ itself.
+\end{itemize}
+
+\textbf{Byte string of length $\ell$}:
+\begin{itemize}
+  \item $\ell=0$: \texttt{0x80}.
+  \item $\ell\leq 55$: $(0x80+\ell)\;\|\;$string.
+  \item $\ell>55$: $(0xb7+\text{len}(\ell))\;\|\;\text{BE}(\ell)\;\|\;$string.
+\end{itemize}
+
+\textbf{List with total payload length $\ell$}:
+\begin{itemize}
+  \item $\ell\leq 55$: $(0xc0+\ell)\;\|\;$RLP-encoded items.
+  \item $\ell>55$: $(0xf7+\text{len}(\ell))\;\|\;\text{BE}(\ell)\;\|\;$items.
+\end{itemize}
+
+\subsection{Examples}
+
+\begin{itemize}
+  \item \texttt{RLP("dog")} $=$ \texttt{0x83 64 6f 67}
+        \quad ($\ell=3$, $0x80+3=0x83$)
+  \item \texttt{RLP(["cat","dog"])} $=$ \texttt{0xc8 83 63 61 74 83 64 6f 67}
+        \quad (payload $=8$ bytes, $0xc0+8=0xc8$)
+  \item \texttt{RLP("")} $=$ \texttt{0x80}
+  \item \texttt{RLP([])} $=$ \texttt{0xc0}
+\end{itemize}
+
+\section{Merkle Patricia Trie (MPT)}
+
+Ethereum stores its state in a \textbf{Merkle Patricia Trie}: a
+compressed radix trie where every node is identified by its hash.
+
+\subsection{Node Types}
+
+\begin{description}
+  \item[Empty node] Null — represents missing key.
+  \item[Leaf node] $(k_{\text{enc}},\;\text{value})$ — stores a
+        key-value pair.
+  \item[Extension node] $(k_{\text{enc}},\;\text{hash\_of\_next})$ —
+        compresses a shared key prefix.
+  \item[Branch node] 17 children: indices 0--f (hex nibble) plus an
+        optional value slot.
+\end{description}
+
+\subsection{Hex-Prefix (HP) Path Encoding}
+
+Keys are sequences of hex nibbles; a flag byte encodes type and parity:
+\begin{table}[h]
+\centering
+\begin{tabular}{cll}
+\toprule
+\textbf{Prefix nibble} & \textbf{Node type} & \textbf{Path length} \\
+\midrule
+\texttt{0} & Extension & Even \\
+\texttt{1} & Extension & Odd \\
+\texttt{2} & Leaf      & Even \\
+\texttt{3} & Leaf      & Odd \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{MPT Worked Example}
+
+\begin{example}
+  Build a Merkle Patricia Trie with two key-value pairs:
+  \begin{itemize}
+    \item Key \texttt{0x1234} $\to$ value "dog"
+    \item Key \texttt{0x1235} $\to$ value "cat"
+  \end{itemize}
+
+  Both keys share the nibble prefix \texttt{1,2,3}.
+
+  \textbf{Step 1}: Both paths share prefix 1,2,3.  Create an
+  \textbf{extension node} with key \texttt{1,2,3} pointing to a branch.
+
+  \textbf{Step 2}: After the shared prefix, the paths diverge at nibble
+  4 vs 5.  Create a \textbf{branch node} with children at positions 4
+  and 5.
+
+  \textbf{Step 3}: Each child is a \textbf{leaf node}:
+  \begin{itemize}
+    \item Position 4: leaf (remaining path = empty, value = "dog")
+    \item Position 5: leaf (remaining path = empty, value = "cat")
+  \end{itemize}
+
+  \textbf{Resulting structure}:
+\begin{lstlisting}[language={}]
+Extension(path=[1,2,3], next=Branch)
+  Branch[4] -> Leaf(path=[], value="dog")
+  Branch[5] -> Leaf(path=[], value="cat")
+\end{lstlisting}
+
+  \textbf{Merkle hashing}: Each node is hashed with keccak256.  The root
+  hash is the hash of the extension node.  Changing ``dog'' to ``duck''
+  changes the leaf hash, the branch hash, and the extension (root) hash.
+  This is the Merkle property.
+\end{example}
+
+\section{The Four Ethereum Tries}
+
+\begin{table}[h]
+\centering
+\caption{Tries referenced in block headers}
+\begin{tabular}{p{3cm}p{4cm}p{5cm}}
+\toprule
+\textbf{Trie} & \textbf{Key} & \textbf{Value (RLP-encoded)} \\
+\midrule
+State          & \texttt{keccak256(address)} & (nonce, balance, storageRoot, codeHash) \\
+Transactions   & \texttt{RLP(tx index)} & serialised transaction \\
+Receipts       & \texttt{RLP(tx index)} & (status, gasUsed, logs, bloom) \\
+Storage (per contract) & \texttt{keccak256(slot)} & 256-bit value \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{keyinsight}
+  The \texttt{stateRoot} in the block header is the root hash of the
+  global state trie.  Changing any account (balance, nonce, storage)
+  changes the root, making tampering detectable.
+\end{keyinsight}
+
+\section{Keccak-256}
+
+Ethereum uses \textbf{Keccak-256} (a variant of SHA-3) for:
+\begin{itemize}
+  \item Address derivation: last 20 bytes of keccak256(uncompressed pubkey).
+  \item EVM \texttt{KECCAK256} opcode.
+  \item Function selectors: first 4 bytes of keccak256(signature string).
+  \item All MPT node hashes.
+\end{itemize}
+
+\section{Bloom Filters}
+
+Each block header contains a 2048-bit \textbf{Bloom filter}:
+\begin{itemize}
+  \item Compact representation of all addresses and topics in the block's logs.
+  \item False positives possible; false negatives impossible.
+  \item Enables efficient log searching without a full node.
+\end{itemize}
+
+
+% ================================================================
+\chapter{Ethereum Transactions}
+\label{chap:ethtx}
+% ================================================================
+
+\section{Transaction Types}
+
+\begin{description}
+  \item[Type~0 (Legacy)] Single \texttt{gasPrice} field; pre-EIP-1559.
+  \item[Type~1 (EIP-2930)] Adds \texttt{accessList} for storage slot pre-warming.
+  \item[Type~2 (EIP-1559)] \texttt{maxFeePerGas} + \texttt{maxPriorityFeePerGas};
+        dominant format today.
+\end{description}
+
+\section{EIP-1559 Transaction Fields}
+
+\begin{table}[h]
+\centering
+\caption{Type-2 transaction fields}
+\begin{tabular}{lll}
+\toprule
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\
+\midrule
+\texttt{chainId}              & uint256 & Prevents cross-chain replay \\
+\texttt{nonce}                & uint256 & Sequential tx count from sender \\
+\texttt{maxPriorityFeePerGas} & uint256 & Max tip to validator (wei/gas) \\
+\texttt{maxFeePerGas}         & uint256 & Max total fee (wei/gas) \\
+\texttt{gasLimit}             & uint256 & Max gas units allowed \\
+\texttt{to}                   & address & Recipient (\texttt{null} = deploy) \\
+\texttt{value}                & uint256 & ETH to transfer (wei) \\
+\texttt{data}                 & bytes   & Calldata / initcode \\
+\texttt{accessList}           & list    & Pre-warmed slots \\
+\texttt{v, r, s}              &         & ECDSA signature \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Signing and Sender Recovery}
+
+No explicit \texttt{from} field; the sender is recovered from the signature:
+\begin{align}
+  \texttt{sigHash} &= \mathrm{keccak256}(\mathrm{RLP}(2,\,\texttt{chainId},\,\texttt{nonce},\ldots,\texttt{accessList})) \\
+  (v,r,s) &= \mathrm{ECDSA\_sign}(\texttt{sigHash},\;\text{private key}) \\
+  \texttt{sender} &= \mathrm{ecrecover}(v,r,s,\;\texttt{sigHash})
+\end{align}
+
+\section{Transaction Execution Flow}
+
+\begin{enumerate}
+  \item Validate: \texttt{nonce} matches, sender balance $\geq$ \texttt{gasLimit}$\times$\texttt{maxFeePerGas}.
+  \item Deduct \texttt{gasLimit}$\times$\texttt{maxFeePerGas} from sender upfront.
+  \item Execute EVM code (or simple value transfer).
+  \item Refund unused gas: $(\texttt{gasLimit}-\texttt{gasUsed})\times\texttt{effectivePrice}$.
+  \item \textbf{Burn} base fee: $\texttt{gasUsed}\times\texttt{baseFee}$.
+  \item Pay validator: $\texttt{gasUsed}\times\texttt{priorityFee}$.
+\end{enumerate}
+
+\section{Contract Creation}
+
+When \texttt{to} is null:
+\begin{itemize}
+  \item \texttt{data} = \textbf{initcode} (constructor bytecode + arguments).
+  \item EVM runs initcode; constructor returns runtime bytecode.
+  \item Contract address (CREATE):
+        $\texttt{addr}=\mathrm{keccak256}(\mathrm{RLP}(\texttt{sender},\texttt{nonce}))[12\text{:}]$
+  \item Contract address (CREATE2):
+        $\texttt{addr}=\mathrm{keccak256}(\texttt{0xff}\|\texttt{sender}\|\texttt{salt}\|\mathrm{keccak256(initcode)})[12\text{:}]$
+\end{itemize}
+
+\section{Function Calls}
+
+\texttt{data} = 4-byte selector $\|$ ABI-encoded arguments.
+
+\begin{align}
+  \texttt{selector} = \mathrm{keccak256}(\text{"funcName(type1,type2,...)")}[0:4]
+\end{align}
+
+Example — calling \texttt{transfer(address,uint256)}:
+\begin{lstlisting}[language={}]
+selector  = 0xa9059cbb
+calldata  = selector || abi.encode(to, amount)
+\end{lstlisting}
+
+\section{Internal Calls}
+
+\begin{table}[h]
+\centering
+\caption{EVM call types}
+\begin{tabular}{lll}
+\toprule
+\textbf{Opcode} & \textbf{Context} & \textbf{State changes} \\
+\midrule
+\texttt{CALL}         & Callee's context & Yes \\
+\texttt{STATICCALL}   & Callee's context & No (read-only) \\
+\texttt{DELEGATECALL} & Caller's context & Yes (in caller's storage) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+% ================================================================
+\chapter{Ethereum Virtual Machine (EVM)}
+\label{chap:evm}
+% ================================================================
+
+\section{Architecture}
+
+The EVM is a stack-based, 256-bit quasi-Turing-complete virtual machine:
+
+\begin{itemize}
+  \item \textbf{Stack}: LIFO, max 1024 elements, each 256 bits.
+  \item \textbf{Memory}: Volatile byte array, expands on demand (cost $\propto$ size$^2$ for large allocations).
+  \item \textbf{Storage}: Persistent 256-bit $\to$ 256-bit key-value map, per contract.
+  \item \textbf{Calldata}: Read-only input from the calling transaction.
+  \item \textbf{Code}: Read-only bytecode being executed.
+\end{itemize}
+
+\section{Instruction Set}
+
+\begin{table}[h]
+\centering
+\caption{Key EVM opcodes and gas costs}
+\begin{tabular}{lllp{4cm}}
+\toprule
+\textbf{Category} & \textbf{Opcode} & \textbf{Gas} & \textbf{Effect} \\
+\midrule
+Arithmetic & \texttt{ADD} & 3 & $a+b$ \\
+ & \texttt{MUL} & 5 & $a\times b$ \\
+ & \texttt{EXP} & 10+ & $a^b$ \\
+\midrule
+Bitwise & \texttt{AND}, \texttt{OR}, \texttt{XOR} & 3 & bitwise ops \\
+ & \texttt{SHL}, \texttt{SHR} & 3 & shifts \\
+\midrule
+Memory & \texttt{MLOAD} & 3+ & load 32 B \\
+ & \texttt{MSTORE} & 3+ & store 32 B \\
+\midrule
+Storage & \texttt{SLOAD} & 2100 & load slot \\
+ & \texttt{SSTORE} & 20\,000 & write new slot \\
+\midrule
+Control & \texttt{JUMP}, \texttt{JUMPI} & 8/10 & unconditional/conditional \\
+ & \texttt{REVERT} & 0 & revert + return data \\
+ & \texttt{RETURN} & 0 & return data \\
+\midrule
+Context & \texttt{CALLER} & 2 & \texttt{msg.sender} \\
+ & \texttt{CALLVALUE} & 2 & \texttt{msg.value} \\
+ & \texttt{TIMESTAMP} & 2 & block timestamp \\
+\midrule
+Hash & \texttt{KECCAK256} & 30+6/word & keccak256(mem range) \\
+\midrule
+Calls & \texttt{CALL} & 100+ & external call \\
+ & \texttt{STATICCALL} & 100+ & read-only call \\
+ & \texttt{DELEGATECALL} & 100+ & delegate call \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Execution Trace Example}
+
+\begin{lstlisting}[language={},caption=Computing $3+5$ in EVM bytecode]
+PUSH1 0x03   // Stack: [3]
+PUSH1 0x05   // Stack: [5, 3]
+ADD          // Stack: [8]
+\end{lstlisting}
+
+\section{Gas Accounting in Practice}
+
+\begin{example}
+  \textbf{Executing a simple ERC-20 transfer}:
+
+  Approximate gas breakdown for \texttt{transfer(address,uint256)}:
+  \begin{table}[h]
+  \centering
+  \begin{tabular}{lr}
+  \toprule
+  \textbf{Operation} & \textbf{Gas} \\
+  \midrule
+  Base transaction fee & 21\,000 \\
+  Non-zero calldata (68 bytes $\times$ 16) & 1\,088 \\
+  SLOAD (read sender balance) & 2\,100 \\
+  SLOAD (read recipient balance) & 2\,100 \\
+  SSTORE (update sender balance) & 5\,000 \\
+  SSTORE (update recipient balance) & 20\,000 \\
+  LOG3 (Transfer event) & 1\,500 \\
+  Misc arithmetic/logic & $\approx 500$ \\
+  \midrule
+  \textbf{Total} & $\approx 53\,288$ \\
+  \bottomrule
+  \end{tabular}
+  \end{table}
+\end{example}
+
+\subsection{Out-of-Gas and Reverts}
+
+If gas is exhausted mid-execution:
+\begin{itemize}
+  \item An \textbf{out-of-gas} exception is raised.
+  \item All state changes from this call (and any sub-calls) are
+        \emph{reverted}.
+  \item All remaining gas is consumed (none refunded).
+  \item The transaction is included in the block (fee paid) but has
+        status 0 (failed).
+\end{itemize}
+
+If \texttt{REVERT} is executed explicitly:
+\begin{itemize}
+  \item State changes are reverted.
+  \item \emph{Unused} gas is refunded.
+  \item A return data (error message) is available.
+\end{itemize}
+
+\subsection{Call Stack and Call Depth Limit}
+
+When a contract calls another, a new \textbf{call frame} is pushed onto
+the call stack:
+\begin{itemize}
+  \item Each frame has its own \textbf{stack}, \textbf{memory}, and
+        \textbf{program counter}.
+  \item Storage and balance are global (shared across frames).
+  \item The call depth limit is \textbf{1024}.  Exceeding it causes an
+        out-of-gas-like failure.
+  \item The EIP-150 \textbf{63/64 rule}: a CALL forwards at most
+        $\frac{63}{64}$ of remaining gas, ensuring gas eventually runs
+        out even in deep recursion.
+\end{itemize}
+
+\section{ABI Encoding}
+
+\textbf{Static types} (\texttt{uint256}, \texttt{address}, \texttt{bool}):
+padded to 32 bytes, left-aligned.
+
+\textbf{Dynamic types} (\texttt{bytes}, \texttt{string}, dynamic arrays):
+encoded with a head containing an offset to the tail data.
+
+\section{Contract Deployment Bytecode}
+
+\begin{enumerate}
+  \item \textbf{Constructor code}: copies runtime bytecode to memory, returns it.
+  \item \textbf{Runtime bytecode}: stored at contract address; executed on calls.
+  \item \textbf{Constructor arguments}: ABI-encoded, appended after runtime bytecode.
+\end{enumerate}
+
+\begin{exambox}
+  \texttt{SSTORE} to a new (zero) slot costs 20\,000 gas; updating an
+  existing slot costs 5\,000; clearing to zero gives a 15\,000 gas
+  refund (capped at 20\% of gas used in EIP-3529).
+\end{exambox}
+
+
+% ================================================================
+\chapter{Ethereum Blocks}
+\label{chap:ethblocks}
+% ================================================================
+
+\section{Block Structure}
+
+An Ethereum block = \textbf{execution payload} (transactions, state)
+wrapped in a \textbf{beacon block} (consensus metadata).
+
+\subsection{Execution Block Header}
+
+\begin{table}[h]
+\centering
+\caption{Execution layer block header (post-merge)}
+\begin{tabular}{lll}
+\toprule
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\
+\midrule
+\texttt{parentHash}       & bytes32  & Hash of parent block header \\
+\texttt{ommersHash}       & bytes32  & keccak256 of uncle list (always empty post-merge) \\
+\texttt{beneficiary}      & address  & Fee recipient \\
+\texttt{stateRoot}        & bytes32  & Root of state MPT after all txs \\
+\texttt{transactionsRoot} & bytes32  & Root of tx trie \\
+\texttt{receiptsRoot}     & bytes32  & Root of receipts trie \\
+\texttt{logsBloom}        & bytes256 & Bloom filter for logs \\
+\texttt{difficulty}       & uint256  & 0 post-merge \\
+\texttt{number}           & uint256  & Block height \\
+\texttt{gasLimit}         & uint256  & Max total gas \\
+\texttt{gasUsed}          & uint256  & Total gas consumed \\
+\texttt{timestamp}        & uint64   & Unix time (exact 12 s slots) \\
+\texttt{extraData}        & bytes    & Up to 32 bytes arbitrary \\
+\texttt{prevRandao}       & bytes32  & Beacon chain RANDAO mix \\
+\texttt{nonce}            & bytes8   & 0 post-merge \\
+\texttt{baseFeePerGas}    & uint256  & EIP-1559 base fee \\
+\texttt{withdrawalsRoot}  & bytes32  & Validator withdrawals (EIP-4895) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Transaction Receipts}
+
+\begin{itemize}
+  \item \texttt{status}: 1 = success, 0 = revert.
+  \item \texttt{cumulativeGasUsed}: running total in block.
+  \item \texttt{logs}: events emitted.
+  \item \texttt{logsBloom}: Bloom contribution.
+\end{itemize}
+
+\section{Logs and Events}
+
+\begin{lstlisting}[language=Solidity]
+event Transfer(address indexed from, address indexed to, uint256 value);
+\end{lstlisting}
+
+Log structure:
+\begin{itemize}
+  \item Topic 0: \texttt{keccak256("Transfer(address,address,uint256)")}
+  \item Topic 1: \texttt{from} (indexed)
+  \item Topic 2: \texttt{to} (indexed)
+  \item Data: ABI-encoded \texttt{value}
+\end{itemize}
+
+Events are \emph{not} accessible from within the EVM; they are only
+visible to external observers.
+
+\section{The Merge (September 15, 2022)}
+
+\begin{itemize}
+  \item Energy reduced 99.95\%: 5.13~GW $\to$ 2.62~MW.
+  \item PoW nonce/difficulty set to 0.
+  \item \texttt{prevRandao} replaces \texttt{mixHash}, injecting beacon
+        chain randomness.
+  \item Block time became exactly 12 s (one slot).
+\end{itemize}
+
+
+% ================================================================
+\chapter{Solidity Programming}
+\label{chap:solidity}
+% ================================================================
+
+\section{Language Overview}
+
+Solidity is a statically-typed, object-oriented language that compiles
+to EVM bytecode.  It supports contracts, inheritance, events, and
+custom modifiers.
+
+\begin{lstlisting}[language=Solidity,caption=Minimal contract]
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract SimpleStorage {
+    uint256 private value;
+
+    function set(uint256 _v) public { value = _v; }
+
+    function get() public view returns (uint256) { return value; }
+}
+\end{lstlisting}
+
+\section{Types}
+
+\subsection{Value Types}
+\texttt{uint8}--\texttt{uint256}, \texttt{int8}--\texttt{int256},
+\texttt{bool}, \texttt{address} / \texttt{address payable},
+\texttt{bytes1}--\texttt{bytes32}, \texttt{enum}.
+
+\subsection{Reference Types}
+\texttt{bytes} (dynamic), \texttt{string}, arrays (\texttt{T[]}),
+\texttt{struct}, \texttt{mapping(K => V)}.
+
+\subsection{Special Variables}
+\begin{itemize}
+  \item \texttt{msg.sender} — caller address.
+  \item \texttt{msg.value} — ETH sent (wei).
+  \item \texttt{block.timestamp}, \texttt{block.number}.
+  \item \texttt{tx.origin} — original EOA (avoid for auth).
+\end{itemize}
+
+\section{Function Visibility and Mutability}
+
+\begin{table}[h]
+\centering
+\caption{Function visibility modifiers}
+\begin{tabular}{ll}
+\toprule
+\textbf{Visibility} & \textbf{Accessible from} \\
+\midrule
+\texttt{public}   & Anywhere (EOAs, other contracts, internally) \\
+\texttt{external} & Only from outside (more efficient calldata access) \\
+\texttt{internal} & Within contract and derived contracts \\
+\texttt{private}  & Only within this contract \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+State mutability: \texttt{view} (reads state), \texttt{pure} (no state
+access), \texttt{payable} (can receive ETH), default (reads + writes).
+
+\section{Mappings, Structs, Events}
+
+\begin{lstlisting}[language=Solidity,caption=Bank contract with events]
+contract Bank {
+    mapping(address => uint256) public balances;
+    event Deposit(address indexed user, uint256 amount);
+    event Withdrawal(address indexed user, uint256 amount);
+
+    function deposit() public payable {
+        balances[msg.sender] += msg.value;
+        emit Deposit(msg.sender, msg.value);
+    }
+
+    function withdraw(uint256 amount) public {
+        require(balances[msg.sender] >= amount, "Insufficient");
+        balances[msg.sender] -= amount;       // effect first!
+        (bool ok, ) = msg.sender.call{value: amount}("");
+        require(ok, "Transfer failed");
+        emit Withdrawal(msg.sender, amount);
+    }
+}
+\end{lstlisting}
+
+\begin{exambox}[Reentrancy]
+  Always update state \emph{before} external calls.  The DAO hack (2016)
+  drained \$60~M by re-entering a withdraw function before the balance
+  was updated.  Pattern: \textbf{Checks $\to$ Effects $\to$ Interactions}.
+\end{exambox}
+
+\section{Modifiers and Inheritance}
+
+\begin{lstlisting}[language=Solidity,caption=Ownable pattern]
+contract Ownable {
+    address public owner;
+    constructor() { owner = msg.sender; }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not owner");
+        _;
+    }
+}
+
+contract Token is Ownable {
+    mapping(address => uint256) public balanceOf;
+
+    function mint(address to, uint256 amount) public onlyOwner {
+        balanceOf[to] += amount;
+    }
+}
+\end{lstlisting}
+
+\section{Minimal ERC-20 Implementation}
+
+\begin{lstlisting}[language=Solidity,caption=ERC-20 token]
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract ERC20 {
+    string  public name;
+    string  public symbol;
+    uint8   public decimals = 18;
+    uint256 public totalSupply;
+
+    mapping(address => uint256) public balanceOf;
+    mapping(address => mapping(address => uint256)) public allowance;
+
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+
+    constructor(string memory _name, string memory _symbol, uint256 _supply) {
+        name = _name; symbol = _symbol;
+        totalSupply = _supply * 10**decimals;
+        balanceOf[msg.sender] = totalSupply;
+    }
+
+    function transfer(address to, uint256 v) public returns (bool) {
+        require(balanceOf[msg.sender] >= v);
+        balanceOf[msg.sender] -= v;
+        balanceOf[to] += v;
+        emit Transfer(msg.sender, to, v);
+        return true;
+    }
+
+    function approve(address spender, uint256 v) public returns (bool) {
+        allowance[msg.sender][spender] = v;
+        emit Approval(msg.sender, spender, v);
+        return true;
+    }
+
+    function transferFrom(address from, address to, uint256 v)
+        public returns (bool)
+    {
+        require(balanceOf[from] >= v && allowance[from][msg.sender] >= v);
+        allowance[from][msg.sender] -= v;
+        balanceOf[from] -= v;
+        balanceOf[to]   += v;
+        emit Transfer(from, to, v);
+        return true;
+    }
+}
+\end{lstlisting}
+
+\section{Storage Layout}
+
+State variables are stored in 32-byte \textbf{slots} starting at slot 0:
+\begin{itemize}
+  \item Variables are packed into the same slot if they fit.
+  \item Mappings: \texttt{mapping(K=>V)} stores value at
+        \texttt{keccak256(K\,||\,slot)}.
+  \item Dynamic arrays: length at slot $s$; elements at
+        \texttt{keccak256(s) + i}.
+\end{itemize}
+
+\begin{lstlisting}[language=Solidity,caption=Storage layout example]
+contract Layout {
+    uint128 a;    // slot 0, bytes 0-15
+    uint128 b;    // slot 0, bytes 16-31  (packed with a)
+    uint256 c;    // slot 1               (full slot)
+    address d;    // slot 2, bytes 0-19
+    bool    e;    // slot 2, byte 20      (packed with d)
+    mapping(address => uint256) balances; // slot 3 (base)
+    // balances[addr] is at keccak256(abi.encode(addr, 3))
+}
+\end{lstlisting}
+
+Understanding storage layout is critical for:
+\begin{itemize}
+  \item Writing \texttt{delegatecall}-based proxies (storage must match).
+  \item Optimising gas (packing saves SSTORE costs).
+  \item Security auditing (spotting storage collisions).
+\end{itemize}
+
+\section{Interfaces and Abstract Contracts}
+
+\begin{lstlisting}[language=Solidity,caption=Interface definition]
+interface IERC20 {
+    function totalSupply() external view returns (uint256);
+    function balanceOf(address) external view returns (uint256);
+    function transfer(address to, uint256 amount) external returns (bool);
+    function approve(address spender, uint256 amount) external returns (bool);
+    function transferFrom(address from, address to, uint256 amount)
+        external returns (bool);
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+}
+\end{lstlisting}
+
+Interfaces allow contracts to interact with any ERC-20 token without
+knowing its implementation:
+\begin{lstlisting}[language=Solidity]
+IERC20 token = IERC20(tokenAddress);
+uint256 bal = token.balanceOf(msg.sender);
+\end{lstlisting}
+
+\section{The Proxy Pattern (Upgradeable Contracts)}
+
+Smart contracts are immutable.  The proxy pattern separates logic from
+storage to allow upgrades:
+
+\begin{enumerate}
+  \item A \textbf{proxy contract} holds all storage and ETH.
+  \item It \texttt{delegatecall}s a \textbf{logic contract} for all
+        function calls.
+  \item To upgrade: deploy a new logic contract and update the proxy's
+        stored implementation address.
+\end{enumerate}
+
+\begin{lstlisting}[language=Solidity,caption=Minimal transparent proxy]
+contract Proxy {
+    address public implementation;   // slot 0
+    address public admin;            // slot 1
+
+    constructor(address _impl) {
+        implementation = _impl;
+        admin = msg.sender;
+    }
+
+    function upgrade(address newImpl) external {
+        require(msg.sender == admin);
+        implementation = newImpl;
+    }
+
+    fallback() external payable {
+        address impl = implementation;
+        assembly {
+            calldatacopy(0, 0, calldatasize())
+            let result := delegatecall(gas(), impl, 0, calldatasize(), 0, 0)
+            returndatacopy(0, 0, returndatasize())
+            switch result
+            case 0 { revert(0, returndatasize()) }
+            default { return(0, returndatasize()) }
+        }
+    }
+}
+\end{lstlisting}
+
+\begin{exambox}
+  \textbf{Storage collision hazard}: If the proxy stores
+  \texttt{implementation} at slot 0 and the logic contract also uses
+  slot 0 for a state variable, a call will overwrite the implementation
+  pointer!  EIP-1967 standardises proxy storage slots to
+  \texttt{keccak256("eip1967.proxy.implementation") - 1} to avoid this.
+\end{exambox}
+
+\section{Common Vulnerabilities}
+
+\begin{table}[h]
+\centering
+\caption{Common Solidity vulnerabilities}
+\begin{tabular}{p{3cm}p{4.5cm}p{4cm}}
+\toprule
+\textbf{Vulnerability} & \textbf{Description} & \textbf{Mitigation} \\
+\midrule
+Reentrancy & Re-enter before state updated & CEI pattern; \texttt{nonReentrant} \\
+Integer overflow & Wrap-around (pre-0.8) & Solidity $\geq 0.8$; SafeMath \\
+Missing access ctrl & No \texttt{onlyOwner} & OpenZeppelin AccessControl \\
+Front-running & Mempool visibility & Commit-reveal \\
+\texttt{tx.origin} auth & Phishing via forwarding & Always use \texttt{msg.sender} \\
+\texttt{delegatecall} & Storage layout clash & Careful proxy patterns \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+% ================================================================
+\chapter{JavaScript and Node.js}
+\label{chap:js}
+% ================================================================
+
+\section{JavaScript Essentials}
+
+\begin{lstlisting}[language=JavaScript,caption=Variables and functions]
+let x = 1;          // block-scoped, reassignable
+const PI = 3.14;    // block-scoped, constant
+var y = 2;          // function-scoped -- avoid
+
+// Arrow function
+const add = (a, b) => a + b;
+
+// Arrow with block body
+const safeDivide = (a, b) => {
+    if (b === 0) throw new Error("Division by zero");
+    return a / b;
+};
+\end{lstlisting}
+
+\section{Arrays}
+
+\begin{lstlisting}[language=JavaScript,caption=Array operations]
+let arr = [1, 2, 'Hello'];
+arr.push(4);          // Add to end
+arr.pop();            // Remove from end
+arr.unshift('A');     // Add to start
+arr.shift();          // Remove from start
+
+// Functional methods
+arr.map(x => x * 2);
+arr.filter(x => typeof x === 'number');
+arr.reduce((acc, x) => acc + x, 0);
+\end{lstlisting}
+
+\section{Objects}
+
+\begin{lstlisting}[language=JavaScript,caption=Objects]
+let user = { name: "John", age: 30 };
+
+console.log(user.name);      // dot notation
+console.log(user["age"]);    // bracket notation
+
+user.isAdmin = true;         // add property
+delete user.age;             // remove property
+console.log("age" in user);  // false
+
+for (let k in user) { console.log(k, user[k]); }
+\end{lstlisting}
+
+\section{Promises and Async/Await}
+
+Many browser and Node.js APIs are asynchronous.
+
+\begin{lstlisting}[language=JavaScript,caption=Promise chain]
+fetch("https://example.com/")
+    .then(response => response.text())
+    .then(text => console.log(text))
+    .catch(e => console.log("Error:", e));
+\end{lstlisting}
+
+\texttt{async}/\texttt{await} is syntactic sugar making async code look
+synchronous:
+
+\begin{lstlisting}[language=JavaScript,caption=async/await]
+async function getText(url) {
+    const response = await fetch(url);
+    const text     = await response.text();
+    console.log(text);
+}
+getText("https://example.com/");
+\end{lstlisting}
+
+An \texttt{async} function always returns a \texttt{Promise}.
+\texttt{await} can only be used inside \texttt{async} functions.
+
+\section{Node.js}
+
+\textbf{Node.js} enables JavaScript outside the browser:
+\begin{itemize}
+  \item Built on Chrome's V8 engine.
+  \item Event-driven, non-blocking I/O.
+  \item \textbf{npm} (Node Package Manager): millions of packages.
+\end{itemize}
+
+\begin{lstlisting}[language=bash,caption=npm essentials]
+npm init                     # create package.json
+npm install ethers           # install locally
+npm install -g truffle       # install globally
+node script.js               # run a script
+\end{lstlisting}
+
+\section{Accepting CLI Input with Inquirer}
+
+\begin{lstlisting}[language=JavaScript,caption=inquirer example (main.js)]
+import inquirer from "inquirer";   // npm install inquirer
+
+const questions = [
+    { name: "name",    type: "input",
+      message: "What's your name?" },
+    { name: "program", type: "select",
+      choices: ["BTech","Dual Degree","MTech","IDDP","PhD"],
+      message: "Which program are you in?" },
+];
+
+inquirer.prompt(questions).then(answers => {
+    console.log(`Name: ${answers.name}`);
+    console.log(`Program: ${answers.program}`);
+});
+\end{lstlisting}
+
+\texttt{package.json} must include \texttt{"type":"module"} to use
+\texttt{import} syntax.
+
+\section{Connecting to Ethereum with ethers.js}
+
+\begin{lstlisting}[language=JavaScript,caption=ethers.js basics]
+import { ethers } from "ethers";
+
+const provider = new ethers.BrowserProvider(window.ethereum);
+const signer   = await provider.getSigner();
+
+const contract = new ethers.Contract(
+    contractAddress, contractABI, signer);
+
+const balance = await contract.balanceOf(signer.address);
+
+const tx = await contract.transfer(recipient, amount);
+await tx.wait();   // wait for 1 confirmation
+\end{lstlisting}
+
+
+% ================================================================
+\chapter{Tornado Cash and Privacy}
+\label{chap:tornado}
+% ================================================================
+
+\section{Motivation}
+
+All Ethereum transactions are public.  Any observer who knows your
+address can track every deposit and withdrawal, revealing your total
+holdings.
+
+\textbf{Concrete risk}: Pay a hotel 1~ETH; the front-desk clerk sees
+your wallet holds 99~ETH and has kidnapping connections.
+
+\textbf{Option A} — use an exchange: custody risk, KYC leaks.\\
+\textbf{Option B} — send to a fresh address first: repeated
+transfers still link old and new address.\\
+\textbf{Tornado Cash} is a better Option B: a smart-contract
+\emph{mixer} that breaks the on-chain link.
+
+\section{Protocol Overview}
+
+\begin{enumerate}
+  \item Alice, Bob, Carol each deposit 1~ETH into the Tornado Cash
+        contract.
+  \item Later, anyone who holds a valid private note can withdraw 1~ETH
+        to any fresh address.
+  \item On-chain, the withdrawal cannot be linked to any specific deposit.
+\end{enumerate}
+
+\subsection{Desired Properties}
+
+\begin{description}
+  \item[Soundness] Only a genuine depositor can withdraw; no double withdrawal.
+  \item[Privacy]   A withdrawal is unlinkable to its deposit.
+\end{description}
+
+\section{Commitment Scheme}
+
+\subsection{Private Note}
+
+The user's browser generates 62 random bytes:
+\begin{lstlisting}[language={}]
+tornado-eth-0.1-5-0x<Header><31-byte Nullifier><31-byte Secret>
+\end{lstlisting}
+
+\subsection{Pedersen Hash}
+
+A \textbf{commitment} is the Pedersen hash of the concatenated bytes:
+\begin{equation}
+  C = \mathrm{PedersenHash}(b_1 b_2\cdots b_n)
+    = g_1^{b_1} g_2^{b_2}\cdots g_n^{b_n}
+\end{equation}
+where $g_i$ are fixed public generators of an elliptic curve group.
+The commitment is \emph{hiding} (reveals nothing about nullifier/secret)
+and \emph{binding} (cannot find two inputs with the same hash).
+
+\section{Deposit Steps}
+
+\begin{enumerate}
+  \item Generate random nullifier and secret on client.
+  \item Compute $C = \mathrm{PedersenHash}(\text{nullifier}\|\text{secret})$.
+  \item Send $C$ + 1 ETH to contract.  Contract checks $C$ is fresh:
+\begin{lstlisting}[language=Solidity]
+mapping(bytes32 => bool) public commitments;
+require(!commitments[_commitment], "Already submitted");
+\end{lstlisting}
+  \item Contract inserts $C$ into a 20-level Merkle tree
+        ($\leq 2^{20}$ deposits, no deletions):
+\begin{lstlisting}[language=Solidity]
+uint32 idx = _insert(_commitment);
+\end{lstlisting}
+  \item Contract marks $C$ seen and verifies \texttt{msg.value == 1 ETH}.
+  \item Contract emits \texttt{Deposit(\_commitment, idx, block.timestamp)}.
+\end{enumerate}
+
+\section{Zero-Knowledge Proofs: zk-SNARKs}
+
+\subsection{What Is a zk-SNARK?}
+
+A \textbf{zk-SNARK} (Zero-Knowledge Succinct Non-Interactive Argument
+of Knowledge) lets a prover convince a verifier of a statement's truth
+without revealing any secret inputs.
+
+\begin{table}[h]
+\centering
+\caption{zk-SNARK properties}
+\begin{tabular}{ll}
+\toprule
+\textbf{Property} & \textbf{Meaning} \\
+\midrule
+Completeness    & Honest prover always generates valid proof \\
+Soundness       & Infeasible to prove a false statement \\
+Zero-Knowledge  & Proof reveals nothing beyond statement truth \\
+Succinct        & Proof is short and fast to verify \\
+Non-Interactive & No back-and-forth; single proof string \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{The Withdrawal Statement}
+
+\begin{quote}
+\itshape
+I know a \emph{nullifier} and \emph{secret} such that:\\
+(1) $\mathrm{PedersenHash}(\text{nullifier}\|\text{secret})$ is a leaf of
+the Merkle tree with root \texttt{\_root}, and\\
+(2) $\mathrm{PedersenHash}(\text{nullifier}) = \texttt{\_nullifierHash}$.
+\end{quote}
+
+The prover generates a proof of this statement and submits it
+on-chain without revealing which commitment (leaf) it corresponds to.
+
+\section{Withdrawal Steps}
+
+\begin{lstlisting}[language=Solidity,caption=withdraw() signature]
+function withdraw(
+    bytes  calldata _proof,
+    bytes32 _root,
+    bytes32 _nullifierHash,
+    address payable _recipient,
+    address payable _relayer,
+    uint256 _fee
+) external;
+\end{lstlisting}
+
+\begin{enumerate}
+  \item Check nullifier not yet spent (prevents double withdrawal):
+\begin{lstlisting}[language=Solidity]
+mapping(bytes32 => bool) public nullifierHashes;
+require(!nullifierHashes[_nullifierHash], "Note already spent");
+\end{lstlisting}
+  \item Check \texttt{\_root} is one of the last 100 known roots (allows
+        deposits while withdrawals are pending):
+\begin{lstlisting}[language=Solidity]
+require(isKnownRoot(_root), "Cannot find your merkle root");
+\end{lstlisting}
+  \item Verify SNARK proof on-chain:
+\begin{lstlisting}[language=Solidity]
+require(verifier.verifyProof(_proof,
+    [uint256(_root), uint256(_nullifierHash), ...]),
+    "Invalid withdraw proof");
+\end{lstlisting}
+  \item Mark nullifier spent; send ETH to recipient minus relayer fee.
+\end{enumerate}
+
+\textbf{Relayer}: Pays gas for the user (whose fresh address has no ETH)
+and receives a fee deducted from the denomination.
+
+\section{Groth16: The Proof System Used by Tornado Cash}
+
+Tornado Cash uses the \textbf{Groth16} zk-SNARK proof system
+(Jens Groth, 2016).
+
+\subsection{Arithmetic Circuits}
+
+Any computation can be represented as an \textbf{arithmetic circuit}
+over a finite field $\mathbb{F}_p$: wires carry field elements, and
+gates compute addition ($+$) and multiplication ($\times$) in
+$\mathbb{F}_p$.
+
+A \textbf{Rank-1 Constraint System (R1CS)} is a set of constraints of
+the form:
+\[
+  (\vec{a}\cdot\vec{w})\times(\vec{b}\cdot\vec{w}) = (\vec{c}\cdot\vec{w})
+\]
+where $\vec{w}$ is the witness vector (all wire values: public inputs,
+private inputs, and intermediate values).
+
+\subsection{Quadratic Arithmetic Programs (QAP)}
+
+Groth16 converts R1CS into a \textbf{QAP}: polynomials $A(x), B(x),
+C(x)$ such that the constraint is satisfied iff
+$A(x)\cdot B(x) - C(x) = H(x)\cdot Z(x)$ where $Z(x)=\prod_i(x-r_i)$
+is the vanishing polynomial at the constraint evaluation points.
+
+\subsection{Groth16 Proof and Verification}
+
+\textbf{Trusted Setup}: A one-time ceremony generates
+\textbf{Structured Reference Strings (SRS)} $(\sigma_1,\sigma_2)$
+containing encrypted powers of a secret $\tau$.  The secret $\tau$
+must be destroyed after setup (``toxic waste'').
+
+\textbf{Proof}: Three elliptic curve points $\pi = (A, B, C) \in
+G_1\times G_2\times G_1$.  Constant size ($\approx 200$ bytes)
+regardless of circuit complexity.
+
+\textbf{Verification}: Check two pairing equations:
+\[
+  e(A, B) = e(\alpha, \beta)\cdot e(\sum_i a_i u_i, \gamma)
+           \cdot e(C, \delta)
+\]
+Verification takes $\approx 2$ ms on modern hardware (only 2 pairings).
+
+\subsection{Poseidon Hash}
+
+The original Tornado Cash uses Pedersen hash.  More modern ZK systems
+use \textbf{Poseidon}, a hash function designed specifically for
+arithmetic circuits:
+\begin{itemize}
+  \item Based on a sponge construction with a round function over
+        $\mathbb{F}_p$.
+  \item Far fewer constraints than SHA-256 ($\approx 240$ vs $\approx
+        27\,000$ constraints per 256-bit hash).
+  \item The round function: $f(x) = (x+c)^5\bmod p$ (simple
+        multiplication gate).
+\end{itemize}
+
+\subsection{Trusted Setup Ceremonies}
+
+The Groth16 setup is \textbf{circuit-specific}: a new ceremony is
+needed for each circuit.  Tornado Cash used a multi-party computation
+(MPC) ceremony with 1114 participants.  The system is secure as long as
+\emph{at least one participant} honestly destroys their secret.
+
+For universal setups (Plonk, STARKs), a single ceremony works for all
+circuits up to a given size.
+
+\section{The Circom Circuit}
+
+The circuit is compiled with \textbf{circom} and a verifier contract is
+generated automatically.
+
+\begin{lstlisting}[language={},caption=withdraw.circom (simplified)]
+template Withdraw(levels) {
+    signal input  root;
+    signal input  nullifierHash;
+    signal input  recipient;  // not constrained -- prevents tampering
+    signal input  relayer;
+    signal input  fee;
+    signal private input nullifier;
+    signal private input secret;
+    signal private input pathElements[levels];
+    signal private input pathIndices[levels];
+
+    // 1. Verify nullifierHash = PedersenHash(nullifier)
+    component hasher = CommitmentHasher();
+    hasher.nullifier <== nullifier;
+    hasher.secret    <== secret;
+    hasher.nullifierHash === nullifierHash;
+
+    // 2. Verify commitment is in Merkle tree with root `root`
+    component tree = MerkleTreeChecker(levels);
+    tree.leaf <== hasher.commitment;
+    tree.root <== root;
+    for (var i = 0; i < levels; i++) {
+        tree.pathElements[i] <== pathElements[i];
+        tree.pathIndices[i]  <== pathIndices[i];
+    }
+
+    // Prevent optimiser from removing recipient/relayer/fee
+    signal rSq; rSq <== recipient * recipient;
+    signal fSq; fSq <== fee      * fee;
+    signal lSq; lSq <== relayer  * relayer;
+}
+component main = Withdraw(20);
+\end{lstlisting}
+
+\section{OFAC Sanctions}
+
+\begin{itemize}
+  \item \textbf{Aug 8, 2022}: OFAC added Tornado Cash contracts to its
+        sanctions list, alleging facilitation of ransomware money
+        laundering.
+  \item GitHub removed repos; three contributors suspended.
+  \item Developer \textbf{Alexey Pertsev} arrested (Netherlands, Aug 2022);
+        sentenced 64 months (May 2024); released Feb 2025.
+  \item Developer \textbf{Roman Storm} arrested (US, Aug 2023); case ongoing.
+  \item EFF and Prof. Matthew Green's advocacy led OFAC to allow
+        educational use of the code.
+  \item GitHub repos restored in 2023.
+\end{itemize}
+
+\begin{exambox}
+  Tornado Cash illustrates the collision between financial privacy
+  (a legitimate right) and AML regulations.  Core question: can
+  \emph{open-source code} — not its operators — be sanctioned?
+\end{exambox}
+
+
+% ================================================================
+\chapter{Consensus Protocols}
+\label{chap:consensus}
+% ================================================================
+
+\section{State Machine Replication (SMR)}
+
+\begin{definitionbox}
+  \textbf{State Machine Replication}: $n$ nodes each maintain a local
+  append-only \emph{history} (ordered list of transactions).
+  \begin{itemize}
+    \item \textbf{Consistency (Safety)}: All nodes agree on the same history.
+    \item \textbf{Liveness}: Every valid client transaction is eventually
+          added to the history.
+  \end{itemize}
+  If all nodes start from the same initial state and apply the same
+  transactions in the same order, they reach identical final states.
+\end{definitionbox}
+
+\section{Network Models}
+
+\begin{table}[h]
+\centering
+\caption{Network models for distributed consensus}
+\begin{tabular}{p{3cm}p{4cm}p{5cm}}
+\toprule
+\textbf{Model} & \textbf{Clock} & \textbf{Message delay} \\
+\midrule
+Synchronous & Global, shared & Bounded: msg at step $t$ arrives by $t+1$ \\
+Asynchronous & None & Unbounded (messages eventually arrive) \\
+Partially synchronous & Global, shared & Unbounded before GST; $\leq\Delta$ after GST \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{GST} (Global Stabilisation Time): exists but is unknown in advance.
+
+\section{Fault Types}
+
+\begin{table}[h]
+\centering
+\caption{Node fault types}
+\begin{tabular}{lll}
+\toprule
+\textbf{Fault} & \textbf{Behaviour} & \textbf{Severity} \\
+\midrule
+Crash     & Stops working at time $t$ & Low \\
+Omission  & Drops some messages & Medium \\
+Byzantine & Deviates arbitrarily; cannot forge signatures & Highest \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Let $f$ = Byzantine nodes, $n$ = total.
+
+\section{SMR with Rotating Leaders (Honest Setting)}
+
+\textbf{Assumptions}: Permissioned ($n$ known), PKI, synchronous, $f=0$.
+
+\begin{itemize}
+  \item In time step $t$: leader $= 1+(t\bmod n)$.
+  \item Leader broadcasts ordered list of new transactions.
+  \item Every node appends the list.
+\end{itemize}
+
+\textbf{Consistency}: All nodes receive same broadcast $\Rightarrow$
+identical histories.
+
+\textbf{Liveness}: Transaction submitted to node $i$ is included when
+node $i$ becomes leader.
+
+\section{Byzantine Broadcast (BB)}
+
+\begin{definitionbox}
+  One of $n$ nodes is the \emph{sender} (may be Byzantine) with private
+  input $v^*\in V$:
+  \begin{description}
+    \item[Termination] Every honest node eventually halts with some $v_i\in V$.
+    \item[Agreement]   All honest nodes output the same value.
+    \item[Validity]    If sender is honest, all output $v^*$.
+  \end{description}
+\end{definitionbox}
+
+SMR reduces to BB via rotating leaders: each time step invokes BB with
+the current leader as sender.
+
+\subsection{Protocol for $f=1$ (Cross-Checking)}
+
+Three rounds:
+\begin{enumerate}
+  \item Sender broadcasts $v^*$ with signature.
+  \item Each non-sender signs received message $m_i$, broadcasts $(m_i,\sigma_i)$.
+        Uses $\bot$ if nothing received.
+  \item Each non-sender takes majority of received messages.
+\end{enumerate}
+
+\textbf{Proposition}: Satisfies termination, agreement, validity for $f=1$.
+
+\textbf{Fails for $f=2$}: Byzantine sender splits votes; Byzantine
+non-sender amplifies the split; two groups of honest nodes disagree.
+
+\section{The Dolev-Strong Protocol}
+
+\begin{theorem}[Dolev-Strong, 1983]
+  In the permissioned, PKI, synchronous setting, there exists a protocol
+  for BB running in $f+1$ rounds that satisfies termination, agreement,
+  and validity for any $f$.
+\end{theorem}
+
+\textbf{Convinced message}: node $i$ is \emph{convinced of $v$ at step
+$t$} if it receives a message referencing $v$ signed by the sender and
+$\geq t-1$ other distinct nodes.
+
+\textbf{Protocol}:
+\begin{itemize}
+  \item Step 0: Sender sends $v^*$ + signature; outputs $v^*$.
+  \item Steps $t=1,\ldots,f+1$: If convinced of $v$ and not previously,
+        sign and broadcast.
+  \item Final: If convinced of exactly one value $v$, output $v$; else $\bot$.
+\end{itemize}
+
+\section{Correctness of Dolev-Strong}
+
+\begin{proof}[Proof of Agreement]
+  Suppose honest nodes $i$ and $j$ both output values at the end.  We
+  show they output the same value.
+
+  For a value $v$ to be output by honest node $i$, node $i$ must have
+  been convinced of $v$ at some time step $t\leq f+1$.  Being convinced
+  means $i$ received a message for $v$ signed by the sender and by
+  $t-1$ other distinct nodes.
+
+  \textbf{Claim}: If honest node $i$ is first convinced of $v$ at step
+  $t$, then all honest nodes are convinced of $v$ by step $t+1$.
+
+  \textit{Reason}: At step $t$, node $i$ signs $v$ and broadcasts.
+  Every honest node then receives this message signed by $i$ plus the
+  $t-1$ other signatures (total: $t$ signatures including sender).
+  So every honest node is convinced of $v$ by step $t+1\leq f+2$,
+  before the protocol ends at step $f+1$.
+
+  Wait — the protocol ends at step $f+1$ and conviction spreads by step
+  $f+2$?  We need $t\leq f$.  If $i$ is first convinced at step $f+1$
+  (the final step), it still broadcasts, but other nodes only check at
+  the end of step $f+1$.  Since all messages arrive by step $f+2$ in
+  the synchronous model, and all honest nodes output at the end of step
+  $f+1$, we need to be more careful.
+
+  The correct argument: honest node $i$ is convinced of $v$ at step
+  $t\leq f+1$.  At step $t$, $i$ re-signs and broadcasts.  Any honest
+  non-sender $j$ will receive, by step $t+1$, a message for $v$ signed
+  by the sender and $t$ other nodes (including $i$).  So $j$ is
+  convinced of $v$ by step $t+1\leq f+2$.  But wait, the protocol runs
+  for $f+2$ steps total (steps $0, 1, \ldots, f+1$), so at step $f+1$
+  (last step), $j$ receives the forwarded signatures and becomes
+  convinced.  Both $i$ and $j$ are convinced of $v$, and since this
+  process is symmetric, the only value any honest node can be convinced
+  of is the one that spreads this way.
+
+  If a Byzantine sender sends different values to different nodes, at
+  most one chain of signatures can grow to convince honest nodes, because
+  digital signatures cannot be forged.  $\square$
+\end{proof}
+
+\begin{proof}[Proof of Validity]
+  If the sender is honest, it sends $v^*$ with its signature in step 0.
+  Every honest non-sender receives a message signed by the sender for
+  $v^*$ by step 1, so they are convinced of $v^*$.  They re-broadcast
+  and all honest nodes output $v^*$.  No other value has a sender
+  signature (honest sender sends only $v^*$), so no honest node is
+  convinced of anything else.  $\square$
+\end{proof}
+
+\section{Impossibility Results}
+
+\subsection{FLM (No-PKI Bound)}
+
+\begin{theorem}[Pease--Shostak--Lamport 1980; Fischer--Lynch--Merrit 1986]
+  \[
+    \boxed{f\geq\frac{n}{3}
+    \;\Rightarrow\;
+    \text{no BB protocol without PKI}}
+  \]
+\end{theorem}
+
+PKI is \emph{necessary} for Dolev-Strong.
+
+\subsection{FLP (Asynchronous Impossibility)}
+
+\begin{theorem}[Fischer--Lynch--Paterson, 1985]
+  For $n\geq 2$, even with $f=1$, no \emph{deterministic} protocol
+  solves Byzantine Agreement in the asynchronous model.
+\end{theorem}
+
+Practical blockchains escape FLP by using the \textbf{partially
+synchronous} model.
+
+\subsection{Partially Synchronous Bound}
+
+\begin{theorem}
+  There exists a deterministic BFT protocol for partially synchronous
+  networks iff $f<\frac{n}{3}$.
+  Safety holds at all times; liveness holds post-GST.
+\end{theorem}
+
+Tendermint and PBFT achieve this bound.
+
+\section{Consensus Summary Table}
+
+\begin{table}[h]
+\centering
+\caption{Consensus protocol comparison}
+\begin{tabular}{p{2.8cm}p{2.8cm}p{2cm}p{3.5cm}p{2cm}}
+\toprule
+\textbf{Protocol} & \textbf{Network model} & \textbf{Max $f$} & \textbf{Guarantees} & \textbf{Used by} \\
+\midrule
+Rotating leaders & Sync, honest & 0 & C + L & Toy \\
+Dolev-Strong & Sync, PKI & Any & T + A + V & Academic \\
+PBFT & Partial sync & $<n/3$ & C + L$^*$ & HyperLedger \\
+Tendermint & Partial sync & $<n/3$ & C + L$^*$ & Cosmos \\
+Nakamoto & Eventual sync & $<50\%$ hash & Prob. C + L & Bitcoin \\
+Casper FFG & Partial sync & $<n/3$ stake & C + L$^*$ + slash & Ethereum \\
+\bottomrule
+\multicolumn{5}{l}{\footnotesize $^*$Liveness only post-GST.}
+\end{tabular}
+\end{table}
+
+
+% ================================================================
+\chapter{Tendermint Protocol}
+\label{chap:tendermint}
+% ================================================================
+
+\section{Overview}
+
+\textbf{Tendermint} is a BFT consensus protocol achieving:
+\begin{itemize}
+  \item Consistency and eventual (post-GST) liveness.
+  \item Optimal fault tolerance: $f < n/3$.
+  \item Partially synchronous network, permissioned, PKI.
+\end{itemize}
+
+\textbf{Key ideas}: rotating leaders, two stages of voting per round,
+restarts after timeout (if messages are delayed), weighted voting in
+practice (proportional to stake).
+
+\section{Rounds and Phases}
+
+A \textbf{round} spans $4\Delta$ time steps:
+
+\begin{table}[h]
+\centering
+\caption{Tendermint round phases}
+\begin{tabular}{lll}
+\toprule
+\textbf{Phase} & \textbf{Start time} & \textbf{Action} \\
+\midrule
+1 (Propose)  & $4\Delta r$           & Leader broadcasts $(B_i, Q_i)$ \\
+2 (Prevote)  & $4\Delta r+\Delta$    & Nodes cast stage-1 votes \\
+3 (Precommit)& $4\Delta r+2\Delta$   & Nodes cast stage-2 votes \\
+4 (Commit)   & $4\Delta r+3\Delta$   & Commit if $\geq\!\frac{2}{3}n$ stage-2 votes \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Each round has a unique \textbf{leader}; if no consensus, nodes move to
+round $r+1$.
+
+\section{Quorum Certificates}
+
+Each vote has attributes: (voter $i$, block $B$, height $h$, round $r$,
+stage $s$).  The triple $(h,r,s)$ is a \textbf{referendum}.
+
+\begin{definitionbox}
+  A \textbf{Quorum Certificate (QC)} for a referendum $(h,r,s)$ is a set
+  of $\geq\frac{2}{3}n$ votes all for the same block in that referendum.
+\end{definitionbox}
+
+\begin{lemma}
+  Any two QCs share $\geq\frac{n}{3}$ voters.
+\end{lemma}
+
+\begin{corollary}
+  If $f<\frac{n}{3}$, any two QCs for the same referendum support the
+  \emph{same} block (since they share at least one honest voter who
+  votes at most once).
+\end{corollary}
+
+\section{Local State per Node}
+
+Node $i$ working on block height $h_i$ maintains:
+\begin{itemize}
+  \item $B_i$: current belief about the correct block at height $h_i$.
+  \item $Q_i$: most recent QC supporting $B_i$ (null initially).
+\end{itemize}
+
+QC ordering: $(h,r_1,s_1)>_{age}(h,r_2,s_2)$ iff $r_1>r_2$, or
+$r_1=r_2$ and $s_1>s_2$.
+
+\section{Protocol Pseudocode}
+
+\begin{lstlisting}[language={},caption=Phase 1: Leader proposes]
+if i == l then                   // i is the leader
+    if l received a height-h QC newer than (B_i, Q_i) then
+        B_i := B_l;  Q_i := Q_l
+    end
+    broadcast(B_i, Q_i)          // annotated with h_i, r, signature
+end
+\end{lstlisting}
+
+\begin{lstlisting}[language={},caption=Phase 2: Stage-1 vote]
+if i received (B_l, Q_l) from leader l then
+    if Q_l is at least as recent as Q_i then
+        B_i := B_l;  Q_i := Q_l
+        broadcast(B_i, Q_i)
+        broadcast stage-1-vote for B_i   // annotated h_i, r, sig
+    end
+end
+\end{lstlisting}
+
+\begin{lstlisting}[language={},caption=Phase 3: Stage-2 vote]
+if i received >= (2n/3) round-r stage-1 votes for B then
+    B_i := B;  Q_i := (those votes)      // round-r stage-1 QC
+    broadcast(B_i, Q_i)
+    broadcast stage-2-vote for B_i
+end
+\end{lstlisting}
+
+\begin{lstlisting}[language={},caption=Phase 4: Commit]
+if i received >= (2n/3) round-r stage-2 votes for B then
+    B_i := B;  Q_i := (those votes)      // round-r stage-2 QC
+    broadcast(B_i, Q_i)
+    commit B_i to local history at height h_i
+    h_i := h_i + 1
+    reset B_i; reset Q_i to null
+end
+\end{lstlisting}
+
+\textbf{Addendum}: If stage-2 QCs for height $h_i$ arrive before Phase~1
+of round $r+1$, execute Phase~4 immediately.
+
+\section{Proof of Consistency}
+
+\begin{theorem}
+  If $f < n/3$ and honest nodes $i,j$ both commit blocks $B,B'$ at the
+  same height $h$, then $B=B'$.
+\end{theorem}
+
+\textbf{Proof sketch}:
+\begin{enumerate}
+  \item Let $r$ be the first round in which $>\frac{n}{3}$ honest nodes
+        contribute height-$h$ stage-2 votes for a common block $B^*$.
+        Call this set $S$.
+  \item Any different block $B'\neq B^*$ committed in round $r+1$ would
+        need a stage-2 QC in referendum $(h,r+1,2)$.
+  \item Stage-2 QC requires $\geq\frac{2}{3}n$ votes; $|S|>\frac{n}{3}$
+        so at least one node from $S$ must contribute.
+  \item Nodes in $S$ hold $Q_i=$ stage-1 QC$(h,r,1)$ supporting $B^*$.
+        They only cast stage-1 votes for a block whose QC is at least as
+        recent as $Q_i$.  Stage-1 QC$(h,r+1,1)$ is more recent than
+        stage-1 QC$(h,r,1)$, but it too must support $B^*$ (same argument
+        applied inductively).
+  \item Therefore $B^*$ is the only block that can be committed. \qed
+\end{enumerate}
+
+\section{Liveness in Tendermint (Post-GST)}
+
+\begin{theorem}
+  After GST, if $f < n/3$, Tendermint terminates (adds a block to
+  history) within $O(\Delta)$ time.
+\end{theorem}
+
+\textbf{Argument}: After GST, all messages arrive within $\Delta$ time.
+Consider the first round $r$ that starts after GST:
+\begin{enumerate}
+  \item The leader $l$ broadcasts $(B_l, Q_l)$ in Phase 1.  Since
+        $f < n/3$, at least $\frac{2}{3}n$ honest nodes receive this
+        message by the end of Phase 2.
+  \item At least $\frac{2}{3}n$ honest nodes cast stage-1 votes for
+        $B_l$ (assuming $Q_l$ is at least as recent as their local $Q$).
+  \item Every honest node receives $\frac{2}{3}n$ stage-1 votes by
+        Phase 3, forming a stage-1 QC, and casts a stage-2 vote.
+  \item Every honest node receives $\frac{2}{3}n$ stage-2 votes by
+        Phase 4 and commits.
+\end{enumerate}
+
+The ``at least as recent'' condition for stage-1 votes is subtle.  The
+consistency proof shows that any block proposed by an honest leader in
+round $r \geq r^*$ (where $r^*$ is the first commitment round) will be
+compatible with previously committed values.
+
+\section{Safety vs.\ Liveness in Partially Synchronous Protocols}
+
+A fundamental tension in consensus:
+\begin{itemize}
+  \item \textbf{Safety} (consistency): no two honest nodes commit
+        different values.  This must hold \emph{at all times}, including
+        before GST.
+  \item \textbf{Liveness}: transactions are eventually committed.  This
+        can only be guaranteed \emph{after GST}.
+\end{itemize}
+
+\textbf{Why safety before GST?}  If the network is partitioned (two
+groups cannot communicate), each group might commit a different block
+(split-brain).  Tendermint avoids this by requiring $\frac{2}{3}n$
+votes for commitment; in a partition where each side has $< \frac{2}{3}n$
+nodes, \emph{neither side} can commit.  This sacrifices liveness
+(no progress) but preserves safety (no inconsistency).
+
+This is the essence of the \textbf{CAP theorem}: under a network
+partition, a distributed system must choose between consistency and
+availability.  Tendermint chooses consistency.
+
+\section{Practical Deployment}
+
+\begin{itemize}
+  \item Cosmos SDK, Binance Smart Chain, Polygon.
+  \item Nodes cast \textbf{weighted votes} (stake proportional), so
+        quorums require $>\frac{2}{3}$ of total stake.
+  \item See \texttt{mintscan.io} for live deployments.
+  \item \textbf{Fast finality}: unlike Nakamoto consensus (probabilistic
+        finality), Tendermint achieves \emph{instant} finality once a
+        block is committed — it can never be reverted.
+\end{itemize}
+
+
+% ================================================================
+\chapter{Ethereum Proof-of-Stake}
+\label{chap:ethpos}
+% ================================================================
+
+\section{The Merge}
+
+September 15, 2022: Ethereum transitioned to PoS:
+\begin{itemize}
+  \item Energy reduced $99.95\%$: 5.13~GW $\to$ 2.62~MW.
+  \item Block time became deterministic: 12~s per slot.
+  \item PoW nonce/difficulty obsoleted (set to 0).
+\end{itemize}
+
+\section{Node Architecture}
+
+\begin{description}
+  \item[Execution client] Executes transactions, maintains mempool,
+       updates world state (EVM layer).
+  \item[Beacon chain client] Runs the PoS algorithm; achieves consensus
+       on execution payloads.
+\end{description}
+
+\section{Validators}
+
+\begin{itemize}
+  \item Must stake \textbf{32 ETH} to the deposit contract.
+  \item $\approx 980\,000$ validators in March 2024.
+  \item Earn attestation and proposal rewards.
+  \item Slashed (penalised + forced exit) for double voting or surround
+        voting.
+\end{itemize}
+
+\section{Slots and Epochs}
+
+\begin{itemize}
+  \item \textbf{Slot}: 12 seconds; one block proposed per slot.
+  \item \textbf{Epoch}: 32 slots ($\approx 6.4$ minutes).
+  \item Each slot: $\frac{1}{32}$ of all validators are active.
+  \item One active validator per slot is the \textbf{block proposer}.
+\end{itemize}
+
+\section{Committees and Attestations}
+
+Validators in a slot are divided into \textbf{committees}:
+\begin{itemize}
+  \item $128\leq$ committee size $\leq 2048$; max 64 committees.
+\end{itemize}
+
+Each validator creates an \textbf{attestation} (signed vote):
+
+\begin{lstlisting}[language=Python,caption=Attestation data structure]
+class AttestationData:
+    slot:               uint64
+    committee_index:    uint64
+    beacon_block_root:  bytes32   # LMD GHOST vote
+    source:             Checkpoint # Casper FFG source
+    target:             Checkpoint # Casper FFG target
+
+class Attestation:
+    aggregation_bits:   Bitlist[MAX_VALIDATORS_PER_COMMITTEE]
+    data:               AttestationData
+    signature:          BLSSignature
+\end{lstlisting}
+
+\textbf{Aggregators}: subset of committee; aggregate attestations using
+BLS before forwarding to the next block proposer.
+
+\section{BLS Signatures}
+
+\textbf{BLS} (Boneh--Lynn--Shacham) signatures support efficient
+aggregation: $n$ signatures on the same message aggregate to a single
+signature of the same size.
+
+\subsection{Mathematical Foundation}
+
+Let $G_1,G_2$ be elliptic curves of prime order $p$ with generators
+$g_1,g_2$.  Let $G_T$ be a multiplicative subgroup of a finite field.
+
+\textbf{Bilinear pairing}: $e:G_1\times G_2\to G_T$ with
+\begin{enumerate}
+  \item $e(g_1^\alpha,g_2^\beta)=e(g_1,g_2)^{\alpha\beta}$\quad (bilinearity)
+  \item $e(g_1,g_2)\neq 1$\quad (non-degeneracy)
+\end{enumerate}
+
+\textbf{Key generation}: $sk=x$, $pk=g_1^x$.
+
+\textbf{Sign}: $\sigma=H(m)^x\in G_2$ where $H:\{0,1\}^*\to G_2$.
+
+\textbf{Verify}: $e(pk,H(m))\stackrel{?}{=}e(g_1,\sigma)$.
+
+\subsection{Aggregation}
+
+For $n$ validators with signatures $\sigma_1,\ldots,\sigma_n$ on the
+same message:
+\begin{align}
+  \sigma_{\text{agg}} &= \prod_{i=1}^n \sigma_i \\
+  pk_{\text{agg}}     &= \prod_{i=1}^n pk_i
+\end{align}
+
+Verify: $e(pk_{\text{agg}},H(m))\stackrel{?}{=}e(g_1,\sigma_{\text{agg}})$.
+Constant-size proof of $n$ validators.
+
+\section{Validator and Committee Selection}
+
+\subsection{RANDAO: On-Chain Randomness}
+
+Committee and block proposer assignment requires \textbf{unbiasable,
+unpredictable randomness}.  Ethereum uses \textbf{RANDAO}:
+
+\begin{enumerate}
+  \item Each validator holds a private RANDAO secret $r_i$.
+  \item In every block they propose, validators reveal
+        $\mathrm{hash}^n(r_i)$ for decreasing $n$ (one pre-image per
+        proposal).
+  \item The beacon chain XORs all reveals: $\text{RANDAO} = v_1\oplus
+        v_2\oplus\cdots$.
+  \item At the end of each epoch, the accumulated RANDAO mix is used as
+        the seed for the next epoch's committee assignments.
+\end{enumerate}
+
+\textbf{Manipulation}: A validator revealing last can choose whether
+to reveal or not, gaining one bit of influence on the outcome.  This is
+a known limitation; Ethereum mitigates it with VDF (Verifiable Delay
+Functions) proposals for future upgrades.
+
+\subsection{Committee Assignment Algorithm}
+
+At the start of each epoch, validators are pseudorandomly shuffled
+using \textbf{swap-or-not} (a Fisher-Yates variant efficient for
+proofs):
+\begin{enumerate}
+  \item Take the list of active validators.
+  \item For each round of the shuffle: for each index $i$, compute a
+        pivot $j = \mathrm{hash}(\text{seed}\|i)$, swap $i$ with $j$
+        if a coin flip (from hash) says to.
+  \item The shuffled list is divided into slots and committees.
+\end{enumerate}
+
+All validators can independently compute any committee assignment given
+only the RANDAO seed (no central coordinator needed).
+
+\section{LMD GHOST Fork Choice Rule}
+
+\textbf{LMD GHOST} = Latest Message Driven Greedy Heaviest Observed
+SubTree.
+
+\begin{itemize}
+  \item \textbf{Latest}: only the most recent attestation from each
+        validator counts (equivocation resistance).
+  \item \textbf{Message Driven}: fork choice driven by attestations, not
+        just block headers.
+  \item \textbf{Greedy Heaviest Subtree}: at each fork, choose the branch
+        with the most total stake weight.
+\end{itemize}
+
+\textbf{Algorithm}: starting at genesis, at each fork compute the
+cumulative stake of validators whose latest attestation supports each
+branch; choose the heaviest branch.
+
+\subsection{LMD GHOST Worked Example}
+
+\begin{example}
+  Consider a block tree after a fork:
+\begin{lstlisting}[language={}]
+Genesis -- A -- B -- C         (branch 1)
+               \-- D -- E     (branch 2)
+\end{lstlisting}
+  Suppose 80 validators have attested:
+  \begin{itemize}
+    \item 30 validators' latest attestation: block C (on branch 1)
+    \item 50 validators' latest attestation: block E (on branch 2)
+  \end{itemize}
+  LMD GHOST: at block B's fork:
+  \begin{itemize}
+    \item Branch 1 (C): 30 votes
+    \item Branch 2 (D/E): 50 votes
+  \end{itemize}
+  LMD GHOST chooses \textbf{branch 2} (heavier), so E is the head.
+\end{example}
+
+\textbf{Key insight}: LMD GHOST uses the \emph{latest} vote from each
+validator.  This means a validator who voted for C and then equivocates
+with a vote for E has their earlier vote \emph{replaced}, not
+\emph{added}.  This prevents a simple attack where a validator
+accumulates weight by voting many times.
+
+\section{Casper FFG}
+
+\textbf{Casper FFG} (Friendly Finality Gadget) provides economic
+finality on top of LMD GHOST.
+
+\subsection{Checkpoints}
+
+\begin{lstlisting}[language=Python]
+class Checkpoint:
+    epoch: uint64    # epoch number
+    root:  bytes32   # hash of first block in that epoch
+\end{lstlisting}
+
+The first slot of every epoch is a \textbf{checkpoint}.
+
+\subsection{FFG Votes}
+
+An FFG vote is a link $s\to t$ where:
+\begin{itemize}
+  \item $s$ = highest justified checkpoint the validator knows (\emph{source})
+  \item $t$ = current epoch checkpoint (\emph{target})
+  \item $s$ must be an ancestor of $t$
+\end{itemize}
+
+A \textbf{supermajority link} $s\to t$: $\geq\frac{2}{3}$ of validators
+voted for it.
+
+\subsection{Justification}
+
+If $c_1$ is justified and $c_1\to c_2$ is a supermajority link,
+$c_2$ becomes \textbf{justified}.
+
+\subsection{Finalization}
+
+If justified $c_1\to c_2$ is a supermajority link and $c_2$ is the
+\emph{direct child epoch} of $c_1$, then $c_1$ is \textbf{finalized}.
+
+\begin{keyinsight}
+  Once a checkpoint is finalized, it is irreversible as long as
+  $<\frac{1}{3}$ of the stake is Byzantine.
+  If two conflicting checkpoints are finalized, at least $\frac{1}{3}$
+  of the stake \emph{can be identified} and slashed
+  (\textbf{accountable safety}).
+\end{keyinsight}
+
+\section{Casper FFG Slashing Rules}
+
+\subsection{Rule 1 — No Double Vote}
+
+A validator must not cast two distinct votes $s_1\to t_1$ and
+$s_2\to t_2$ with $h(t_1)=h(t_2)$ (same target epoch height).
+
+\subsection{Rule 2 — No Surround Vote}
+
+A validator must not cast $s_1\to t_1$ and $s_2\to t_2$ such that:
+\[
+  h(s_1) < h(s_2) < h(t_2) < h(t_1)
+\]
+(one vote ``surrounds'' the other).
+
+\section{Accountable Safety}
+
+\begin{theorem}
+  If $<\frac{1}{3}$ of validators are Byzantine and two conflicting
+  checkpoints $a_m,b_n$ ($m<n$) are both finalized, then at least
+  $\frac{1}{3}$ of total stake can be proven to have violated Rule~1
+  or Rule~2, and hence slashed.
+\end{theorem}
+
+\textbf{Proof sketch}: There is a chain of supermajority links from
+genesis to $b_n$.  The finalization of $a_m$ requires a supermajority
+link $a_m\to a_{m+1}$.  The pair $(a_m,a_{m+1})$ must fall between two
+consecutive links $b_{j-1}\to b_j$ in the chain to $b_n$.  Any
+validator who voted for both $a_m\to a_{m+1}$ and a link in the $b_n$
+chain violated Rule~1 (same target epoch) or Rule~2 (surround vote).
+Since two QCs overlap by $>\frac{1}{3}$ stake, enough violators are
+identifiable.  $\square$
+
+\section{Ethereum PoS Parameter Summary}
+
+\begin{table}[h]
+\centering
+\caption{Ethereum PoS key parameters}
+\begin{tabular}{ll}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+Slot duration          & 12 seconds \\
+Epoch                  & 32 slots $\approx 6.4$ min \\
+Validator deposit      & 32 ETH \\
+Validators per slot    & $\approx n/32$ \\
+Committee size         & 128--2048 \\
+Fault tolerance        & $f<\frac{1}{3}$ of total stake \\
+Finality latency       & $\approx$ 2 epochs ($\approx 12.8$ min) \\
+Fork choice            & LMD GHOST \\
+Finality gadget        & Casper FFG \\
+Signature scheme       & BLS12-381 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{exambox}
+  \textbf{Ethereum PoS vs.\ Tendermint}: Both achieve $f<n/3$ BFT in
+  the partially synchronous model.  Tendermint uses one-vote-per-node;
+  Ethereum uses stake-weighted BLS aggregation, enabling participation
+  of $\sim\!10^6$ validators at manageable bandwidth.  LMD GHOST handles
+  fork choice; Casper FFG adds economic finality with slashing.
+\end{exambox}
+
+
+% ================================================================
+\appendix
+\chapter{Mathematical Quick Reference}
+% ================================================================
+
+\section{Group Theory}
+
+\begin{table}[h]
+\centering
+\caption{Group theory identities}
+\begin{tabular}{ll}
+\toprule
+\textbf{Statement} & \textbf{Formula} \\
+\midrule
+Fermat's Little Thm & $a^{p-1}\equiv 1\pmod p$ ($p$ prime, $p\nmid a$) \\
+Modular inverse     & $a^{-1}\equiv a^{p-2}\pmod p$ \\
+Euler's Criterion   & $a^{(p-1)/2}\equiv\pm 1\pmod p$ \\
+Lagrange's Theorem  & $|H|\ \mid\ |G|$ for $H\leq G$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Elliptic Curve Operations}
+
+\begin{table}[h]
+\centering
+\caption{ECC quick reference}
+\begin{tabular}{p{3.5cm}p{6cm}p{2cm}}
+\toprule
+\textbf{Operation} & \textbf{Formula} & \textbf{Complexity} \\
+\midrule
+Addition $P+Q$ & $\lambda=\frac{y_2-y_1}{x_2-x_1}$; $x_3=\lambda^2-x_1-x_2$; $y_3=\lambda(x_1-x_3)-y_1$ & $O(1)$ \\
+Doubling $2P$ & $\lambda=\frac{3x_1^2+a}{2y_1}$; $x_3=\lambda^2-2x_1$; $y_3=\lambda(x_1-x_3)-y_1$ & $O(1)$ \\
+Scalar mult $kP$ & double-and-add & $O(\log k)$ \\
+ECDLP & find $k$ given $G,kG$ & $O(\sqrt{n})$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Hash Function Summary}
+
+\begin{table}[h]
+\centering
+\caption{Hash functions used in Bitcoin and Ethereum}
+\begin{tabular}{llll}
+\toprule
+\textbf{Function} & \textbf{Output} & \textbf{Preimage} & \textbf{Collision} \\
+\midrule
+SHA-256       & 256 bit & $2^{256}$ & $2^{128}$ \\
+RIPEMD-160    & 160 bit & $2^{160}$ & $2^{80}$  \\
+SHA256d       & 256 bit & $2^{256}$ & $2^{128}$ \\
+Keccak-256    & 256 bit & $2^{256}$ & $2^{128}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+% ================================================================
+\chapter{Glossary}
+% ================================================================
+
+\begin{description}[leftmargin=2.8cm,style=sameline]
+  \item[ASIC]       Application-Specific Integrated Circuit; custom mining chip.
+  \item[BFT]        Byzantine Fault Tolerant: works with $<\frac{1}{3}$ faulty nodes.
+  \item[BLS]        Boneh--Lynn--Shacham pairing-based signature scheme.
+  \item[Calldata]   Read-only input data of a transaction or call.
+  \item[CEI]        Checks-Effects-Interactions: secure Solidity pattern.
+  \item[ECDLP]      Elliptic Curve Discrete Logarithm Problem.
+  \item[ECDSA]      Elliptic Curve Digital Signature Algorithm.
+  \item[EOA]        Externally Owned Account; controlled by a private key.
+  \item[EVM]        Ethereum Virtual Machine.
+  \item[Gas]        Unit of EVM computation.
+  \item[GST]        Global Stabilisation Time.
+  \item[LMD GHOST]  Latest Message Driven Greedy Heaviest Observed SubTree.
+  \item[Merkle tree] Binary hash tree enabling $O(\log n)$ membership proofs.
+  \item[MPT]        Merkle Patricia Trie; Ethereum's state storage.
+  \item[NFT]        Non-Fungible Token (ERC-721).
+  \item[PoS]        Proof of Stake.
+  \item[PoW]        Proof of Work.
+  \item[QC]         Quorum Certificate: $\geq\frac{2}{3}n$ votes for same block.
+  \item[RLP]        Recursive Length Prefix encoding.
+  \item[SNARK]      Succinct Non-Interactive Argument of Knowledge.
+  \item[UTXO]       Unspent Transaction Output.
+  \item[Wei]        Smallest ETH unit; $10^{18}\ \text{wei}=1\ \text{ETH}$.
+  \item[zk-SNARK]   Zero-Knowledge SNARK.
+\end{description}
+
+\end{document}

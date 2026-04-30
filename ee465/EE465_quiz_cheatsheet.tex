@@ -1,0 +1,407 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[strings]{underscore}
+\usepackage{lmodern}
+\usepackage[margin=0.45in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage[protrusion=true,expansion=false]{microtype}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{array}
+\pagestyle{empty}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2pt}
+\setlength{\columnsep}{12pt}
+\setlength{\columnseprule}{0.2pt}
+\setlist[itemize]{leftmargin=1.2em,itemsep=0.1em,topsep=0.2em,parsep=0pt,partopsep=0pt}
+\titleformat{\section}{\large\bfseries}{}{0pt}{}
+\titleformat{\subsection}{\normalsize\bfseries}{}{0pt}{}
+\titlespacing*{\section}{0pt}{0.6ex}{0.2ex}
+\titlespacing*{\subsection}{0pt}{0.45ex}{0.15ex}
+\newcommand{\term}[1]{\textbf{#1}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\imp}[1]{\textbf{#1}}
+\newcommand{\sep}{\vspace{2pt}\hrule\vspace{3pt}}
+
+\begin{document}
+\footnotesize
+\sloppy
+
+{\Large\bfseries EE465 Quiz Cheatsheet}\hfill
+\textbf{Sources:} Consensus, EthereumBlocks, EVM, SolidityTutorial, TornadoCash
+
+\sep
+\begin{multicols*}{2}
+\raggedcolumns
+
+\section*{Consensus}
+\begin{itemize}
+\item \term{Consensus}: make multiple nodes stay in sync despite unreliable network and malicious behavior.
+\item \term{SMR}: clients send txs; each node keeps an append-only ordered history.
+\item \term{SMR goals}: \imp{consistency} = same history at all honest nodes, \imp{liveness} = every valid client tx eventually enters history.
+\item \term{Synchronous permissioned model}: fixed known nodes, PKI, shared global clock, message sent at step $t$ arrives before $t+1$, all honest in simplest setting.
+\end{itemize}
+
+\subsection*{Faults and Basic Protocols}
+\begin{itemize}
+\item \term{Fault types}: crash, omission, Byzantine. Byzantine nodes may deviate arbitrarily but cannot forge signatures.
+\item \term{Bad SMR \#1}: nodes do not communicate; consistency fails if clients contact only some nodes or orders differ.
+\item \term{Bad SMR \#2}: fixed leader broadcasts ordered list each round; consistency holds, liveness fails if client sends to non-leader.
+\item \term{Rotating leaders}: leader at time $t$ is $1+(t \bmod n)$; leader broadcasts new tx list; every node appends it. Works with honest nodes.
+\end{itemize}
+
+\subsection*{Byzantine Broadcast (BB)}
+\begin{itemize}
+\item \term{Setting}: one known sender with private input $v^* \in V$.
+\item \term{Termination}: every honest node halts with some output.
+\item \term{Agreement}: all honest nodes output same value.
+\item \term{Validity}: if sender is honest, honest nodes output sender's input.
+\item \term{SMR from BB}: in each epoch, current leader proposes ordered list $L^*$ of not-yet-included txs; run BB on $L^*$; append BB output.
+\item Liveness in this reduction is usually stated only for requests submitted to honest nodes.
+\end{itemize}
+
+\subsection*{BB for $f=1$}
+\begin{itemize}
+\item \term{Step 1}: sender signs and sends $v^*$ to every non-sender.
+\item \term{Step 2}: each non-sender signs what it received and forwards it to all other non-senders. Missing value is treated as $\bot$.
+\item \term{Step 3}: each non-sender majority-votes over received signed messages; ties broken consistently.
+\item Works for $f=1$ because honest nodes can cross-check conflicting signed messages.
+\item \imp{Fails for $f=2$}: sender + one Byzantine non-sender can split honest nodes into two groups that see different majorities.
+\end{itemize}
+
+\subsection*{Dolev-Strong}
+\begin{itemize}
+\item Works for any $f$ in synchronous permissioned PKI setting.
+\item \term{Convincing message at time $t$}: message for value $v$, signed first by sender, then by at least $t-1$ distinct other nodes.
+\item \term{Protocol}: time 0 sender sends signed $v^*$; during times $1,\dots,f+1$, any newly convinced non-sender signs and forwards; at end output unique convinced value or $\bot$.
+\item Theorem: satisfies termination, agreement, validity.
+\end{itemize}
+
+\subsection*{Impossibility and Thresholds}
+\begin{itemize}
+\item \term{FLM result}: in synchronous permissioned \emph{non-PKI} setting, if $f \ge n/3$, BB with termination + agreement + validity is impossible.
+\item \term{Asynchronous network}: no shared clock, no bound on delay, every sent message eventually arrives.
+\item \term{FLP theorem}: in asynchronous permissioned PKI setting, no deterministic BA protocol can guarantee termination + agreement + validity even for $f=1$.
+\item \term{Partial synchrony}: global stabilization time GST is unknown; after GST delays are bounded by known $\Delta$.
+\item In partial synchrony, safety must always hold; liveness may only hold after GST.
+\item Deterministic BA exists \imp{iff} $f < n/3$.
+\item \term{33\% threshold}: honest nodes can wait only for $n-f$ messages; those may include Byzantine nodes, so honest majority requires
+\[
+f < \frac{n-f}{2} \iff f < \frac{n}{3} \iff n \ge 3f+1.
+\]
+\item \term{CAP principle}: cannot have consistency, availability, and partition tolerance simultaneously.
+\item Tendermint/PBFT sacrifice liveness during partition; Bitcoin sacrifices consistency because long reorgs are possible.
+\end{itemize}
+
+\section*{Ethereum Blocks}
+\begin{itemize}
+\item Ethereum launched as PoW in July 2015; switched to PoS in Sept.\ 2022 (\term{the Merge}).
+\item \term{Execution client}: executes txs and updates world state.
+\item \term{Beacon chain client}: runs PoS consensus on execution blocks.
+\end{itemize}
+
+\subsection*{Eth1 Header}
+\begin{itemize}
+\item Main fields:
+\begin{itemize}
+\item hashes: \code{parentHash}, \code{ommersHash}, \code{stateRoot}, \code{transactionsRoot}, \code{receiptsRoot}
+\item others: \code{beneficiary}, \code{logsBloom}, \code{difficulty}, \code{number}, \code{gasLimit}, \code{gasUsed}, \code{timestamp}, \code{extraData}, \code{mixHash}, \code{nonce}
+\end{itemize}
+\item Block can be written as $(\text{Header}, \text{Transactions}, \text{Uncle Headers})$.
+\end{itemize}
+
+\subsection*{Uncles / Ommers and GHOST}
+\begin{itemize}
+\item \term{Ommer}: sibling of parent; Ethereum rewarded some stale blocks because short block times increase stale rate.
+\item Uncle txs are invalid; creator gets only fraction of reward and no tx fees.
+\item \term{GHOST}: choose the child whose subtree is heaviest at every fork, not merely longest chain.
+\item Ethereum 2.0 uses an LMD-GHOST variant.
+\end{itemize}
+
+\subsection*{Eth2 Execution Header}
+\begin{itemize}
+\item Same major fields as Eth1, but key changes:
+\item \code{ommersHash} = hash of empty list.
+\item \code{difficulty} = 0.
+\item \code{nonce} = 8 zero bytes.
+\item \code{mixHash} replaced by \code{prevRandao}.
+\item New fee field: \code{baseFeePerGas}.
+\end{itemize}
+
+\subsection*{High-yield Header Meanings}
+\begin{itemize}
+\item \code{parentHash}: Keccak-256 of parent header.
+\item \code{beneficiary}: destination address of block reward and tx fees.
+\item \code{stateRoot}: root of world-state trie after executing all block txs.
+\item \code{transactionsRoot}: root of trie holding all block txs.
+\item \code{receiptsRoot}: root of tx receipts trie.
+\item \code{number}: number of ancestor blocks.
+\item \code{timestamp}: Unix time of block creation.
+\item \code{extraData}: arbitrary data; validators identify themselves here.
+\end{itemize}
+
+\subsection*{Receipts, Logs, and Bloom}
+\begin{itemize}
+\item Receipts trie is a \term{Merkle Patricia Trie}.
+\item Key = RLP encoding of tx index in block.
+\item Value = RLP-encoded receipt
+\[
+\code{[status, cumulativeGasUsed, logsBloom, logs]}.
+\]
+\item Log structure:
+\[
+\code{[address, [topic0, topic1, topic2, topic3], data]}.
+\]
+\item \code{topic0} = Keccak hash of event signature; \code{topic1--3} = indexed params.
+\item Example for
+\code{Transfer(address,address,uint256)}:
+\item \code{topic0 = keccak256("Transfer(address,address,uint256)")}.
+\item \code{topic1 = sender}, \code{topic2 = receiver}, \code{data = value}.
+\item \term{logsBloom}: OR of receipt bloom filters. Logger address and indexed topics set 3 of 2048 bits.
+\item Light clients use bloom filters to search relevant logs.
+\end{itemize}
+
+\subsection*{Gas Fields and EIP-1559}
+\begin{itemize}
+\item \code{gasUsed}: total gas used by all block txs.
+\item \code{gasLimit}: max gas in block; slides state current value $60$ million.
+\item \code{baseFeePerGas}: minimum required gas price, burned by protocol.
+\item Gas target is half the gas limit: $30$ million.
+\item EIP-1559 update:
+\[
+\text{gasTarget} = \frac{\text{gasLimit}}{2}
+\]
+\[
+\delta = \frac{\text{gasUsed}-\text{gasTarget}}{4\,\text{gasLimit}} \times \text{baseFeePerGas}
+\]
+\[
+\text{baseFeePerGas}_{new} = \text{baseFeePerGas} + \delta
+\]
+\item Users may add a \term{priority fee} (tip).
+\end{itemize}
+
+\section*{EVM}
+\begin{itemize}
+\item Stack-based machine with 32-byte words; contract code stored in virtual ROM.
+\item Stack and memory are \term{volatile}; storage persists across transactions.
+\item Stack size limit: \imp{1024 words}.
+\item Memory is a word-addressed byte array.
+\item Storage is a word-to-word key-value map for the current contract.
+\end{itemize}
+
+\subsection*{Access and Resources}
+\begin{itemize}
+\item Current contract storage via \code{SLOAD}, \code{SSTORE}.
+\item Other contracts' storage cannot be read directly.
+\item Other contracts' code can be read with \code{EXTCODECOPY}.
+\item Transaction calldata via \code{CALLDATALOAD}, \code{CALLDATACOPY}.
+\end{itemize}
+
+\subsection*{Gas Numbers}
+\begin{itemize}
+\item Base tx cost: \imp{21000}.
+\item \code{ADD}, \code{SUB}: 3 gas.
+\item \code{MUL}, \code{DIV}: 5 gas.
+\item \code{MLOAD}, \code{MSTORE}: $3 +$ memory expansion cost.
+\item \code{SLOAD}: 2100 gas for cold key, 100 for warm key.
+\item \code{CALL}: 2600 gas for cold address, 100 for warm address.
+\item \code{BALANCE}: 2600 cold, 100 warm.
+\item \code{CREATE}: minimum 32000.
+\item Calldata: 4 gas per zero byte, 16 gas per non-zero byte.
+\item \code{KECCAK256}: $30 + 6$ per hashed word.
+\item Precompile \code{ecPairing} at address \code{0x08}: 45000 gas.
+\end{itemize}
+
+\subsection*{Memory Expansion}
+\begin{itemize}
+\item Memory grows in 32-byte words.
+\item For \code{MSTORE}, top stack word is offset, next word is data.
+\item If new offset exceeds previously touched memory, expansion cost applies.
+\[
+\text{memory\_size\_word} = \frac{\text{memory\_byte\_size}+31}{32}
+\]
+\[
+\text{memory\_cost} = \frac{\text{memory\_size\_word}^2}{512} + 3 \cdot \text{memory\_size\_word}
+\]
+\end{itemize}
+
+\section*{Solidity}
+\begin{itemize}
+\item Statically typed language for Ethereum smart contracts; JavaScript-like syntax.
+\item \term{Local vars}: inside functions, not stored in world state.
+\item \term{State vars}: outside functions, stored in world state.
+\item \term{Special vars}: e.g.\ \code{block.number}, \code{msg.sender}.
+\end{itemize}
+
+\subsection*{Core Types and Storage Forms}
+\begin{itemize}
+\item Primitive types: \code{bool}, \code{uint}, \code{int}, \code{address}, \code{bytes1} to \code{bytes32}, \code{string}.
+\item \term{constant}: fixed at compile time; cheaper because hardcoded.
+\item \term{immutable}: set in constructor, unchangeable after deployment.
+\item \term{Mappings}: \code{mapping(keyType => valueType)}.
+\item Mapping lookup always returns a value; unset key gives default value.
+\item Key type cannot be reference type; value type can be any type, including mapping.
+\item Nested mapping example:
+\code{mapping(address => mapping(uint => bool))}.
+\item Arrays can be dynamic or fixed-size; use \code{push()} and \code{pop()}.
+\item Structs group fields; use \code{storage} reference for in-place updates.
+\end{itemize}
+
+\subsection*{Function Facts}
+\begin{itemize}
+\item \term{view}: reads state but does not modify it.
+\item \term{pure}: neither reads nor modifies state.
+\item Visibility:
+\begin{itemize}
+\item \code{public}: callable by contracts and EOAs.
+\item \code{private}: only inside defining contract.
+\item \code{internal}: defining contract + children.
+\item \code{external}: callable from other contracts / EOAs.
+\end{itemize}
+\item Reference-type data locations in function signatures are mandatory:
+\code{memory}, \code{storage}, \code{calldata}.
+\item \code{calldata} is read-only and cheaper when applicable.
+\item Public functions cannot take or return mappings.
+\item Functions can return multiple values.
+\end{itemize}
+
+\subsection*{Events, Checks, and Modifiers}
+\begin{itemize}
+\item Example event: \code{Log(sender, message)} with sender indexed.
+\item Up to \imp{3 indexed parameters}.
+\item Contract address, event signature, and indexed params contribute to bloom filters.
+\item \code{require(cond, "msg")} checks user input / preconditions.
+\item \code{assert(cond)} checks conditions that should never fail.
+\item Both revert state changes on failure.
+\item Modifiers run code before/after a function; \code{\_} marks where function body runs.
+\item Typical modifier: \code{onlyOwner}.
+\end{itemize}
+
+\subsection*{Inheritance, Payable, and Calls}
+\begin{itemize}
+\item Base function must be \code{virtual}; child implementation must be \code{override}.
+\item Multiple inheritance is allowed; parent search is \imp{right to left}; \code{super} calls immediate parent implementation.
+\item State variables are not overridden directly; child re-initializes them, usually in constructor.
+\item \code{payable} functions and addresses can receive Ether.
+\item \code{address(this).balance} = Ether balance of current contract.
+\item Calling typed contract:
+\code{Callee(_addr).setX(x)}.
+\item Low-level call uses \term{addr.call(...)} together with \term{abi.encodeWithSignature(...)}.
+\item Interfaces: declarations only, no state vars, all functions \code{external}, may declare events and errors.
+\end{itemize}
+
+\subsection*{receive / fallback}
+\begin{itemize}
+\item \code{receive()} handles plain Ether transfer.
+\item \code{fallback()} runs when:
+\begin{itemize}
+\item called function does not exist, or
+\item Ether sent and \code{receive} does not exist, or
+\item Ether sent with non-empty \code{msg.data}.
+\end{itemize}
+\item Fallback is often used for forwarding / proxy behavior.
+\end{itemize}
+
+\section*{Re-Entrancy and Tokens}
+\subsection*{DAO Attack}
+\begin{itemize}
+\item Vulnerable pattern: external Ether transfer happens \emph{before} balance reset.
+\item Attacker re-enters from fallback and calls \code{withdraw()} again before state updates.
+\item Fix 1: \term{checks-effects-interactions}: set balance to zero before transfer.
+\item Fix 2: re-entrancy lock:
+\code{require(!locked); locked=true; ...; locked=false;}
+\end{itemize}
+
+\subsection*{ERC-20}
+\begin{itemize}
+\item Standard interface for fungible tokens.
+\item Events: \code{Transfer}, \code{Approval}.
+\item Main functions:
+\begin{itemize}
+\item \code{totalSupply}, \code{balanceOf}, \code{transfer}
+\item \code{allowance}, \code{approve}, \code{transferFrom}
+\end{itemize}
+\item Common storage:
+\begin{itemize}
+\item \code{totalSupply}, \code{name}, \code{symbol}
+\item \code{balanceOf[address]}
+\item \code{allowance[owner][spender]}
+\end{itemize}
+\item \code{\_mint(to, amount)} increases recipient balance + total supply, emits \code{Transfer(address(0), to, amount)}.
+\end{itemize}
+
+\subsection*{ERC-721 / NFTs}
+\begin{itemize}
+\item NFT = non-fungible token; ownership commonly stored as \code{tokenId -> owner}.
+\item Mint checks: recipient not zero address, token id not already minted.
+\item NFT image is usually \emph{not} stored on-chain; contract stores metadata link via \code{tokenURI()}.
+\end{itemize}
+
+\section*{Tornado Cash}
+\begin{itemize}
+\item Purpose: break the visible link between deposit address and withdrawal address.
+\item Desired properties:
+\begin{itemize}
+\item \term{soundness}: only past depositors can withdraw, and only once.
+\item \term{privacy}: withdrawal should not be linkable to a specific deposit.
+\end{itemize}
+\end{itemize}
+
+\subsection*{Deposit}
+\begin{itemize}
+\item Private note = header + \imp{31-byte nullifier} + \imp{31-byte secret}.
+\item These 62 bytes are randomly generated on the user's computer.
+\item Commitment = Pedersen hash of the 62-byte secret material.
+\item Commitment must be fresh: \code{require(!commitments[c], "...")}.
+\item Commitment inserted into Merkle tree of depth \imp{20}.
+\item No deletions $\Rightarrow$ max deposits = \imp{$2^{20}$}.
+\item Contract records commitment, checks \code{msg.value == denomination}, emits \code{Deposit(commitment, insertedIndex, timestamp)}.
+\end{itemize}
+
+\subsection*{Withdraw}
+\begin{itemize}
+\item Function takes \code{_proof}, \code{_root}, \code{_nullifierHash}, \code{_recipient}, \code{_relayer}, \code{_fee}.
+\item SNARK statement: user knows secret + nullifier for a commitment in tree root \code{_root}, and \code{_nullifierHash} is Pedersen hash of the nullifier.
+\item Prevent double spend by requiring an unseen \code{nullifierHash}.
+\item Root must be one of the \imp{last 100 Merkle roots}.
+\item Contract verifies proof on-chain, stores nullifier hash as spent, sends
+\begin{itemize}
+\item \code{denomination - fee} to recipient
+\item \code{fee} to relayer
+\end{itemize}
+\item Proof also binds recipient, relayer, and fee to prevent tampering.
+\item Verifier contract is generated using \code{circom}.
+\end{itemize}
+
+\subsection*{Historical Note}
+\begin{itemize}
+\item OFAC sanctioned Tornado Cash addresses on Aug.\ 8, 2022.
+\item Repositories were later restored for educational use; major legal cases against developers continued.
+\end{itemize}
+
+\section*{Ultra-Short Recall}
+\begin{itemize}
+\item \imp{Consensus}: consistency vs liveness.
+\item \imp{BB}: termination, agreement, validity.
+\item \imp{Threshold}: $f < n/3$, equivalently $n \ge 3f+1$.
+\item \imp{Async deterministic BA}: impossible (FLP).
+\item \imp{Eth2 changes}: empty \code{ommersHash}, \code{difficulty=0}, \code{nonce=0}, \code{prevRandao}, \code{baseFeePerGas}.
+\item \imp{Receipt}: \code{[status, cumulativeGasUsed, logsBloom, logs]}.
+\item \imp{Transfer topic0}: Keccak hash of the ERC-20 Transfer event signature.
+\item \imp{EVM stack}: 1024 words.
+\item \imp{Base tx gas}: 21000.
+\item \imp{SLOAD}: 2100 cold, 100 warm.
+\item \imp{Calldata}: 4 zero byte, 16 non-zero byte.
+\item \imp{Data locations}: \code{memory}, \code{storage}, \code{calldata}.
+\item \imp{Visibility}: \code{public}, \code{private}, \code{internal}, \code{external}.
+\item \imp{Re-entrancy fix}: update state before external call.
+\item \imp{Tornado note}: 31-byte nullifier + 31-byte secret.
+\item \imp{Tornado tree}: depth 20, max $2^{20}$ deposits, roots remembered: 100.
+\end{itemize}
+
+\end{multicols*}
+\end{document}

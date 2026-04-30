@@ -1,0 +1,53 @@
+\contentsline {section}{\numberline {1}Lecture 13: Reduced-Order Guidance Models and Straight-Line Path Following}{3}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Why reduced-order guidance models are needed}{3}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Autopilot-hold loop abstractions used in guidance}{3}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.3}Kinematic model for controlled flight}{3}{subsection.1.3}%
+\contentsline {subsection}{\numberline {1.4}Coordinated-turn relation}{3}{subsection.1.4}%
+\contentsline {subsection}{\numberline {1.5}Accelerated climb and load factor}{4}{subsection.1.5}%
+\contentsline {subsection}{\numberline {1.6}Kinematic guidance model options}{4}{subsection.1.6}%
+\contentsline {subsection}{\numberline {1.7}Dynamic point-mass guidance model}{5}{subsection.1.7}%
+\contentsline {subsection}{\numberline {1.8}Trajectory tracking vs path following}{5}{subsection.1.8}%
+\contentsline {subsection}{\numberline {1.9}Straight-line path geometry}{5}{subsection.1.9}%
+\contentsline {subsection}{\numberline {1.10}Longitudinal straight-line tracking}{5}{subsection.1.10}%
+\contentsline {subsection}{\numberline {1.11}Lateral straight-line vector-field strategy}{6}{subsection.1.11}%
+\contentsline {section}{\numberline {2}Lecture 14: Orbit Following, Carrot-Chasing, and NLGL}{7}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Lyapunov proof for straight-line lateral guidance}{7}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Orbit path representation and kinematics}{7}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Orbit vector-field command and stability}{7}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Practical angle wrapping issue}{7}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}Classification of path-following methods}{8}{subsection.2.5}%
+\contentsline {subsection}{\numberline {2.6}Carrot-chasing algorithm}{8}{subsection.2.6}%
+\contentsline {subsection}{\numberline {2.7}Nonlinear Guidance Law (NLGL) / L1 Logic}{8}{subsection.2.7}%
+\contentsline {subsection}{\numberline {2.8}Look-ahead distance selection insight}{9}{subsection.2.8}%
+\contentsline {subsection}{\numberline {2.9}PD/PID vs NLGL in wind}{9}{subsection.2.9}%
+\contentsline {section}{\numberline {3}Lecture 15: Circular NLGL Analysis, Path Manager, Fillets, Dubins Basics}{10}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Circular path with nonlinear guidance assumptions}{10}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Dynamics of Eta and Beta}{10}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Linearization near circular equilibrium}{10}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Waypoint path manager motivation}{10}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Half-plane switching}{10}{subsection.3.5}%
+\contentsline {subsection}{\numberline {3.6}Fillet maneuver for smooth line transitions}{11}{subsection.3.6}%
+\contentsline {subsection}{\numberline {3.7}Path-length correction with fillets}{11}{subsection.3.7}%
+\contentsline {subsection}{\numberline {3.8}Dubins vehicle and path decomposition}{11}{subsection.3.8}%
+\contentsline {subsection}{\numberline {3.9}Circle centers and angle operator}{12}{subsection.3.9}%
+\contentsline {subsection}{\numberline {3.10}Length formulas introduced in Lecture 15}{12}{subsection.3.10}%
+\contentsline {section}{\numberline {4}Lecture 16: Dubins Completion and UAV Path Planning Algorithms}{13}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Remaining Dubins cases}{13}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Path planning classes}{13}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Point-to-point planning with Voronoi graph}{13}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Edge cost with safety-distance penalty}{13}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Dijkstra search procedure}{14}{subsection.4.5}%
+\contentsline {subsection}{\numberline {4.6}RRT for point-to-point planning}{14}{subsection.4.6}%
+\contentsline {subsection}{\numberline {4.7}Coverage path planning concept}{14}{subsection.4.7}%
+\contentsline {section}{\numberline {5}Lecture 17: Vision-Guided Navigation, Geolocation, and Time-to-Collision}{15}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Role of onboard vision}{15}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Frames and transformation chain}{15}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Camera projection model}{15}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}Gimbal pointing control}{16}{subsection.5.4}%
+\contentsline {subsection}{\numberline {5.5}Geolocation setup}{16}{subsection.5.5}%
+\contentsline {subsection}{\numberline {5.6}Flat-earth geolocation estimate}{16}{subsection.5.6}%
+\contentsline {subsection}{\numberline {5.7}EKF formulation for geolocation}{16}{subsection.5.7}%
+\contentsline {subsection}{\numberline {5.8}Target pixel filtering and velocity estimation}{17}{subsection.5.8}%
+\contentsline {subsection}{\numberline {5.9}Removing apparent motion due to platform/gimbal rotation}{17}{subsection.5.9}%
+\contentsline {subsection}{\numberline {5.10}Time-to-collision (TTC)}{17}{subsection.5.10}%
+\contentsline {section}{\numberline {6}Consolidated Revision Checklist (Lectures 13--17)}{18}{section.6}%

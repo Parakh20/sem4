@@ -1,0 +1,73 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{jiang2017deep}
+\citation{jiang2017deep}
+\citation{watkins1992q}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction \& Motivation}{3}{section.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Reinforcement Learning Fundamentals}{3}{section.2}\protected@file@percent }
+\newlabel{sec:rl}{{2}{3}{Reinforcement Learning Fundamentals}{section.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}The Core Idea}{3}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Q-Learning and Deep Q-Networks}{3}{subsection.2.2}\protected@file@percent }
+\citation{schulman2017proximal}
+\citation{jiang2017deep}
+\citation{markowitz1952}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Policy Gradient Methods}{4}{subsection.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Proximal Policy Optimisation (PPO)}{4}{subsection.2.4}\protected@file@percent }
+\newlabel{eq:ppo}{{4}{4}{Proximal Policy Optimisation (PPO)}{equation.2.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Portfolio Optimisation --- Classical Approach}{4}{section.3}\protected@file@percent }
+\newlabel{sec:classical}{{3}{4}{Portfolio Optimisation --- Classical Approach}{section.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Return and Risk}{4}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Markowitz Mean-Variance Optimisation}{4}{subsection.3.2}\protected@file@percent }
+\newlabel{eq:markowitz}{{6}{4}{Markowitz Mean-Variance Optimisation}{equation.3.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Performance Metrics}{4}{subsection.3.3}\protected@file@percent }
+\citation{jiang2017deep}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Why Classical Methods Fall Short}{5}{subsection.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Literature Review: Jiang et al.\ (2017)}{5}{section.4}\protected@file@percent }
+\newlabel{sec:litreview}{{4}{5}{Literature Review: Jiang et al.\ (2017)}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Key Architecture: EIIE}{5}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}MDP Formulation}{5}{subsection.4.2}\protected@file@percent }
+\citation{jiang2017deep}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Results and Limitations}{6}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Proposed Framework}{6}{section.5}\protected@file@percent }
+\newlabel{sec:proposed}{{5}{6}{Proposed Framework}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Contribution 1: Risk-Aware Reward}{6}{subsection.5.1}\protected@file@percent }
+\newlabel{eq:riskreward}{{7}{6}{Contribution 1: Risk-Aware Reward}{equation.5.7}{}}
+\citation{jiang2017deep}
+\citation{jiang2017deep}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Contribution 2: EMA-Filtered State}{7}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}The RL--Finance Feedback Loop}{7}{section.6}\protected@file@percent }
+\citation{jiang2017deep}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces The RL--Finance feedback loop. Raw market state is EMA-filtered before being fed to the agent. Actions produce trades, which generate a risk-adjusted reward that the agent uses to improve its policy. The Jiang et al.\ baseline lacks both the EMA filter and the risk penalty in $R_t$.}}{8}{figure.caption.3}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:loop}{{1}{8}{The RL--Finance feedback loop. Raw market state is EMA-filtered before being fed to the agent. Actions produce trades, which generate a risk-adjusted reward that the agent uses to improve its policy. The Jiang et al.\ baseline lacks both the EMA filter and the risk penalty in $R_t$}{figure.caption.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7}Methodology \& Experimental Setup}{8}{section.7}\protected@file@percent }
+\newlabel{sec:method}{{7}{8}{Methodology \& Experimental Setup}{section.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Data}{8}{subsection.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Baselines}{8}{subsection.7.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3}Proposed Agents}{8}{subsection.7.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.4}Evaluation Metrics}{8}{subsection.7.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.5}Demo Code}{8}{subsection.7.5}\protected@file@percent }
+\newlabel{lst:demo}{{1}{9}{Portfolio comparison demo (Python)}{lstlisting.1}{}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {1}{\ignorespaces Portfolio comparison demo (Python)}}{9}{lstlisting.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Cumulative portfolio returns: equal-weight and risk-aware (minimum volatility proxy). The risk-aware strategy achieves a higher Sharpe ratio with lower peak-to-trough drawdown, at the cost of lower raw cumulative return.}}{9}{figure.caption.4}\protected@file@percent }
+\newlabel{fig:cumret}{{2}{9}{Cumulative portfolio returns: equal-weight and risk-aware (minimum volatility proxy). The risk-aware strategy achieves a higher Sharpe ratio with lower peak-to-trough drawdown, at the cost of lower raw cumulative return}{figure.caption.4}{}}
+\citation{jiang2017deep}
+\citation{jiang2017deep}
+\citation{jiang2017deep}
+\@writefile{toc}{\contentsline {section}{\numberline {8}Expected Results \& Evaluation}{10}{section.8}\protected@file@percent }
+\newlabel{sec:results}{{8}{10}{Expected Results \& Evaluation}{section.8}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Expected performance summary (indicative). All results are on US equity data (2020--2024) and are not directly comparable to the cryptocurrency results of \citet  {jiang2017deep}.}}{10}{table.caption.5}\protected@file@percent }
+\newlabel{tab:results}{{1}{10}{Expected performance summary (indicative). All results are on US equity data (2020--2024) and are not directly comparable to the cryptocurrency results of \citet {jiang2017deep}}{table.caption.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {9}Challenges \& Limitations}{10}{section.9}\protected@file@percent }
+\citation{jiang2017deep}
+\citation{jiang2017deep}
+\bibstyle{plainnat}
+\bibcite{markowitz1952}{{1}{1952}{{Markowitz}}{{}}}
+\bibcite{watkins1992q}{{2}{1992}{{Watkins and Dayan}}{{}}}
+\bibcite{schulman2017proximal}{{3}{2017}{{Schulman et~al.}}{{}}}
+\bibcite{jiang2017deep}{{4}{2017}{{Jiang et~al.}}{{}}}
+\bibcite{liu2021finrl}{{5}{2021}{{Liu et~al.}}{{}}}
+\@writefile{toc}{\contentsline {section}{\numberline {10}Conclusion}{11}{section.10}\protected@file@percent }
+\gdef \@abspage@last{11}

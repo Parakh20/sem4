@@ -1,0 +1,229 @@
+\contentsline {chapter}{\numberline {1}Introduction to Bitcoin}{9}{chapter.1}%
+\contentsline {section}{\numberline {1.1}What Is Bitcoin?}{9}{section.1.1}%
+\contentsline {subsection}{\numberline {1.1.1}The Double-Spending Problem}{9}{subsection.1.1.1}%
+\contentsline {subsection}{\numberline {1.1.2}Network Participants}{9}{subsection.1.1.2}%
+\contentsline {section}{\numberline {1.2}Cryptographic Keys and Addresses}{9}{section.1.2}%
+\contentsline {subsection}{\numberline {1.2.1}Key Pair}{9}{subsection.1.2.1}%
+\contentsline {subsection}{\numberline {1.2.2}Bitcoin Address Derivation}{10}{subsection.1.2.2}%
+\contentsline {section}{\numberline {1.3}The Blockchain}{10}{section.1.3}%
+\contentsline {subsection}{\numberline {1.3.1}Block Header}{10}{subsection.1.3.1}%
+\contentsline {subsection}{\numberline {1.3.2}Merkle Hash Tree}{10}{subsection.1.3.2}%
+\contentsline {subsection}{\numberline {1.3.3}Tamper Resistance and the 51\% Attack}{11}{subsection.1.3.3}%
+\contentsline {section}{\numberline {1.4}The Bitcoin P2P Network}{11}{section.1.4}%
+\contentsline {subsection}{\numberline {1.4.1}Node Discovery}{11}{subsection.1.4.1}%
+\contentsline {subsection}{\numberline {1.4.2}Transaction Propagation}{11}{subsection.1.4.2}%
+\contentsline {subsection}{\numberline {1.4.3}Block Propagation and Orphan Blocks}{12}{subsection.1.4.3}%
+\contentsline {subsection}{\numberline {1.4.4}Simplified Payment Verification (SPV)}{12}{subsection.1.4.4}%
+\contentsline {section}{\numberline {1.5}The Genesis Block}{13}{section.1.5}%
+\contentsline {section}{\numberline {1.6}The UTXO Set}{13}{section.1.6}%
+\contentsline {subsection}{\numberline {1.6.1}Key Takeaways}{13}{subsection.1.6.1}%
+\contentsline {chapter}{\numberline {2}Cryptographic Hash Functions}{15}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Definition}{15}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}Security Hierarchy}{15}{subsection.2.1.1}%
+\contentsline {subsection}{\numberline {2.1.2}Attack Complexities}{15}{subsection.2.1.2}%
+\contentsline {section}{\numberline {2.2}SHA-256}{16}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Bitcoin Usage of SHA-256}{16}{subsection.2.2.1}%
+\contentsline {section}{\numberline {2.3}SHA-256 Internal Structure in Detail}{16}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}Padding}{16}{subsection.2.3.1}%
+\contentsline {subsection}{\numberline {2.3.2}The Compression Function}{17}{subsection.2.3.2}%
+\contentsline {subsection}{\numberline {2.3.3}Avalanche Effect}{17}{subsection.2.3.3}%
+\contentsline {subsection}{\numberline {2.3.4}Length Extension Attacks}{17}{subsection.2.3.4}%
+\contentsline {section}{\numberline {2.4}RIPEMD-160}{18}{section.2.4}%
+\contentsline {section}{\numberline {2.5}Hash Pointers}{18}{section.2.5}%
+\contentsline {chapter}{\numberline {3}Group Theory and Modular Arithmetic}{19}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Groups}{19}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}Examples Relevant to Cryptography}{19}{subsection.3.1.1}%
+\contentsline {section}{\numberline {3.2}Cyclic Groups and the Discrete Logarithm}{20}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Modular Arithmetic}{20}{section.3.3}%
+\contentsline {section}{\numberline {3.4}Finite Fields}{20}{section.3.4}%
+\contentsline {subsection}{\numberline {3.4.1}The Extended Euclidean Algorithm}{20}{subsection.3.4.1}%
+\contentsline {subsection}{\numberline {3.4.2}Worked Example: Discrete Logarithm in $\mathbb {Z}_{11}^*$}{21}{subsection.3.4.2}%
+\contentsline {section}{\numberline {3.5}Lagrange's Theorem}{21}{section.3.5}%
+\contentsline {section}{\numberline {3.6}Quadratic Residues}{21}{section.3.6}%
+\contentsline {chapter}{\numberline {4}Elliptic Curve Cryptography in Bitcoin}{22}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Elliptic Curves}{22}{section.4.1}%
+\contentsline {subsection}{\numberline {4.1.1}Bitcoin's Curve: secp256k1}{22}{subsection.4.1.1}%
+\contentsline {section}{\numberline {4.2}Group Law on Elliptic Curves}{22}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Point Addition: $P+Q$ with $P\neq \pm Q$}{22}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}Point Doubling: $P+P=2P$}{23}{subsection.4.2.2}%
+\contentsline {subsection}{\numberline {4.2.3}Identity and Inverse}{23}{subsection.4.2.3}%
+\contentsline {section}{\numberline {4.3}Scalar Multiplication}{23}{section.4.3}%
+\contentsline {section}{\numberline {4.4}Worked Example: Point Addition over $\mathbb {F}_{17}$}{23}{section.4.4}%
+\contentsline {section}{\numberline {4.5}Elliptic Curve Discrete Logarithm Problem (ECDLP)}{24}{section.4.5}%
+\contentsline {section}{\numberline {4.6}Key Generation}{24}{section.4.6}%
+\contentsline {section}{\numberline {4.7}ECDSA: Elliptic Curve Digital Signature Algorithm}{24}{section.4.7}%
+\contentsline {subsection}{\numberline {4.7.1}Signing}{24}{subsection.4.7.1}%
+\contentsline {subsection}{\numberline {4.7.2}Verification}{25}{subsection.4.7.2}%
+\contentsline {section}{\numberline {4.8}ECDSA Worked Conceptual Example}{25}{section.4.8}%
+\contentsline {subsection}{\numberline {4.8.1}Schnorr Signatures (Taproot)}{26}{subsection.4.8.1}%
+\contentsline {section}{\numberline {4.9}Parameter Summary}{26}{section.4.9}%
+\contentsline {chapter}{\numberline {5}Bitcoin Transactions}{27}{chapter.5}%
+\contentsline {section}{\numberline {5.1}The UTXO Model}{27}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Transaction Structure}{27}{section.5.2}%
+\contentsline {subsection}{\numberline {5.2.1}Input Fields}{28}{subsection.5.2.1}%
+\contentsline {subsection}{\numberline {5.2.2}Output Fields}{28}{subsection.5.2.2}%
+\contentsline {section}{\numberline {5.3}Bitcoin Script}{28}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}Key Opcodes}{28}{subsection.5.3.1}%
+\contentsline {section}{\numberline {5.4}P2PKH — Pay to Public Key Hash}{29}{section.5.4}%
+\contentsline {section}{\numberline {5.5}P2SH — Pay to Script Hash}{29}{section.5.5}%
+\contentsline {section}{\numberline {5.6}Multisignature ($m$-of-$n$)}{29}{section.5.6}%
+\contentsline {section}{\numberline {5.7}Worked Example: A Complete Bitcoin Transaction}{30}{section.5.7}%
+\contentsline {section}{\numberline {5.8}P2WPKH: Pay-to-Witness-Public-Key-Hash}{30}{section.5.8}%
+\contentsline {section}{\numberline {5.9}Timelock Transactions}{30}{section.5.9}%
+\contentsline {section}{\numberline {5.10}SegWit and Transaction Malleability}{31}{section.5.10}%
+\contentsline {section}{\numberline {5.11}Coinbase Transaction}{31}{section.5.11}%
+\contentsline {chapter}{\numberline {6}Mining Miscellanea}{32}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Proof of Work}{32}{section.6.1}%
+\contentsline {subsection}{\numberline {6.1.1}Difficulty and Adjustment}{32}{subsection.6.1.1}%
+\contentsline {subsection}{\numberline {6.1.2}Expected Hashes per Block}{32}{subsection.6.1.2}%
+\contentsline {section}{\numberline {6.2}Mining Hardware}{32}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Mining Pools}{33}{section.6.3}%
+\contentsline {section}{\numberline {6.4}Why SHA256d and Not SHA256?}{33}{section.6.4}%
+\contentsline {subsection}{\numberline {6.4.1}Nonce Space Exhaustion}{33}{subsection.6.4.1}%
+\contentsline {section}{\numberline {6.5}Selfish Mining}{33}{section.6.5}%
+\contentsline {section}{\numberline {6.6}Transaction Lifecycle in the Mempool}{33}{section.6.6}%
+\contentsline {section}{\numberline {6.7}The Lightning Network}{34}{section.6.7}%
+\contentsline {section}{\numberline {6.8}Proof-of-Work vs.\ Alternatives}{34}{section.6.8}%
+\contentsline {chapter}{\numberline {7}Introduction to Ethereum}{35}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Ethereum vs.\ Bitcoin}{35}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Account Model}{35}{section.7.2}%
+\contentsline {subsection}{\numberline {7.2.1}Externally Owned Accounts (EOAs)}{35}{subsection.7.2.1}%
+\contentsline {subsection}{\numberline {7.2.2}Contract Accounts}{35}{subsection.7.2.2}%
+\contentsline {section}{\numberline {7.3}Ether and Wei}{36}{section.7.3}%
+\contentsline {section}{\numberline {7.4}Gas and Fees}{36}{section.7.4}%
+\contentsline {subsection}{\numberline {7.4.1}Why Gas?}{36}{subsection.7.4.1}%
+\contentsline {subsection}{\numberline {7.4.2}EIP-1559 Fee Mechanism (Post-London 2021)}{36}{subsection.7.4.2}%
+\contentsline {subsection}{\numberline {7.4.3}EIP-1559: Worked Fee Example}{37}{subsection.7.4.3}%
+\contentsline {subsection}{\numberline {7.4.4}Account Nonce and Replay Protection}{37}{subsection.7.4.4}%
+\contentsline {section}{\numberline {7.5}Smart Contracts}{37}{section.7.5}%
+\contentsline {subsection}{\numberline {7.5.1}Representative Applications}{38}{subsection.7.5.1}%
+\contentsline {section}{\numberline {7.6}ERC-20 Token Standard}{38}{section.7.6}%
+\contentsline {chapter}{\numberline {8}Ethereum Data Structures and Encoding}{39}{chapter.8}%
+\contentsline {section}{\numberline {8.1}RLP Encoding}{39}{section.8.1}%
+\contentsline {subsection}{\numberline {8.1.1}Encoding Rules}{39}{subsection.8.1.1}%
+\contentsline {subsection}{\numberline {8.1.2}Examples}{39}{subsection.8.1.2}%
+\contentsline {section}{\numberline {8.2}Merkle Patricia Trie (MPT)}{40}{section.8.2}%
+\contentsline {subsection}{\numberline {8.2.1}Node Types}{40}{subsection.8.2.1}%
+\contentsline {subsection}{\numberline {8.2.2}Hex-Prefix (HP) Path Encoding}{40}{subsection.8.2.2}%
+\contentsline {section}{\numberline {8.3}MPT Worked Example}{40}{section.8.3}%
+\contentsline {section}{\numberline {8.4}The Four Ethereum Tries}{41}{section.8.4}%
+\contentsline {section}{\numberline {8.5}Keccak-256}{41}{section.8.5}%
+\contentsline {section}{\numberline {8.6}Bloom Filters}{41}{section.8.6}%
+\contentsline {chapter}{\numberline {9}Ethereum Transactions}{43}{chapter.9}%
+\contentsline {section}{\numberline {9.1}Transaction Types}{43}{section.9.1}%
+\contentsline {section}{\numberline {9.2}EIP-1559 Transaction Fields}{43}{section.9.2}%
+\contentsline {section}{\numberline {9.3}Signing and Sender Recovery}{44}{section.9.3}%
+\contentsline {section}{\numberline {9.4}Transaction Execution Flow}{44}{section.9.4}%
+\contentsline {section}{\numberline {9.5}Contract Creation}{44}{section.9.5}%
+\contentsline {section}{\numberline {9.6}Function Calls}{44}{section.9.6}%
+\contentsline {section}{\numberline {9.7}Internal Calls}{44}{section.9.7}%
+\contentsline {chapter}{\numberline {10}Ethereum Virtual Machine (EVM)}{46}{chapter.10}%
+\contentsline {section}{\numberline {10.1}Architecture}{46}{section.10.1}%
+\contentsline {section}{\numberline {10.2}Instruction Set}{46}{section.10.2}%
+\contentsline {section}{\numberline {10.3}Execution Trace Example}{46}{section.10.3}%
+\contentsline {section}{\numberline {10.4}Gas Accounting in Practice}{46}{section.10.4}%
+\contentsline {subsection}{\numberline {10.4.1}Out-of-Gas and Reverts}{47}{subsection.10.4.1}%
+\contentsline {subsection}{\numberline {10.4.2}Call Stack and Call Depth Limit}{47}{subsection.10.4.2}%
+\contentsline {section}{\numberline {10.5}ABI Encoding}{48}{section.10.5}%
+\contentsline {section}{\numberline {10.6}Contract Deployment Bytecode}{48}{section.10.6}%
+\contentsline {chapter}{\numberline {11}Ethereum Blocks}{49}{chapter.11}%
+\contentsline {section}{\numberline {11.1}Block Structure}{49}{section.11.1}%
+\contentsline {subsection}{\numberline {11.1.1}Execution Block Header}{49}{subsection.11.1.1}%
+\contentsline {section}{\numberline {11.2}Transaction Receipts}{49}{section.11.2}%
+\contentsline {section}{\numberline {11.3}Logs and Events}{50}{section.11.3}%
+\contentsline {section}{\numberline {11.4}The Merge (September 15, 2022)}{50}{section.11.4}%
+\contentsline {chapter}{\numberline {12}Solidity Programming}{51}{chapter.12}%
+\contentsline {section}{\numberline {12.1}Language Overview}{51}{section.12.1}%
+\contentsline {section}{\numberline {12.2}Types}{51}{section.12.2}%
+\contentsline {subsection}{\numberline {12.2.1}Value Types}{51}{subsection.12.2.1}%
+\contentsline {subsection}{\numberline {12.2.2}Reference Types}{51}{subsection.12.2.2}%
+\contentsline {subsection}{\numberline {12.2.3}Special Variables}{51}{subsection.12.2.3}%
+\contentsline {section}{\numberline {12.3}Function Visibility and Mutability}{52}{section.12.3}%
+\contentsline {section}{\numberline {12.4}Mappings, Structs, Events}{52}{section.12.4}%
+\contentsline {section}{\numberline {12.5}Modifiers and Inheritance}{53}{section.12.5}%
+\contentsline {section}{\numberline {12.6}Minimal ERC-20 Implementation}{53}{section.12.6}%
+\contentsline {section}{\numberline {12.7}Storage Layout}{54}{section.12.7}%
+\contentsline {section}{\numberline {12.8}Interfaces and Abstract Contracts}{55}{section.12.8}%
+\contentsline {section}{\numberline {12.9}The Proxy Pattern (Upgradeable Contracts)}{55}{section.12.9}%
+\contentsline {section}{\numberline {12.10}Common Vulnerabilities}{56}{section.12.10}%
+\contentsline {chapter}{\numberline {13}JavaScript and Node.js}{58}{chapter.13}%
+\contentsline {section}{\numberline {13.1}JavaScript Essentials}{58}{section.13.1}%
+\contentsline {section}{\numberline {13.2}Arrays}{58}{section.13.2}%
+\contentsline {section}{\numberline {13.3}Objects}{59}{section.13.3}%
+\contentsline {section}{\numberline {13.4}Promises and Async/Await}{59}{section.13.4}%
+\contentsline {section}{\numberline {13.5}Node.js}{59}{section.13.5}%
+\contentsline {section}{\numberline {13.6}Accepting CLI Input with Inquirer}{60}{section.13.6}%
+\contentsline {section}{\numberline {13.7}Connecting to Ethereum with ethers.js}{60}{section.13.7}%
+\contentsline {chapter}{\numberline {14}Tornado Cash and Privacy}{61}{chapter.14}%
+\contentsline {section}{\numberline {14.1}Motivation}{61}{section.14.1}%
+\contentsline {section}{\numberline {14.2}Protocol Overview}{61}{section.14.2}%
+\contentsline {subsection}{\numberline {14.2.1}Desired Properties}{61}{subsection.14.2.1}%
+\contentsline {section}{\numberline {14.3}Commitment Scheme}{61}{section.14.3}%
+\contentsline {subsection}{\numberline {14.3.1}Private Note}{61}{subsection.14.3.1}%
+\contentsline {subsection}{\numberline {14.3.2}Pedersen Hash}{62}{subsection.14.3.2}%
+\contentsline {section}{\numberline {14.4}Deposit Steps}{62}{section.14.4}%
+\contentsline {section}{\numberline {14.5}Zero-Knowledge Proofs: zk-SNARKs}{62}{section.14.5}%
+\contentsline {subsection}{\numberline {14.5.1}What Is a zk-SNARK?}{62}{subsection.14.5.1}%
+\contentsline {subsection}{\numberline {14.5.2}The Withdrawal Statement}{62}{subsection.14.5.2}%
+\contentsline {section}{\numberline {14.6}Withdrawal Steps}{63}{section.14.6}%
+\contentsline {section}{\numberline {14.7}Groth16: The Proof System Used by Tornado Cash}{63}{section.14.7}%
+\contentsline {subsection}{\numberline {14.7.1}Arithmetic Circuits}{64}{subsection.14.7.1}%
+\contentsline {subsection}{\numberline {14.7.2}Quadratic Arithmetic Programs (QAP)}{64}{subsection.14.7.2}%
+\contentsline {subsection}{\numberline {14.7.3}Groth16 Proof and Verification}{64}{subsection.14.7.3}%
+\contentsline {subsection}{\numberline {14.7.4}Poseidon Hash}{64}{subsection.14.7.4}%
+\contentsline {subsection}{\numberline {14.7.5}Trusted Setup Ceremonies}{64}{subsection.14.7.5}%
+\contentsline {section}{\numberline {14.8}The Circom Circuit}{65}{section.14.8}%
+\contentsline {section}{\numberline {14.9}OFAC Sanctions}{65}{section.14.9}%
+\contentsline {chapter}{\numberline {15}Consensus Protocols}{67}{chapter.15}%
+\contentsline {section}{\numberline {15.1}State Machine Replication (SMR)}{67}{section.15.1}%
+\contentsline {section}{\numberline {15.2}Network Models}{67}{section.15.2}%
+\contentsline {section}{\numberline {15.3}Fault Types}{67}{section.15.3}%
+\contentsline {section}{\numberline {15.4}SMR with Rotating Leaders (Honest Setting)}{68}{section.15.4}%
+\contentsline {section}{\numberline {15.5}Byzantine Broadcast (BB)}{68}{section.15.5}%
+\contentsline {subsection}{\numberline {15.5.1}Protocol for $f=1$ (Cross-Checking)}{68}{subsection.15.5.1}%
+\contentsline {section}{\numberline {15.6}The Dolev-Strong Protocol}{69}{section.15.6}%
+\contentsline {section}{\numberline {15.7}Correctness of Dolev-Strong}{69}{section.15.7}%
+\contentsline {section}{\numberline {15.8}Impossibility Results}{70}{section.15.8}%
+\contentsline {subsection}{\numberline {15.8.1}FLM (No-PKI Bound)}{70}{subsection.15.8.1}%
+\contentsline {subsection}{\numberline {15.8.2}FLP (Asynchronous Impossibility)}{70}{subsection.15.8.2}%
+\contentsline {subsection}{\numberline {15.8.3}Partially Synchronous Bound}{70}{subsection.15.8.3}%
+\contentsline {section}{\numberline {15.9}Consensus Summary Table}{70}{section.15.9}%
+\contentsline {chapter}{\numberline {16}Tendermint Protocol}{72}{chapter.16}%
+\contentsline {section}{\numberline {16.1}Overview}{72}{section.16.1}%
+\contentsline {section}{\numberline {16.2}Rounds and Phases}{72}{section.16.2}%
+\contentsline {section}{\numberline {16.3}Quorum Certificates}{72}{section.16.3}%
+\contentsline {section}{\numberline {16.4}Local State per Node}{73}{section.16.4}%
+\contentsline {section}{\numberline {16.5}Protocol Pseudocode}{73}{section.16.5}%
+\contentsline {section}{\numberline {16.6}Proof of Consistency}{74}{section.16.6}%
+\contentsline {section}{\numberline {16.7}Liveness in Tendermint (Post-GST)}{74}{section.16.7}%
+\contentsline {section}{\numberline {16.8}Safety vs.\ Liveness in Partially Synchronous Protocols}{75}{section.16.8}%
+\contentsline {section}{\numberline {16.9}Practical Deployment}{75}{section.16.9}%
+\contentsline {chapter}{\numberline {17}Ethereum Proof-of-Stake}{76}{chapter.17}%
+\contentsline {section}{\numberline {17.1}The Merge}{76}{section.17.1}%
+\contentsline {section}{\numberline {17.2}Node Architecture}{76}{section.17.2}%
+\contentsline {section}{\numberline {17.3}Validators}{76}{section.17.3}%
+\contentsline {section}{\numberline {17.4}Slots and Epochs}{76}{section.17.4}%
+\contentsline {section}{\numberline {17.5}Committees and Attestations}{77}{section.17.5}%
+\contentsline {section}{\numberline {17.6}BLS Signatures}{77}{section.17.6}%
+\contentsline {subsection}{\numberline {17.6.1}Mathematical Foundation}{77}{subsection.17.6.1}%
+\contentsline {subsection}{\numberline {17.6.2}Aggregation}{78}{subsection.17.6.2}%
+\contentsline {section}{\numberline {17.7}Validator and Committee Selection}{78}{section.17.7}%
+\contentsline {subsection}{\numberline {17.7.1}RANDAO: On-Chain Randomness}{78}{subsection.17.7.1}%
+\contentsline {subsection}{\numberline {17.7.2}Committee Assignment Algorithm}{78}{subsection.17.7.2}%
+\contentsline {section}{\numberline {17.8}LMD GHOST Fork Choice Rule}{79}{section.17.8}%
+\contentsline {subsection}{\numberline {17.8.1}LMD GHOST Worked Example}{79}{subsection.17.8.1}%
+\contentsline {section}{\numberline {17.9}Casper FFG}{79}{section.17.9}%
+\contentsline {subsection}{\numberline {17.9.1}Checkpoints}{80}{subsection.17.9.1}%
+\contentsline {subsection}{\numberline {17.9.2}FFG Votes}{80}{subsection.17.9.2}%
+\contentsline {subsection}{\numberline {17.9.3}Justification}{80}{subsection.17.9.3}%
+\contentsline {subsection}{\numberline {17.9.4}Finalization}{80}{subsection.17.9.4}%
+\contentsline {section}{\numberline {17.10}Casper FFG Slashing Rules}{80}{section.17.10}%
+\contentsline {subsection}{\numberline {17.10.1}Rule 1 — No Double Vote}{80}{subsection.17.10.1}%
+\contentsline {subsection}{\numberline {17.10.2}Rule 2 — No Surround Vote}{80}{subsection.17.10.2}%
+\contentsline {section}{\numberline {17.11}Accountable Safety}{81}{section.17.11}%
+\contentsline {section}{\numberline {17.12}Ethereum PoS Parameter Summary}{81}{section.17.12}%
+\contentsline {chapter}{\numberline {A}Mathematical Quick Reference}{82}{appendix.A}%
+\contentsline {section}{\numberline {A.1}Group Theory}{82}{section.A.1}%
+\contentsline {section}{\numberline {A.2}Elliptic Curve Operations}{82}{section.A.2}%
+\contentsline {section}{\numberline {A.3}Hash Function Summary}{82}{section.A.3}%
+\contentsline {chapter}{\numberline {B}Glossary}{84}{appendix.B}%

@@ -1,0 +1,951 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{bm}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{mathtools}
+\usepackage{booktabs}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\setlist[itemize]{itemsep=2pt,topsep=4pt}
+\setlist[enumerate]{itemsep=2pt,topsep=4pt}
+\setlength{\parskip}{0.5em}
+\setlength{\parindent}{0pt}
+
+\newcommand{\vect}[1]{\bm{#1}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\satgd}{\mathrm{sat}_\mathrm{gd}}
+\newcommand{\vex}{\mathrm{vex}}
+\newcommand{\diag}{\mathrm{diag}}
+
+\title{AE700 Detailed Study Material\\Lectures 18 to 23}
+\author{Prepared from course lectures: Guidance and Control of Unmanned Autonomous Vehicles}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+%=============================================================================
+\section{Lecture 18: TTC via Flat-Earth Model, Precision Landing, and Multirotor Introduction}
+%=============================================================================
+
+\subsection{Time-to-Collision using Flat-Earth Model}
+
+In Lecture 17, TTC required knowledge of the object's physical size.
+Here a flat-earth assumption removes that requirement.
+
+\textbf{Flat-earth geometry.}
+For a camera looking downward at angle $\varphi$ from vertical, and UAV height $h=-p_d$:
+\[
+\mathbb{L} = \frac{h}{\cos\varphi}, \qquad h=-p_d.
+\]
+The $z$-component of the unit inertial LOS gives $\cos\varphi = \tilde{l}_z^i$.
+
+\textbf{Differentiation for TTC.}
+Differentiating:
+\[
+\frac{\dot{\mathbb{L}}}{\mathbb{L}}
+= \frac{1}{\mathbb{L}}\frac{d}{dt}\!\left(\frac{h}{\cos\varphi}\right)
+= \frac{\dot{h}}{h} + \dot{\varphi}\tan\varphi.
+\]
+The second term $\dot\varphi\tan\varphi$ is obtained from the camera:
+\[
+\cos\varphi = \tilde{l}_z^i
+\;\Rightarrow\;
+\dot\varphi\tan\varphi = -\frac{1}{\tilde{l}_z^i}\frac{d}{dt}\tilde{l}_z^i.
+\]
+The inertial-frame derivative of $\tilde{l}^i$ involves the camera-to-inertial rotation applied to the pixel-derived derivative:
+\[
+\frac{d\tilde{l}^i}{dt_i} = \left(\mathcal{R}_b^i\mathcal{R}_g^b\mathcal{R}_c^g\right)
+\frac{d\tilde{l}^c}{dt_i},
+\qquad
+\frac{d\tilde{l}^c}{dt_i} = Z(\epsilon)\dot\epsilon + \tilde{l}^c_{\mathrm{app}}.
+\]
+\textbf{TTC formula:}
+\[
+\boxed{
+t_c = \frac{\mathbb{L}}{\dot{\mathbb{L}}} = \frac{1}{\dfrac{\dot h}{h} + \dot\varphi\tan\varphi}
+}
+\]
+Key advantage: no knowledge of object physical size is needed; only the vehicle height $h$ and the pixel/angular-rate measurements.
+
+\subsection{Precision Landing via Proportional Navigation Guidance}
+
+\textbf{Problem statement.}
+Use a camera to guide the UAV to land precisely on a (possibly moving) visually distinct target.
+
+\textbf{Navigation model of the UAV:}
+\[
+\dot p_n = V_g\cos\chi\cos\gamma,\quad
+\dot p_e = V_g\sin\chi\cos\gamma,\quad
+\dot p_d = -V_g\sin\gamma,
+\]
+\[
+\dot\chi = \frac{g}{V_g}\tan\phi\cos(\chi-\psi),\quad
+\dot\phi = u_1,\quad
+\dot\gamma = u_2.
+\]
+
+\textbf{Proportional Navigation (PN) setup.}
+Define the LOS vector and its rate:
+\[
+\vect{l} = p_{\mathrm{obj}} - p_{\mathrm{MAV}},
+\qquad
+\dot{\vect{l}} = v_{\mathrm{obj}} - v_{\mathrm{MAV}}.
+\]
+PN guidance: maneuver the vehicle so that $\dot{\vect{l}}$ aligns with $-\vect{l}$, i.e., bring the relative velocity along the LOS. Guidance command is proportional to
+\[
+\vect{a}_{\mathrm{MAV}} \propto \vect{l}\times\dot{\vect{l}}.
+\]
+When $\dot{\vect{l}}\parallel\vect{l}$, this cross-product is zero (target alignment achieved).
+
+\textbf{Normalized perpendicular LOS rate.}
+Since $\dot{\vect{l}}$ cannot be directly recovered from a monocular camera, define:
+\[
+\vect{\Omega}_\perp = \tilde{\vect{l}} \times \frac{\dot{\vect{l}}}{\mathbb{L}},
+\quad \tilde{\vect{l}} = \frac{\vect{l}}{\mathbb{L}},
+\]
+and the commanded acceleration (perpendicular to vehicle velocity, in inertial frame):
+\[
+\boxed{
+\vect{a}_{\mathrm{MAV}} = N\,\vect{\Omega}_\perp \times \vect{v}_{\mathrm{MAV}},\quad N>0.
+}
+\]
+
+\textbf{Camera-frame estimation and frame conversion.}
+\[
+\vect{\Omega}_\perp^{v2} = \left(\mathcal{R}_b^{v2}\mathcal{R}_g^b\mathcal{R}_c^g\right)\vect{\Omega}_\perp^c,
+\]
+where $\vect{\Omega}_\perp^c$ is estimated using pixel data:
+\[
+\frac{\vect{l}^c}{\mathbb{L}} = \frac{d}{dt}\frac{\vect{l}^c}{\mathbb{L}} + \frac{\dot{\mathbb{L}}}{\mathbb{L}}\tilde{l}^c
+= Z(\epsilon)\dot\epsilon + \tilde{l}^c_{\mathrm{app}} + \frac{\dot{\mathbb{L}}}{\mathbb{L}}\tilde{l}^c.
+\]
+
+\textbf{Commanded acceleration in vehicle-2 frame:}
+\[
+\vect{a}_{\mathrm{MAV}}^{v2}
+= N\vect{\Omega}_\perp^{v2}\times\vect{v}_{\mathrm{MAV}}^{v2}
+= N\begin{bmatrix}\Omega^{v2}_{\perp,x}\\\Omega^{v2}_{\perp,y}\\\Omega^{v2}_{\perp,z}\end{bmatrix}
+\times\begin{bmatrix}V_g\\0\\0\end{bmatrix}
+=\begin{bmatrix}0\\NV_g\Omega^{v2}_{\perp,z}\\-NV_g\Omega^{v2}_{\perp,y}\end{bmatrix}.
+\]
+
+\textbf{Roll and pitch-rate commands.}
+General rule:
+\[
+\phi^c = \sigma(a_y^{v2})\tan^{-1}\!\!\left(\frac{a_y^{v2}}{|a_z^{v2}|}\right),
+\quad
+\dot\gamma^c = -\frac{\mathrm{sign}(a_z^{v2})\sqrt{(a_y^{v2})^2+(a_z^{v2})^2}}{V_g}.
+\]
+The signed-sigmoidal function $\sigma$ handles the discontinuity when $a_z^{v2}=0$:
+\[
+\sigma(a_y^{v2}) = \mathrm{sign}(a_y^{v2})\frac{1-e^{-k(a_y^{v2})^2}}{1+e^{-k(a_y^{v2})^2}},\quad k>0.
+\]
+This gives a smooth roll command $\phi^c \in (-\pi/2,\pi/2)$ without discontinuities.
+
+\subsection{Fixed-wing vs.\ Multirotor UAVs}
+
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+ & Fixed-wing & Single-rotor helicopter & Multirotors \\
+\midrule
+Ease-of-use & ++ & + & +++ \\
+Reliability & ++ & + & +++ \\
+Maintainability & ++ & + & +++ \\
+Time of endurance & +++ & ++ & + \\
+Payload capacity & ++ & +++ & + \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{itemize}
+  \item Fixed-wing: must maintain forward airspeed; requires runway/launcher; no VTOL.
+  \item Multirotors: VTOL, hover, mechanically simple, high reliability; lower endurance and payload.
+\end{itemize}
+
+\subsection{Quadrotor Movements (Physical Intuition)}
+
+All movements use differential propeller speed changes. Propellers 1--4 in X-config: 1 (front-right, CW), 2 (rear-right, CCW), 3 (rear-left, CW), 4 (front-left, CCW).
+
+\textbf{Hover:} All four angular speeds equal; thrusts sum to vehicle weight; reaction torques cancel in pairs.
+
+\textbf{Up/Down:} All four $\bar\omega_i$ increased/decreased equally $\Rightarrow$ thrust changes, net moment remains zero.
+
+\textbf{Forward/Backward:} $\bar\omega_{1,4}$ decrease and $\bar\omega_{2,3}$ increase by same $\Delta$ $\Rightarrow$ pitch moment forward. Vertical thrust component decreases, so all speeds must be raised additionally to maintain altitude.
+
+\textbf{Left/Right:} $\bar\omega_{1,2}$ decrease and $\bar\omega_{3,4}$ increase $\Rightarrow$ roll right (or vice versa). Same altitude compensation needed.
+
+\textbf{Yaw:} $\bar\omega_{2,4}$ decrease and $\bar\omega_{1,3}$ increase $\Rightarrow$ CW reaction torques dominate $\Rightarrow$ body yaws CW. Zero roll/pitch moment (symmetric change).
+
+\newpage
+%=============================================================================
+\section{Lecture 19: Quadrotor Hardware and Modelling Architecture}
+%=============================================================================
+
+\subsection{Structural Components}
+
+\subsubsection*{Landing Gear}
+\begin{itemize}
+  \item Supports the multicopter on landing/takeoff; keeps propellers above ground.
+  \item Weakens ground effect; absorbs landing impact energy.
+\end{itemize}
+
+\subsubsection*{Duct}
+\begin{itemize}
+  \item Protects blades and ensures personal safety.
+  \item Reduces tip vortex losses $\Rightarrow$ improves thrust efficiency and reduces noise.
+  \item Acts as an inlet--diffuser: generates additional thrust beyond the bare propeller.
+\end{itemize}
+
+\subsubsection*{Propeller}
+\begin{itemize}
+  \item 2-blade: better aerodynamic efficiency.
+  \item 3-blade: smaller diameter for the same thrust, but lower efficiency; can improve endurance if reduction in size/weight dominates.
+  \item \emph{Chord length}: located at 2/3 of the propeller radius (representative chord).
+  \item \emph{Propeller pitch}: distance advanced per revolution in a soft solid.
+  \item \emph{Good match condition}: motor operating point at high efficiency $\Rightarrow$ less power for same thrust.
+\end{itemize}
+
+\subsubsection*{Motor and ESC}
+\begin{itemize}
+  \item BLDC motor converts stored electrical energy (battery) to mechanical energy for propeller.
+  \item ESC (Electronic Speed Controller): receives PWM signal from autopilot, drives BLDC.
+  \item Motor efficiency varies with output torque (type, size, speed).
+\end{itemize}
+
+\subsection{Airframe Configurations}
+
+\textbf{Plus (+) vs.\ X configuration:}
+\begin{itemize}
+  \item X-configuration is more popular: higher maneuverability (all rotors contribute to pitch and roll), less forward FOV occlusion.
+  \item Arms are at $45^\circ$ to the forward axis in X-config.
+\end{itemize}
+
+\textbf{Ring configuration:}
+\begin{itemize}
+  \item More rigid, less vibration from motors/propellers.
+  \item Heavier fuselage $\Rightarrow$ lower endurance and slightly reduced maneuverability.
+\end{itemize}
+
+\textbf{Propeller forms:}
+\begin{itemize}
+  \item Common: one motor + propeller per arm.
+  \item Co-axial: two propellers per arm (one top, one bottom). Efficiency of each blade reduced due to airflow interference, but combined thrust $\approx 1.6\times$ single propeller.
+  \item Efficiency requires $h/r_p > 0.357$ (spacing-to-radius ratio).
+  \item Non-horizontal discs: thrust has components along all three body axes $\Rightarrow$ no need to tilt the vehicle for horizontal flight; but reduced vertical thrust capability.
+  \item Variable-pitch propellers: can generate negative thrust (bidirectional).
+\end{itemize}
+
+\textbf{Size vs.\ propeller length:}
+For $n$-rotor multicopter with arm radius $R$ and max propeller radius $r_{\max}$:
+\[
+\sin\!\left(\frac{\pi}{n}\right) = \frac{r_{\max}}{R}
+\;\Rightarrow\;
+R = \frac{r_{\max}}{\sin(\pi/n)}.
+\]
+Compact design: $r_{\max} = [1.05,1.2]\,r_p$ where $r_p$ is the nominal propeller radius.
+
+\textbf{Minimum propellers for full 6-DOF control:} at least 6 propellers needed.
+
+\subsection{CG Location}
+
+\begin{itemize}
+  \item CG should lie on the central (vertical) axis; off-center CG creates parasitic moments.
+  \item \textbf{Forward flight with low CG}: drag torque (force × CG-arm) makes pitch angle tend to zero — \emph{stable}.
+  \item \textbf{Forward flight with high CG}: drag torque increases pitch angle toward flip — \emph{unstable}.
+  \item \textbf{Wind gust with high CG}: drag torque self-corrects pitch angle — \emph{stable}.
+  \item \textbf{Wind gust with low CG}: drag torque worsens pitch angle — \emph{unstable}.
+  \item \textbf{Optimal placement}: as close to center as possible, slightly below the propeller disc plane (balances both scenarios).
+\end{itemize}
+
+\subsection{Autopilot Placement}
+
+\begin{itemize}
+  \item Autopilot carries IMU sensors; ideal position is the geometric center.
+  \item Off-center placement introduces \emph{lever-arm effect}: centrifugal and tangential accelerations contaminate the accelerometer measurement, degrading state estimation.
+  \item Place autopilot near the CG assuming geometric center $\approx$ CG.
+\end{itemize}
+
+\subsection{Aerodynamic Drag on Fuselage}
+
+Four types: frictional drag, pressure drag, induced drag, interference drag.
+Design goal: smooth joints and streamlined fuselage surfaces.
+
+\subsection{Modelling Architecture}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+Model & Input $\to$ Output \\
+\midrule
+Rigid-body kinematic model & Velocity, angular velocity $\to$ Position, attitude \\
+Rigid-body dynamic model & Thrust, moments $\to$ Velocity, angular velocity \\
+Control effectiveness model & Propeller angular speeds $\to$ Thrust, moments \\
+Propulsor model & Throttle command $\to$ Propeller angular speeds \\
+Control allocation model & (inverse of control effectiveness) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\newpage
+%=============================================================================
+\section{Lecture 20: Quadrotor Kinematics and Dynamics}
+%=============================================================================
+
+\subsection{Coordinate Frames and Euler Angles}
+
+\textbf{Inertial frame (NED or ENU)}: fixed, denoted $\mathcal{F}^i$.
+\textbf{Body frame}: $\mathcal{F}^b$ with origin at CoM; $z_b$ pointing \emph{upward} (opposite gravity in hover).
+Attitude parameterization: Euler angles $\vect{\Theta} = [\phi,\theta,\psi]^\top$ (roll, pitch, yaw).
+
+\textbf{Body-to-inertial rotation matrix} (ZYX convention):
+\[
+\mathcal{R}_b^i = \mathcal{R}_z(\psi)\mathcal{R}_y(\theta)\mathcal{R}_x(\phi).
+\]
+
+\subsection{Rigid-Body Kinematics}
+
+\textbf{Position:}
+\[
+\dot{\vect{p}}^i = \mathcal{R}_b^i\,\vect{v}^b,
+\]
+where $\vect{p}^i = [p_N,p_E,p_D]^\top$ is position in the inertial frame and $\vect{v}^b$ is the velocity in the body frame.
+
+\textbf{Euler angle kinematics:}
+\[
+\dot{\vect{\Theta}} = \mathbf{T}(\vect{\Theta})\,\vect{\omega},
+\quad
+\mathbf{T}(\vect{\Theta})
+=
+\begin{bmatrix}
+1 & \sin\phi\tan\theta & \cos\phi\tan\theta\\
+0 & \cos\phi & -\sin\phi\\
+0 & \sin\phi/\cos\theta & \cos\phi/\cos\theta
+\end{bmatrix},
+\]
+where $\vect\omega=[p,q,r]^\top$ is the body-frame angular velocity.
+
+\textit{Singularity}: $\mathbf{T}$ is singular at $\theta = \pm\pi/2$ (gimbal lock). Use rotation matrix (SO(3)) formulation for aggressive maneuvers.
+
+\subsection{Rigid-Body Newton--Euler Dynamics}
+
+\textbf{Translational dynamics} (in body frame):
+\[
+m\dot{\vect{v}}^b = \vect{F}^b - \vect{\omega}\times(m\vect{v}^b).
+\]
+In the inertial frame, for quadrotor with $z_b$ up:
+\[
+m\ddot{\vect{p}} = f\,\mathcal{R}_b^i\,\vect{e}_3 - mg\,\vect{e}_3,
+\quad
+\vect{e}_3 = [0,0,1]^\top,
+\]
+where $f>0$ is the total thrust and $\vect{e}_3$ in the right-hand side is the inertial upward direction.
+
+\textbf{Rotational dynamics:}
+\[
+\mathbf{J}\dot{\vect{\omega}} = \vect{\tau} - \vect{\omega}\times(\mathbf{J}\vect{\omega}) + \vect{\tau}_{\mathrm{gyro}},
+\]
+where $\mathbf{J}=\diag(J_{xx},J_{yy},J_{zz})$ is the diagonal inertia tensor and $\vect\tau$ is the net body-frame torque.
+
+\textbf{Gyroscopic torque} due to spinning rotors:
+\[
+\vect{\tau}_{\mathrm{gyro}} = -J_r\,\vect{\omega}\times\!\left(\sum_{k=1}^{n_r}\sigma_k\bar\omega_k\right)\hat{\vect{e}}_3,
+\]
+where $J_r$ is the rotor moment of inertia about its spin axis, $\sigma_k\in\{-1,+1\}$ is the spin direction, and $\bar\omega_k$ is angular speed of rotor $k$.
+
+\subsection{Quadrotor Force and Moment Model}
+
+Each propeller $k$ produces:
+\begin{itemize}
+  \item Thrust: $f_k = c_T\bar\omega_k^2$
+  \item Reaction torque: $\tau_{d,k} = \sigma_k c_M\bar\omega_k^2$
+\end{itemize}
+where $c_T>0$ (thrust coefficient), $c_M>0$ (drag-torque coefficient).
+
+\textbf{Total thrust and moments for X-config quadrotor} (arm length $d$, propeller positions at $\psi_i=(i-1)\pi/2+\pi/4$, $i=1,2,3,4$; $\sigma=[+1,-1,+1,-1]$):
+\[
+\begin{bmatrix}f_d\\\tau_x\\\tau_y\\\tau_z\end{bmatrix}
+= \underbrace{
+\begin{bmatrix}
+c_T & c_T & c_T & c_T \\
+-\tfrac{dc_T}{\sqrt{2}} & -\tfrac{dc_T}{\sqrt{2}} & \tfrac{dc_T}{\sqrt{2}} & \tfrac{dc_T}{\sqrt{2}} \\
+\tfrac{dc_T}{\sqrt{2}} & -\tfrac{dc_T}{\sqrt{2}} & -\tfrac{dc_T}{\sqrt{2}} & \tfrac{dc_T}{\sqrt{2}} \\
+c_M & -c_M & c_M & -c_M
+\end{bmatrix}
+}_{\mathbf{M}_4}
+\begin{bmatrix}\bar\omega_1^2\\\bar\omega_2^2\\\bar\omega_3^2\\\bar\omega_4^2\end{bmatrix}.
+\]
+The control effectiveness matrix factors as $\mathbf{M}_4 = \mathbf{P}_a\mathbf{M}_4(1,1,1)$ where $\mathbf{P}_a = \diag(c_T, dc_T, dc_T, c_M)$.
+Since the quadrotor has exactly 4 inputs and 4 outputs, $\mathbf{M}_4$ is square and invertible: $\mathbf{P}_4 = \mathbf{M}_4^{-1}$.
+
+\subsection{Propulsor Model}
+
+The BLDC motor + ESC + propeller system is modelled as a first-order system:
+\[
+\bar\omega_k(s) = \frac{1}{T_m s+1}\bigl(C_R\sigma_k + \omega_b\bigr),\quad \sigma_k\in[0,1],
+\]
+where $T_m$ is the motor time constant, $C_R$ is the speed-range coefficient (rad/s per throttle unit), $\omega_b$ is the baseline (no-load) angular speed, and $\sigma_k$ is the throttle command.
+
+\subsection{Blade Flapping and Hub Forces}
+
+At non-zero forward airspeed, the advancing blade (higher relative airspeed) produces more lift than the retreating blade.
+This asymmetry causes \emph{blade flapping}: a periodic change in blade pitch/position.
+Flapping generates \emph{hub forces} (in the plane of the rotor) and cross-coupling pitching/rolling moments.
+In hover and low-speed flight these are small and often neglected; they become important at high speeds.
+
+\newpage
+%=============================================================================
+\section{Lecture 21: Quadrotor Position and Velocity Control}
+%=============================================================================
+
+\subsection{Cascaded Control Architecture}
+
+The quadrotor control hierarchy (outer to inner):
+\[
+\underbrace{\text{Position loop}}_{\text{Lec 21}}
+\;\to\;
+\underbrace{\text{Velocity loop}}_{\text{Lec 21}}
+\;\to\;
+\underbrace{\text{Attitude loop}}_{\text{Lec 22}}
+\;\to\;
+\underbrace{\text{Motor speed loop}}_{\text{Lec 22}}
+\]
+\begin{itemize}
+  \item Outputs of the position/velocity controllers provide attitude references ($\phi_d,\theta_d$) and total thrust command $f_d$ to the attitude control system.
+  \item Bandwidth of inner loop must be significantly higher than outer loop for the separation assumption to hold.
+\end{itemize}
+
+\subsection{Position Dynamics}
+
+From Newton's second law with $z_b$ pointing up:
+\[
+m\ddot{p}_x = f(\cos\psi\sin\theta\cos\phi + \sin\psi\sin\phi),
+\]
+\[
+m\ddot{p}_y = f(\sin\psi\sin\theta\cos\phi - \cos\psi\sin\phi),
+\]
+\[
+m\ddot{p}_z = f\cos\theta\cos\phi - mg.
+\]
+For small roll and pitch angles ($\phi,\theta\ll 1$, $\cos\phi\approx\cos\theta\approx 1$):
+\[
+m\ddot{p}_x \approx f(\cos\psi\,\theta + \sin\psi\,\phi),
+\quad
+m\ddot{p}_y \approx f(\sin\psi\,\theta - \cos\psi\,\phi),
+\quad
+m\ddot{p}_z \approx f - mg.
+\]
+
+\subsection{Altitude (Z) Controller}
+
+PID on altitude error $e_z = p_{z,d} - p_z$:
+\[
+f_d = \frac{m}{\cos\theta\cos\phi}\bigl(g + \ddot{p}_{z,d} + K_{pz}e_z + K_{iz}\int e_z\,dt + K_{dz}\dot{e}_z\bigr).
+\]
+For small angles: $f_d \approx m\bigl(g + K_{p,z}e_z + K_{v,z}\dot{e}_z + \cdots\bigr)$.
+
+Typical cascade: position P loop $\to$ velocity PID loop:
+\[
+\dot{p}_{z,c} = K_{pz}e_z,\qquad
+f_d = m\bigl(g + K_{vpz}e_{vz} + K_{viz}\int e_{vz} + K_{vdz}\dot{e}_{vz}\bigr),\quad e_{vz}=\dot{p}_{z,c}-\dot{p}_z.
+\]
+
+\subsection{Horizontal (X--Y) Controller}
+
+Desired horizontal accelerations from PID:
+\[
+a_{d,x} = \ddot{p}_{x,d} + K_{px}e_x + K_{ix}\int e_x + K_{dx}\dot{e}_x,
+\quad
+a_{d,y} = \ddot{p}_{y,d} + K_{py}e_y + K_{iy}\int e_y + K_{dy}\dot{e}_y.
+\]
+
+\textbf{Desired attitude from desired acceleration.}
+Given $a_{d,x}, a_{d,y}$, current yaw $\psi$, and thrust $f_d$:
+\[
+\phi_d = \frac{m}{f_d}(a_{d,y}\cos\psi - a_{d,x}\sin\psi), \qquad \theta_d = \frac{m}{f_d}(a_{d,x}\cos\psi + a_{d,y}\sin\psi).
+\]
+(Small-angle approximation; exact versions involve $\sin^{-1}$ and $\tan^{-1}$.)
+The yaw reference $\psi_d$ is set independently by the mission designer.
+
+Cascade form:
+\[
+\dot{p}_{x,c} = K_{px}e_x,\quad
+a_{d,x} = K_{vpx}e_{vx} + K_{vix}\int e_{vx} + K_{vdx}\dot{e}_{vx},\quad e_{vx}=\dot{p}_{x,c}-\dot{p}_x.
+\]
+
+\subsection{Attitude Reference Generation}
+
+The triple $(\phi_d, \theta_d, \psi_d)$ together with $f_d$ is passed to the attitude controller (Lecture 22).
+Important: the assumption of fast inner-loop dynamics ($\phi\approx\phi_d$, $\theta\approx\theta_d$) must hold for the position controller to work as designed.
+
+\newpage
+%=============================================================================
+\section{Lecture 22: Quadrotor Attitude Control, Control Allocation, and Motor Control}
+%=============================================================================
+
+\subsection{Attitude Control Objectives}
+
+Design torques $\vect\tau$ such that:
+\begin{itemize}
+  \item \textbf{Euler angle objective}: $\displaystyle\lim_{t\to\infty}\|\vect{\Theta}_h(t)-\vect{\Theta}_{hd}(t)\|=0$.
+  \item \textbf{Rotation matrix objective}: $\displaystyle\lim_{t\to\infty}\|\mathcal{R}^\top\mathcal{R}_d - I_3\|=0$.
+\end{itemize}
+The inner (attitude) loop bandwidth must be significantly higher than the outer (position) loop.
+
+\subsection{Euler Angle Based Attitude Control}
+
+\textbf{Error definition:}
+\[
+\vect{e}_\Theta = \vect{\Theta} - \vect{\Theta}_d,
+\quad
+\vect{\Theta}_d = \begin{bmatrix}\vect{\Theta}_{hd}^\top & \psi_d\end{bmatrix}^\top,
+\]
+where $\vect{\Theta}_{hd}^\top = [\phi_d,\theta_d]$ comes from the position controller and $\psi_d$ is the designer's choice.
+
+\textbf{Desired angular velocity} (from $\dot{\vect{\Theta}}=\vect\omega$):
+\[
+\boxed{\vect\omega_d = -K_\Theta\,\vect{e}_\Theta}
+\]
+
+\textbf{Angular velocity error:} $\vect{e}_\omega = \vect\omega - \vect\omega_d$.
+With assumption $\dot{\vect\Theta}_d=0$ and $\vect{e}_\omega\to 0$:
+$\vect{e}_\Theta\to 0$ as $t\to\infty$.
+
+\textbf{Torque command (PID, using $\mathbf{J}\dot{\vect\omega}=\vect\tau$):}
+\[
+\boxed{
+\vect\tau_d = -K_{\omega p}\vect{e}_\omega - K_{\omega i}\int\vect{e}_\omega\,dt - K_{\omega d}\dot{\vect{e}}_\omega
+}
+\]
+The derivative term can be omitted to reduce noise sensitivity.
+
+\textbf{Saturated form} (with symmetric thrust limit $\tau_{\max}$):
+\[
+\vect{e}_\omega = \satgd(\vect\omega-\vect\omega_d,\,a_{10}),\quad
+\vect\tau_d = \satgd\!\left(-K_{\omega p}\vect{e}_\omega - K_{\omega i}\int\vect{e}_\omega - K_{\omega d}\dot{\vect{e}}_\omega,\;\tau_{\max}\right)
+\in[-\tau_{\max},\tau_{\max}].
+\]
+
+\subsection{Rotation Matrix (SO(3)) Based Attitude Control}
+
+\textbf{Attitude error matrix:}
+\[
+\tilde{\mathcal{R}} = \mathcal{R}^\top\mathcal{R}_d.
+\]
+This is an identity matrix when $\mathcal{R}=\mathcal{R}_d$ (perfect tracking).
+
+\textbf{Error vectors:}
+\[
+\vect{e}_\mathcal{R} = \frac{1}{2}\vex\!\left(\mathcal{R}_d^\top\mathcal{R} - \mathcal{R}^\top\mathcal{R}_d\right),
+\qquad
+\vect{e}_\omega = \vect\omega - \mathcal{R}^\top\mathcal{R}_d\,\vect\omega_d.
+\]
+\textbf{vex}: inverse operator converting a skew-symmetric matrix to a vector.
+For small angles, $\vect\omega_d\approx\dot{\vect\Theta}_d\approx 0$ so $\vect{e}_\omega\approx\vect\omega$.
+
+\textbf{PD controller} (suitable for slow/moderate maneuvers):
+\[
+\boxed{\vect\tau_d = -K_\mathcal{R}\,\vect{e}_\mathcal{R} - K_\omega\,\vect{e}_\omega}
+\]
+
+\textbf{Nonlinear controller} (for aggressive maneuvers, compensates gyroscopic and feedforward terms):
+\[
+\vect\tau_d = -K_\mathcal{R}\,\vect{e}_\mathcal{R} - K_\omega\,\vect{e}_\omega
+- \mathbf{J}\!\left([\vect\omega]_\times\mathcal{R}^\top\mathcal{R}_d\,\vect\omega_d - \mathcal{R}^\top\mathcal{R}_d\,\dot{\vect\omega}_d\right),
+\]
+where $[\vect\omega]_\times$ is the skew-symmetric (cross-product) matrix of $\vect\omega$.
+
+\subsection{Control Allocation}
+
+\textbf{Problem:} Given virtual control input $\vect{u}_v = [f_d, \vect\tau_d^\top]^\top\in\R^4$, find the propeller speed commands $\bar{\vect{\omega}}^2_d = [\bar\omega_{d,1}^2,\ldots,\bar\omega_{d,n_r}^2]^\top$ satisfying actuator constraints.
+
+\textbf{Linear allocation:}
+\[
+\vect{u}_v(t) = \mathbf{M}_{n_r}\,\bar{\vect\omega}_d^2,\quad
+\bar{\vect\omega}_d^2\in\R^{n_r}.
+\]
+Actuator constraints: $\bar\omega_{d,k,\min}\le\bar\omega_{d,k}\le\bar\omega_{d,k,\max}$.
+
+\textbf{Quadrotor (unique, $n_r=4$):}
+\[
+\mathbf{P}_4 = \mathbf{M}_4^{-1},\qquad
+\bar{\vect\omega}_d^2 = \mathbf{P}_4\begin{bmatrix}f_d\\\vect\tau_d\end{bmatrix}.
+\]
+
+\textbf{Multirotors with $n_r>4$ (nonunique, uses pseudo-inverse):}
+\[
+\boxed{
+\mathbf{P}_{n_r} = \mathbf{M}_{n_r}^\dagger
+= \mathbf{M}_{n_r}^\top\!\left(\mathbf{M}_{n_r}\mathbf{M}_{n_r}^\top\right)^{-1},
+\quad
+\bar{\vect\omega}_d^2 = \mathbf{P}_{n_r}\begin{bmatrix}f_d\\\vect\tau_d\end{bmatrix}.
+}
+\]
+
+\textbf{Control effectiveness matrix} for a general $n_r$-rotor vehicle:
+\[
+\mathbf{M}_{n_r}(c_T,c_M,d) =
+\begin{bmatrix}
+c_T & c_T & \cdots & c_T \\
+-d_1 c_T\sin\varphi_1 & -d_2 c_T\sin\varphi_2 & \cdots & -d_{n_r}c_T\sin\varphi_{n_r}\\
+d_1 c_T\cos\varphi_1 & d_2 c_T\cos\varphi_2 & \cdots & d_{n_r}c_T\cos\varphi_{n_r}\\
+c_M\delta_1 & c_M\delta_2 & \cdots & c_M\delta_{n_r}
+\end{bmatrix},
+\]
+where $\varphi_i$ is the azimuth angle of rotor $i$, $d_i$ is its arm length, and $\delta_i\in\{-1,+1\}$ is spin direction.
+
+\textbf{Factorization:}
+\[
+\mathbf{M}_{n_r}(c_T,c_M,d) = \mathbf{P}_a\,\mathbf{M}_{n_r}(1,1,1),
+\quad
+\mathbf{P}_a = \diag(c_T,\,dc_T,\,dc_T,\,c_M),
+\]
+\[
+\mathbf{M}_{n_r}^\dagger(c_T,c_M,d) = \mathbf{M}_{n_r}^\dagger(1,1,1)\,\mathbf{P}_a^{-1}.
+\]
+\textit{This factorization means unknown $c_T, c_M, d$ can be compensated via a PID corrective loop on the outputs.}
+
+\textbf{Hexacopter ($n_r=6$, $\varphi_i=(i-1)\cdot60^\circ$):}
+\[
+\mathbf{M}_6^\dagger(1,1,1) = \frac{1}{6}
+\begin{bmatrix}
+1 & 0 & 2 & 1\\
+1 & -\sqrt{3} & 1 & -1\\
+1 & -\sqrt{3} & -1 & 1\\
+1 & 0 & -2 & -1\\
+1 & \sqrt{3} & -1 & 1\\
+1 & \sqrt{3} & 1 & -1
+\end{bmatrix}.
+\]
+
+\textbf{Benefits of control allocation:}
+\begin{itemize}
+  \item Safer operation: can redistribute thrust even with propeller failure.
+  \item Adapts automatically to different flight conditions.
+\end{itemize}
+
+\subsection{Motor Speed Control}
+
+\textbf{Objective:} $\displaystyle\lim_{t\to\infty}|\bar\omega_k(t)-\omega_{d,k}(t)|=0$ for all $k=1,\ldots,n_r$.
+
+\textbf{Propulsor model:}
+\[
+\bar\omega_k = \frac{1}{T_ms+1}(C_R\sigma_k+\omega_b),\quad \sigma_k\in[0,1].
+\]
+
+\textbf{Closed-loop PID controller} (define error $\tilde\omega = \bar\omega_k - \omega_{d,k}$):
+\[
+\boxed{
+\sigma_k = -k_{\omega p}\tilde\omega - k_{\omega i}\int\tilde\omega\,dt - k_{\omega d}\dot{\bar\omega}_k
+}
+\]
+
+\textbf{Open-loop (feedforward) controller:}
+\[
+\sigma_k = a\,\omega_{d,k} + b,\quad a,b\in\R.
+\]
+Parameters $a$ and $b$ are determined from the propulsor model: $\sigma_k = (\omega_{d,k} - \omega_b)/C_R$ at steady-state.
+
+\subsection{Simulation Parameters (Example)}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Parameter & Value & Unit \\
+\midrule
+$g$ & 9.81 & m/s² \\
+$d$ (arm) & 0.2223 & m \\
+$m$ & 1.0230 & kg \\
+$c_T$ & $1.4865\times10^{-7}$ & N/(RPM²) \\
+$c_M$ & $2.9250\times10^{-9}$ & N$\cdot$m/(RPM²) \\
+$J_{xx}=J_{yy}$ & 0.0095 & kg$\cdot$m² \\
+$J_{zz}$ & 0.0186 & kg$\cdot$m² \\
+$T_m$ & 0.0760 & s \\
+$C_R$ & 80.58 & RPM \\
+$\omega_b$ & 976.2 & RPM \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Controller gains (X/Y channels: $K_p=0.5$, $K_{vp}=1$, $K_{vi}=0.05$, $K_{vd}=0.2$; Z channel: $K_p=4$, $K_{vp}=2$, $K_{vi}=4$, $K_{vd}=0.4$; Roll/Pitch: $K_\Theta=2$, $K_{\omega p}=2$, $K_{\omega d}=0.8$; Yaw: $K_\Theta=3$, $K_{\omega p}=3$, $K_{\omega d}=2.5$).
+
+\newpage
+%=============================================================================
+\section{Lecture 23: Fully Actuated Unmanned Autonomous Vehicles}
+%=============================================================================
+
+\subsection{Motivation}
+
+Conventional multirotors have all propellers pointing in the same (upward) direction. Parallel thrusts collectively counteract gravity but produce \emph{underactuated dynamics}: the vehicle cannot apply an arbitrary wrench (force + torque) in all 6 directions simultaneously. They must tilt to generate horizontal forces.
+
+\textbf{Fully actuated (FA) UAVs} extend this by enabling thrust in \emph{arbitrary directions}, making them:
+\begin{itemize}
+  \item Capable of decoupled position and attitude control (independently move while maintaining any orientation).
+  \item Suitable as airborne manipulators, inspection drones, etc.
+\end{itemize}
+
+\subsection{Classification: Fixed-tilt vs.\ Variable-tilt}
+
+\begin{description}
+  \item[Fixed-tilt:] Propellers have dissimilar but fixed orientations.
+    The control allocation matrix $\mathbf{M}$ is \emph{constant}.
+  \item[Variable-tilt:] Propellers are actively tilted using additional servo actuators.
+    $\mathbf{M}$ depends on $N_a$ tilt angles; can switch between underactuated and fully actuated configurations.
+\end{description}
+
+\subsection{Coordinate Frames and Propeller Configuration}
+
+\textbf{Body frame:} $\Psi_B(o_B, \vect{x}_B, \vect{y}_B, \vect{z}_B)$; origin at CoM; $\vect{z}_B$ opposite gravity; $\vect{x}_B$ forward.
+
+\textbf{Propeller frame:} $\Psi_{p_i}(o_{p_i}, \vect{x}_{p_i}, \vect{y}_{p_i}, \vect{z}_{p_i})$; origin at rotor CoM; $\vect{z}_{p_i}$ along thrust direction; $\vect{x}_{p_i}$ along line $o_B\to o_{p_i}$.
+
+\textbf{Per-rotor parameters:}
+\begin{itemize}
+  \item Displacement: $\vect{\xi}_i = o_{p_i}^B$ (position of rotor $i$ in body frame).
+  \item Orientation: $\vect{u}_i = \mathcal{R}_{p_i}^B(t)\hat{\vect{z}}$ (thrust direction in body frame).
+  \item For \emph{fixed-tilt}: $\vect{\xi}_i$ and $\vect{u}_i$ are constants.
+  \item For \emph{planar multirotor}: $\mathcal{R}_{p_i}^B = \mathcal{R}_z(\psi_i)\mathcal{R}_y(\beta_i)\mathcal{R}_x(\alpha_i)$, where $\psi_i$ is the heading, $\alpha_i$ the cant angle, $\beta_i$ the dihedral angle.
+\end{itemize}
+
+\subsection{Aerodynamic Wrench and Control-Wrench Matrix}
+
+\textbf{Aerodynamic wrench} (generalized force = torque + force):
+\[
+\mathbf{W}^i = \begin{bmatrix}\vect{\tau}^{i\top} & \vect{f}^{i\top}\end{bmatrix}^\top.
+\]
+
+\textbf{Wrench transformation} between frames:
+\[
+\mathbf{W}^k = \mathbf{A}_i^k\,\mathbf{W}^i,
+\quad
+\mathbf{A}_i^k :=
+\begin{bmatrix}
+\mathcal{R}_i^k & \hat{\vect{\delta}}_i^k\mathcal{R}_i^k\\
+\mathbf{0} & \mathcal{R}_i^k
+\end{bmatrix},
+\]
+where $\hat{\vect{\delta}}_i^k$ is the skew-symmetric matrix of the position offset.
+
+\textbf{Individual propeller wrench} (in propeller frame $\Psi_{p_i}$, thrust $\lambda_i$, drag-torque-to-thrust ratio $\gamma$, spin direction $\sigma_i\in\{-1,+1\}$):
+\[
+\mathbf{W}_c^{p_i}
+= \lambda_i\begin{bmatrix}0 & 0 & \gamma\sigma_i & 0 & 0 & 1\end{bmatrix}^\top
+= \lambda_i\begin{bmatrix}\gamma\sigma_i\hat{\vect{z}}\\\hat{\vect{z}}\end{bmatrix}.
+\]
+
+\textbf{Cumulative aerodynamic-control wrench} in body frame:
+\[
+\mathbf{W}_c^B = \sum_{i=1}^{N_p}\mathbf{A}_{p_i}^B\,\mathbf{W}_c^{p_i}
+\;\Rightarrow\;
+\begin{bmatrix}\vect{\tau}_c^B\\\vect{f}_c^B\end{bmatrix}
+= \sum_{i=1}^{N_p}\lambda_i
+\begin{bmatrix}\gamma\sigma_i\vect{u}_i + \vect{\xi}_i\times\vect{u}_i\\\vect{u}_i\end{bmatrix}.
+\]
+\textbf{Compact form:}
+\[
+\boxed{
+\mathbf{W}_c^B = \mathbf{M}\,\vect{\lambda},
+\quad
+\mathbf{M}\in\R^{6\times N_p},
+}
+\]
+where $\vect\lambda = [\lambda_1,\ldots,\lambda_{N_p}]^\top$ is the thrust vector.
+
+\subsection{Actuation Classification}
+
+\begin{description}
+  \item[Underactuated:] $\mathrm{rank}(\mathbf{M}) < 6$.
+  \item[Fully actuated:] $\mathrm{rank}(\mathbf{M}) = 6$, $N_p = 6$.
+  \item[Overactuated (with redundancy):] $\mathrm{rank}(\mathbf{M}) = 6$, $N_p > 6$.
+\end{description}
+
+\textbf{Allowable thrust space:}
+\[
+\Lambda = \{\vect\lambda\in\R^{N_p}\mid 0\le\lambda_i\le\lambda_{\max}\;\text{(unidirectional) or }|\lambda_i|\le\lambda_{\max}\;\text{(bidirectional)}\}.
+\]
+\textbf{Allowable aerodynamic-wrench space:} $\mathcal{W} = \mathbf{M}\Lambda$ (image of $\Lambda$ under $\mathbf{M}$).
+
+\textbf{Omnidirectional vehicle:} $\mathcal{W}$ is large enough to produce a wrench that fully counteracts gravity in \emph{any} orientation $\mathcal{R}$ in $\Psi_B$.
+
+\subsection{Fixed-tilt FA-UAV Designs}
+
+\subsubsection*{Quad4Hor}
+\begin{itemize}
+  \item Conventional quadrotor + 4 additional horizontal rotors positioned between the quadrotor arms.
+  \item Added horizontal rotors produce no moment about CoM.
+  \item \textbf{Issue}: Horizontal rotors placed below vertical ones cause airflow interference $\Rightarrow$ negative effect on controllability.
+\end{itemize}
+
+\subsubsection*{HexC (Hexarotor with Canted Rotors)}
+\begin{itemize}
+  \item Full actuation by tilting rotors around the axis collinear with their rotor arm.
+  \item All cant angles $\alpha_i$ equal; rotation directions alternate (3 symmetric pairs with opposite spin).
+  \item Large $\alpha_i \Rightarrow$ high horizontal force capability; Small $\alpha_i \Rightarrow$ high flying efficiency.
+  \item Angle bounded by minimum required upward thrust.
+  \item Better disturbance rejection against lateral wind gusts than conventional hexarotor.
+\end{itemize}
+
+\subsubsection*{HexCD (Hexarotor with Canted and Dihedral Rotors)}
+\begin{itemize}
+  \item Rotors canted and tilted along axis perpendicular to rotor arms ($\alpha_i$, $\beta_i$).
+  \item Direction of dihedral angle $\beta_i$ does not influence UAV performance.
+  \item Maximum $\beta_i$ limited by frame interference; optimal $\beta_i = 0$.
+  \item HexC has greater maneuverability; HexCD has better robustness against rotor failure (nonzero $\beta$).
+\end{itemize}
+
+\subsubsection*{CoHexC (Coaxial Hexarotor with Canted Pairs)}
+\begin{itemize}
+  \item 12 rotors in 6 coaxial pairs; each pair rotates in opposite directions.
+  \item Drag torques from the two rotors in a pair cancel each other.
+  \item Produces large amount of thrust; fewer airflow interference issues compared to Quad4Hor (both rotors at same speed).
+\end{itemize}
+
+\subsubsection*{HexDTet (Double-Tetrahedron Hexarotor)}
+\begin{itemize}
+  \item \textbf{First attempt} to achieve a hexarotor with noncoplanar rotors.
+  \item 6 rotors on edges of two opposite tetrahedra sharing a common base.
+  \item Elevation angle $\eta_i$: angle between common base and edge containing the rotor; same for all rotors.
+\end{itemize}
+
+\subsubsection*{HeptF (Heptarotor with Minimized Frame)}
+\begin{itemize}
+  \item One of the first attempts at an omnidirectional UAV with only unidirectional rotors.
+  \item Minimum 7 rotors required.
+  \item No symmetry constraints $\Rightarrow$ all rotors designed to rotate clockwise.
+  \item Airflow interference minimized by imposing a minimum distance between rotors.
+\end{itemize}
+
+\subsubsection*{HeptW (Heptarotor with Maximized Wrench)}
+\begin{itemize}
+  \item 7 unidirectional rotors on vertices of a regular heptagon in horizontal plane.
+  \item Rotors spin in alternating directions.
+  \item Orientation optimized for maximum omnidirectional wrench generation.
+\end{itemize}
+
+\subsubsection*{OctCu (Octarotor Cube)}
+\begin{itemize}
+  \item \textbf{First multirotor to successfully perform omnidirectional flight.}
+  \item Rotor positions fixed at vertices of a cube.
+  \item All rotors spin in the same direction; symmetric propellers $\Rightarrow$ bidirectional thrust.
+  \item Cage-like frame for safe human-robot interaction.
+  \item Orientation optimized for maximum attainable omnidirectional wrench (vehicle agility).
+\end{itemize}
+
+\subsubsection*{OctB (Octarotor Beam)}
+\begin{itemize}
+  \item Omnidirectional octarotor with a beam-like shape; designed for aerial physical-interaction tasks.
+  \item Each side of beam: 4 rotors at square vertices (1,6,7,8 CW; others CCW).
+  \item Bidirectional thrust: two unidirectional propellers stacked in opposite directions on same shaft.
+\end{itemize}
+
+\subsection{Variable-tilt FA-UAV Designs}
+
+\subsubsection*{QuadvC (Quadrotor with Variable Cant Rotors)}
+\begin{itemize}
+  \item Full actuation via 4 tilting actuators, each canting a rotor individually around $\vect{x}_{p_i}$-axis.
+  \item Unidirectional rotors; max achievable hover pitch/roll angle $\approx 30^\circ$.
+\end{itemize}
+
+\subsubsection*{QuadvD (Quadrotor with Variable Dihedral Rotors)}
+\begin{itemize}
+  \item Active tilt of dihedral angle (not cant angle) by extra actuator.
+  \item Inward dihedral limited by rotor blade-frame interference.
+  \item Dihedral does not contribute to yaw torque $\Rightarrow$ reduced total torque.
+\end{itemize}
+
+\subsubsection*{QuadvCD (Quadrotor with Variable Cant and Dihedral)}
+\begin{itemize}
+  \item Combines both QuadvC and QuadvD: two actuators per rotor.
+  \item 8 total actuators for thrust vectoring.
+  \item Push-pull mechanism limits maximum achievable dihedral angle.
+\end{itemize}
+
+\subsubsection*{QuadvCDc (Coupled Cant and Dihedral)}
+\begin{itemize}
+  \item Single parallelogram linkage actuates all propellers in the same direction simultaneously.
+  \item Reduces actuators from 8 to 2.
+  \item \textbf{Drawback}: Cannot orient rotors individually; limited maximum tilting angle.
+\end{itemize}
+
+\subsubsection*{HexvC (Hexarotor with Variable Cant)}
+\begin{itemize}
+  \item \textbf{First variable-tilt concept to achieve successful omnidirectional flight.}
+  \item Canting actuator on each rotor of a conventional hexarotor.
+  \item Developed at ETH Zurich and Zurich University of the Arts.
+\end{itemize}
+
+\subsubsection*{HexvCc (Hexarotor with Coupled Variable Cant)}
+\begin{itemize}
+  \item Single actuator to cant all 6 hexarotor rotors simultaneously via wire mechanism.
+  \item Cant angle alternates (same pattern as HexC); maximum cant limited by frame.
+  \item \textbf{Advantage}: 6 actuators $\to$ 1 (lower mass, less energy).
+  \item \textbf{Disadvantage}: Reduced maneuverability; lower bandwidth from wire linkage.
+\end{itemize}
+
+\subsection{Summary Table: FA-UAV Configurations}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Concept & Abbrev. & Key feature \\
+\midrule
+Quadrotor + 4 horizontal rotors & Quad4Hor & Simple fixed-tilt full actuation \\
+Hexarotor with canted rotors & HexC & Best maneuverability in fixed-tilt hex \\
+Hexarotor canted + dihedral & HexCD & Rotor-failure robustness \\
+Coaxial hexarotor canted & CoHexC & High thrust, 12 rotors \\
+Double-tetrahedron hexarotor & HexDTet & First noncoplanar hex \\
+Heptarotor minimized frame & HeptF & First 7-rotor omnidirectional \\
+Heptarotor maximized wrench & HeptW & Optimized omni wrench \\
+Octarotor cube & OctCu & First omni flight achieved \\
+Octarotor beam & OctB & Physical interaction tasks \\
+Quad variable cant & QuadvC & $\pm30^\circ$ tilt capability \\
+Quad variable dihedral & QuadvD & Dihedral tilt \\
+Quad variable cant+dihedral & QuadvCD & Full individual tilt, 8 actuators \\
+Quad coupled cant+dihedral & QuadvCDc & 2 actuators via linkage \\
+Hex variable cant & HexvC & First successful omni variable-tilt \\
+Hex coupled variable cant & HexvCc & Wire-coupled, 1 actuator \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\newpage
+%=============================================================================
+\section{Consolidated Revision Checklist (Lectures 18--23)}
+%=============================================================================
+
+\begin{enumerate}
+  \item Derive TTC using the flat-earth model from camera pixel rates and vehicle altitude.
+  \item Write the PNG guidance law, define $\vect\Omega_\perp$, and convert it to roll/pitch-rate commands using the vehicle-2 frame.
+  \item Explain the signed-sigmoidal function used to resolve the roll-angle discontinuity.
+  \item Compare fixed-wing, helicopter, and multirotor UAVs across endurance, payload, reliability.
+  \item Describe quadrotor movements (up, forward, lateral, yaw) in terms of propeller speed changes.
+  \item Explain the role of each hardware component: landing gear, duct, motor+ESC, propeller blade count, airframe config.
+  \item State the optimal CG placement for forward flight vs.\ wind-disturbance stability and explain the physics.
+  \item Write out the 4-layer modelling architecture and state the input/output of each layer.
+  \item Derive the quadrotor Newton--Euler equations of motion including gyroscopic torque.
+  \item Write the control effectiveness matrix $\mathbf{M}_4$ for an X-config quadrotor from first principles.
+  \item Explain the factorization $\mathbf{M}_{n_r} = \mathbf{P}_a\mathbf{M}_{n_r}(1,1,1)$ and how it handles unknown coefficients.
+  \item Describe the cascade position--velocity--attitude control architecture; derive desired $\phi_d,\theta_d$ from desired acceleration.
+  \item Compare Euler angle and SO(3) rotation matrix attitude controllers: error definitions, controllers, when to use each.
+  \item Write the saturated PID attitude torque command using $\satgd$.
+  \item Derive the nonlinear SO(3) controller including gyroscopic and feedforward terms.
+  \item Explain control allocation: pseudo-inverse for overactuated systems, benefits, procedure.
+  \item Write closed-loop and open-loop motor speed controllers from the propulsor model.
+  \item Define aerodynamic wrench and write the compact form $\mathbf{W}_c^B = \mathbf{M}\vect\lambda$.
+  \item Distinguish underactuated, fully actuated, and overactuated configurations using $\mathrm{rank}(\mathbf{M})$.
+  \item Explain omnidirectionality: what $\mathcal{W}$ must satisfy and why it requires $\mathrm{rank}(\mathbf{M})=6$.
+  \item For at least 5 FA-UAV designs, state the key feature, trade-off, and actuation type.
+  \item Compare fixed-tilt and variable-tilt concepts: trade-offs in efficiency, maneuverability, and actuator count.
+\end{enumerate}
+
+\section*{Primary Reference}
+Randal Beard and Timothy W.\ McLain, \emph{Small Unmanned Aircraft: Theory and Practice}, Princeton University Press, 2012.
+
+\end{document}

@@ -1,0 +1,513 @@
+\documentclass[10pt]{article}
+\usepackage[a4paper,margin=0.23in]{geometry}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+\setlength{\columnsep}{0.09in}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.15ex}
+\setlength{\abovedisplayskip}{2pt}
+\setlength{\belowdisplayskip}{2pt}
+\setlength{\abovedisplayshortskip}{1pt}
+\setlength{\belowdisplayshortskip}{1pt}
+\setlength{\emergencystretch}{1.4em}
+\setlist[itemize]{leftmargin=*,itemsep=0.15ex,topsep=0.15ex,parsep=0pt,partopsep=0pt}
+\setlist[enumerate]{leftmargin=*,itemsep=0.15ex,topsep=0.15ex,parsep=0pt,partopsep=0pt}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\ind}{\mathbf{1}}
+\newcommand{\hd}[1]{\vspace{0.35ex}\noindent{\bfseries\small #1}\par\vspace{0.1ex}}
+\DeclareMathOperator{\Pois}{Pois}
+\DeclareMathOperator{\Exp}{Exp}
+\DeclareMathOperator{\Bin}{Bin}
+\DeclareMathOperator{\Geom}{Geom}
+
+\begin{document}
+\small
+\begin{multicols}{3}
+
+\hd{Poisson Process: Core Formulas}
+% Rate $\lambda>0$ homogeneous Poisson process $\{N(t),t\ge0\}$:
+\[
+\PP(N(t)=n)=e^{-\lambda t}\frac{(\lambda t)^n}{n!}.
+\]
+\[
+\E[N(t)]=\Var(N(t))=\lambda t.
+\]
+Independent stationary increments:
+\[
+N(t)-N(s)\sim\Pois(\lambda(t-s)),\quad 0\le s<t.
+\]
+Interarrivals $X_i\stackrel{iid}{\sim}\Exp(\lambda)$, $S_n=\sum_{i=1}^nX_i$:
+\[
+S_n\sim\Gamma(n,\lambda),
+\quad
+f_{S_n}(t)=\frac{\lambda^n t^{n-1}e^{-\lambda t}}{(n-1)!}.
+\]
+Memoryless: $\PP(X>s+t\mid X>s)=e^{-\lambda t}$.
+NHPP with rate $\lambda(t)$ and mean $m(t)=\int_0^t \lambda(u)\,du$:
+\[
+N(t)\sim\Pois(m(t)).
+\]
+\[
+N(t+s)-N(t)\sim\Pois(m(t+s)-m(t)).
+\]
+
+Conditional on count:
+\[
+N(s)\mid N(t)=n\sim\Bin\!\left(n,\frac{s}{t}\right),\quad 0<s<t.
+\]
+\[
+\E[N(s)\mid N(t)=n]=\frac{ns}{t}.
+\]
+\[
+\Var(N(s)\mid N(t)=n)=\frac{ns}{t}\Big(1-\frac{s}{t}\Big).
+\]
+Given $N(t)=n$, arrival times are order statistics of $n$ iid $U(0,t)$:
+\[
+\E[S_i\mid N(t)=n]=\frac{i}{n+1}t.
+\]
+Unconditional moment/covariance identities:
+\[
+\E[N(t)N(t+s)]=\lambda t+\lambda^2 t(t+s).
+\]
+\[
+\Cov(N(s),N(t))=\lambda\min\{s,t\}.
+\]
+
+\hd{Poisson Operations and Competing Clocks}
+Superposition: if $N_i$ indep. Poisson($\lambda_i$), then
+\[
+\sum_i N_i(t)\sim\Pois\Big((\sum_i\lambda_i)t\Big).
+\]
+Thinning: keep each event with prob. $p$:
+\[
+N_p(t)\sim\Pois(\lambda pt),\quad N_p\perp N_{1-p}.
+\]
+Time-varying thinning $p_i(s)$:
+\[
+N_i(t)\sim\Pois\!\left(\lambda\int_0^t p_i(s)\,ds\right),
+\]
+independent across $i$.
+Competing exponentials $T_i\sim\Exp(\lambda_i)$ indep.:
+\[
+\min_i T_i\sim\Exp(\Lambda),\quad \Lambda=\sum_i\lambda_i,
+\]
+\[
+\PP(i\text{ first})=\frac{\lambda_i}{\Lambda}.
+\]
+
+\hd{Poisson with Random Horizon and Mixtures}
+If $T\perp\!\!\perp N$:
+\[
+\E[N(T)]=\lambda\E[T].
+\]
+\[
+\Var(N(T))=\lambda\E[T]+\lambda^2\Var(T).
+\]
+\[
+\PP(N(T)=n)=\E\left[e^{-\lambda T}\frac{(\lambda T)^n}{n!}\right].
+\]
+If $T\sim\Exp(\mu)$:
+\[
+\PP(N(T)=n)=\frac{\mu}{\lambda+\mu}\left(\frac{\lambda}{\lambda+\mu}\right)^n,
+\]
+(geometric on $\{0,1,\dots\}$),
+\[
+\E[N(T)]=\frac{\lambda}{\mu},
+\quad
+\Var(N(T))=\frac{\lambda}{\mu}\left(1+\frac{\lambda}{\mu}\right).
+\]
+Poisson bus-batch mixture ($X\sim\Exp(\lambda)$, $Y\mid X\sim\Pois(\mu X)$):
+\[
+\PP(Y=k)=\frac{\lambda\mu^k}{(\lambda+\mu)^{k+1}},
+\quad
+\E[Y]=\frac{\mu}{\lambda}.
+\]
+
+\hd{Compound Poisson and Useful Expectations}
+$D(t)=\sum_{k=1}^{N(t)}X_k$, $X_k\stackrel{iid}{\sim}X$:
+\[
+\E[D(t)]=\lambda t\E[X],
+\quad
+\Var(D(t))=\lambda t\E[X^2].
+\]
+\[
+\Cov(D(s),D(t))=\lambda\min\{s,t\}\E[X^2].
+\]
+Campbell identity:
+\[
+\E\!\left[\sum_{S_i\le t} g(S_i)\right]
+=\lambda\int_0^t g(u)\,du.
+\]
+
+\hd{Renewal Process: Core Formulas}
+Interrenewals $X_i\stackrel{iid}{\sim}F$, $\mu=\E[X_1]\in(0,\infty)$,
+\[
+S_n=\sum_{i=1}^n X_i.
+\]
+\[
+N(t)=\max\{n:S_n\le t\},\quad m(t)=\E[N(t)].
+\]
+\[
+m(t)=\sum_{n\ge1}F^{*n}(t).
+\]
+Renewal equation:
+\[
+m(t)=F(t)+\int_0^t m(t-x)\,dF(x).
+\]
+General renewal equation $g=h+g*F$:
+\[
+g(t)=h(t)+\int_0^t h(t-x)\,dm(x).
+\]
+Laplace-Stieltjes transform:
+\[
+\tilde m(s)=\frac{\tilde F(s)}{1-\tilde F(s)}.
+\]
+Elementary renewal theorem:
+\[
+\frac{m(t)}{t}\to\frac1\mu.
+\]
+Blackwell (non-lattice):
+\[
+m(t+a)-m(t)\to\frac{a}{\mu},\quad a>0.
+\]
+Lattice span $d$: increment limits on multiples of $d$.
+
+\hd{Key Renewal Theorem and Reward Theorem}
+If $F$ non-lattice and $h$ is directly Riemann integrable (dRi):
+\[
+\int_0^t h(t-x)\,dm(x)
+\to
+\frac1\mu\int_0^\infty h(x)\,dx.
+\]
+Renewal reward $(X_i,R_i)$ iid by cycle:
+\[
+\frac{\text{Reward}(t)}{t}\to\frac{\E[R]}{\E[X]}\ \text{a.s.}.
+\]
+\[
+\frac{\E[\text{Reward}(t)]}{t}\to\frac{\E[R]}{\E[X]}.
+\]
+Average cost policy template:
+\[
+\text{Long-run average}
+=
+\frac{\E[\text{cost per cycle}]}{\E[\text{cycle length}]}.
+\]
+Variance asymptotics (if $\sigma_X^2<\infty$):
+\[
+\Var(N(t))\sim \frac{\sigma_X^2}{\mu^3}t.
+\]
+Delayed renewal (first cdf $G$, rest $F$):
+\[
+m_D(t)=G(t)+\int_0^t m(t-x)\,dG(x).
+\]
+
+\hd{Forward/Backward Recurrence, Excess, Inspection Paradox}
+Age $A(t)=t-S_{N(t)}$, excess $Y(t)=S_{N(t)+1}-t$.
+For non-lattice $F$, $\mu<\infty$:
+\[
+\PP(A_\infty\le x)=\frac1\mu\int_0^x \bar F(u)\,du,
+\]
+\[
+\PP(Y_\infty>x)=\frac1\mu\int_x^\infty \bar F(u)\,du.
+\]
+If density exists:
+\[
+f_{A_\infty}(x)=f_{Y_\infty}(x)=\frac{\bar F(x)}{\mu}.
+\]
+Expected age/excess:
+\[
+\E[A_\infty]=\E[Y_\infty]=\frac{\E[X^2]}{2\E[X]}.
+\]
+Residual given current age $a$:
+\[
+\E[X-a\mid X>a]=\frac{\int_a^\infty \bar F(u)\,du}{\bar F(a)}.
+\]
+Spread interval $X_{N(t)+1}$ (length-biased):
+\[
+\E[X_{N(t)+1}]\to\frac{\E[X^2]}{\E[X]}\ge \E[X].
+\]
+Size-biased density: $f_{X^*}(x)=x f_X(x)/\mu$.
+Poisson special case: $A(t),Y(t)$ are iid $\Exp(\lambda)$ ind
+
+\hd{Wald, Stopping Times, and Expectation Identities}
+Tower law and total variance:
+\[
+\E[X]=\E[\E[X\mid Y]].
+\]
+\[
+\Var(X)=\E[\Var(X\mid Y)]+\Var(\E[X\mid Y]).
+\]
+Wald (iid $X_i$, stopping time $N$, integrability):
+\[
+\E\Big[\sum_{i=1}^N X_i\Big]=\E[N]\E[X_1].
+\]
+If $N\perp\!\!\perp\{X_i\}$:
+\[
+\Var\Big(\sum_{i=1}^N X_i\Big)=\E[N]\Var(X_1)
+\]
+\[
+\qquad +(\E[X_1])^2\Var(N).
+\]
+If $\E[X_i]=0$, $\Var(X_i)=\sigma^2$, and $M$ stopping time:
+\[
+\Var(T_M)=\Var\Big(\sum_{i=1}^M X_i\Big)=\sigma^2\E[M].
+\]
+Corollary for renewals (since $N(t)+1$ is stopping time):
+\[
+\E[S_{N(t)+1}]=\E[N(t)+1]\E[X].
+\]
+Optional stopping safe checks (exam use):
+\begin{itemize}
+\item $\tau$ bounded.
+\item Martingale increments bounded and $\E[\tau]<\infty$.
+\item Stopped process uniformly integrable.
+\end{itemize}
+
+\hd{Exchange of Limit and Expectation}
+Use before swapping limit and expectation:
+\begin{itemize}
+\item MCT: $0\le X_n\uparrow X$ a.s. $\Rightarrow\E[X_n]\uparrow\E[X]$.
+\item DCT: $X_n\to X$ a.s., $|X_n|\le Y\in L^1$ $\Rightarrow\E[X_n]\to\E[X]$.
+\item BCT: DCT with bounded $Y=C$.
+\item Fatou: $\E[\liminf X_n]\le\liminf\E[X_n]$.
+\item UI + convergence in probability $\Rightarrow\E[X_n]\to\E[X]$.
+\end{itemize}
+Warning type: $X_n\to0$ a.s. does not imply $\E[X_n]\to0$.
+
+\hd{DTMC Core Relations}
+State space $\mathcal S$, transition matrix $P$, $n$-step matrix $P^n$:
+\[
+P_{ij}^{(n+m)}=\sum_k P_{ik}^{(n)}P_{kj}^{(m)}.
+\]
+Stationary distribution:
+\[
+\pi=\pi P,
+\quad
+\sum_i\pi_i=1,
+\quad
+\pi_i\ge0.
+\]
+Detailed balance (reversible):
+\[
+\pi_iP_{ij}=\pi_jP_{ji}\quad \forall i,j.
+\]
+If irreducible positive recurrent:
+\[
+\pi_i=\frac1{\E_i[T_i^+]},
+\quad
+\text{long-run fraction in }i=\pi_i.
+\]
+Birth-death (states $0,1,\dots$):
+\[
+\pi_{n+1}=\pi_n\frac{p_n}{q_{n+1}},
+\quad
+q_i=P_{i,i-1},\ p_i=P_{i,i+1},
+\]
+\[
+\pi_n=\pi_0\prod_{k=1}^n\frac{p_{k-1}}{q_k}
+\]
+(normalize if summable).
+
+\hd{DTMC Expectation, Hitting, Absorption Formulas}
+Hitting probability $h_i=\PP_i(\tau_A<\infty)$:
+\[
+h_i=
+\begin{cases}
+1,&i\in A,\\
+\sum_j P_{ij}h_j,&i\notin A.
+\end{cases}
+\]
+Mean hitting time $m_i=\E_i[\tau_A]$:
+\[
+m_i=
+\begin{cases}
+0,&i\in A,\\
+1+\sum_j P_{ij}m_j,&i\notin A.
+\end{cases}
+\]
+For finite absorbing chain with transient block $Q$ and absorbing block $R$:
+\[
+\mathcal N=(I-Q)^{-1}=I+Q+Q^2+\cdots.
+\]
+\[
+\mathcal N_{ij}=\E_i[\#\text{ visits to transient }j].
+\]
+\[
+\mathbf t=\mathcal N\mathbf 1
+\quad\text{(mean absorption times)}.
+\]
+\[
+B=\mathcal N R
+\quad\text{(absorption probs)}.
+\]
+Gambler's ruin ($0..N$, start $i$):
+\[
+\PP_i(\tau_N<\tau_0)=
+\begin{cases}
+\dfrac{1-(q/p)^i}{1-(q/p)^N},&p\ne q,\\
+\dfrac{i}{N},&p=q=1/2.
+\end{cases}
+\]
+\[
+\E_i[\tau_{\{0,N\}}]=i(N-i),\quad p=q=1/2.
+\]
+\[
+\E_i[\tau_{\{0,N\}}]=\frac{i-N A_i}{q-p},\quad p\ne q.
+\]
+\[
+A_i=\dfrac{1-(q/p)^i}{1-(q/p)^N}.
+\]
+
+\hd{Expectation Qs: Poisson (Exam Bank)}
+\begin{itemize}
+\item $\E[N(t)]$, $\Var(N(t))$, $\Cov(N(s),N(t))$.
+\item $\E[N(T)]$, $\Var(N(T))$ for random $T$.
+\item $\E[S_n]=n/\lambda$, $\Var(S_n)=n/\lambda^2$.
+\item $\E[N(t)\mid N(T)=n]=nt/T$ ($t<T$).
+\item Number before exponential clock: geometric law, mean $\lambda/\mu$.
+\item Competing Poisson/exponential: first-arrival type and expected minimum time.
+\item Batch size between Poisson buses: geometric mixture.
+\item Waiting customers at random time (stationary): backward-time mixing trick.
+\item Expected blocked/lost arrivals in lockout/dead-time interval.
+\item Compound Poisson expectation/covariance questions.
+\item NHPP count in interval: $\Pois(m(t+h)-m(t))$.
+\item Marked arrivals/state occupancy counts: independent Poisson via thinning.
+\end{itemize}
+
+\hd{Expectation Qs: Renewal/Reward (Exam Bank)}
+\begin{itemize}
+\item $\E[N(t)]$ renewal eqn or asymptotic $t/\mu$.
+\item $\E[N(t+a)-N(t)]\to a/\mu$ (Blackwell).
+\item Long-run reward/cost/throughput via $\E[R]/\E[X]$.
+\item Expected cycle reward and cycle length under threshold policy.
+\item Expected residual life/age/spread at random observation time.
+\item Limiting distribution of forward/backward recurrence times.
+\item Expected interrenewal seen by observer (inspection paradox).
+\item Delayed-renewal expectations using first-cycle correction $G$.
+\item Alternating-renewal availability and limiting up probability.
+\item Expected accepted arrivals/departures in renewal-loss models.
+\end{itemize}
+
+\hd{Expectation Qs: Stopping Times Limits}
+\begin{itemize}
+\item Compute $\E[T_M]$, $\Var(T_M)$ stopped sums.
+\item Threshold crossing expected time via martingale + OST.
+\item Expected renewals until event via Wald/geometric decomposition.
+\item Random-sum mean/variance with independent or stopping index.
+\item Justify $\lim\E[X_n]=\E[\lim X_n]$ using MCT/DCT/UI.
+\item Detect invalid interchange (mass escapes to rare large values).
+\end{itemize}
+
+% \hd{Expectation Qs: DTMC (Exam Bank)}
+% \begin{itemize}
+% \item Expected hitting time to a state/set (linear equations).
+% \item Expected return time: $\E_i[T_i^+]=1/\pi_i$.
+% \item Expected absorption time for finite absorbing chains.
+% \item Expected number of visits before absorption.
+% \item Probability of absorption in each absorbing class.
+% \item Long-run proportion of time/transition flow in state/set.
+% \item Birth-death stationary probabilities by product recursion.
+% \item Ruin probability and expected game duration.
+% \end{itemize}
+
+\hd{Probability Tools Often Needed}
+\begin{itemize}
+\item Indicator trick: $N=\sum_{k\ge1}\ind\{N\ge k\}$, so $\E[N]=\sum_{k\ge1}\PP(N\ge k)$.
+\item Tail integral ($X\ge0$):
+\[
+\E[X]=\int_0^\infty \PP(X>x)\,dx.
+\]
+\[
+\E[X^r]=r\int_0^\infty x^{r-1}\PP(X>x)\,dx.
+\]
+\item Random sum conditioning:
+\[
+\E\!\left[\sum_{i=1}^N Z_i\right]=\sum_{n\ge0} a_n,
+\]
+\[
+a_n=\E\!\left[\sum_{i=1}^n Z_i\mid N=n\right]\PP(N=n).
+\]
+\item Order-statistics density:
+\[
+f_{X_{(i)}}(x)=C_{n,i}\,f(x)\,U_{n,i}(x).
+\]
+\[
+U_{n,i}(x)=[F(x)]^{i-1}[1-F(x)]^{n-i}.
+\]
+\[
+C_{n,i}=\frac{n!}{(i-1)!(n-i)!}.
+\]
+\end{itemize}
+
+\hd{Typical Derivation Patterns and Tricks}
+\begin{itemize}
+\item \textbf{Condition on first interarrival/renewal:}
+write $g(t)=h(t)+\int_0^t g(t-x)\,dF(x)$.
+\item \textbf{Mixture integral:}
+for random horizon/age, integrate conditional Poisson law over density.
+\item \textbf{Cycle decomposition:}
+identify regenerative cycle, compute $\E[\text{reward}]/\E[\text{cycle}]$.
+\item \textbf{Use KRT:}
+rewrite target as $\int_0^t h(t-x)\,dm(x)$ with dRi $h$.
+\item \textbf{Use Blackwell:}
+convert local-window count/reward to renewal increment.
+\item \textbf{Memoryless shortcut:}
+for exponential clocks, residual law equals original law.
+\item \textbf{Detailed balance shortcut:}
+solve local flow equations instead of full $\pi=\pi P$.
+\item \textbf{Birth-death geometric series:}
+obtain $\pi_n$ product form, normalize by one series.
+\item \textbf{Hitting-time recursion:}
+first-step equation $m_i=1+\sum_jP_{ij}m_j$.
+\item \textbf{Fundamental matrix:}
+for absorbing finite DTMC, compute everything from $(I-Q)^{-1}$.
+\end{itemize}
+
+\hd{Fast Problem-Solving Flowchart for Midsem}
+\begin{enumerate}
+\item \textbf{Count in time interval?} If independent stationary increments and rate given: use Poisson/HPP or NHPP.
+\item \textbf{iid cycle lengths with resets?} Use renewal equation; asymptotics via ERT/Blackwell/KRT.
+\item \textbf{Long-run average cost/reward?} Build one cycle and apply renewal reward theorem.
+\item \textbf{Random sum or stop-at-rule?} Check stopping-time conditions; apply Wald/OST.
+\item \textbf{Discrete state steps with transition matrix?} It is DTMC; use $\pi=\pi P$, detailed balance, or hitting-time linear system.
+\item \textbf{Absorbing finite DTMC?} Partition to $Q,R$, compute $(I-Q)^{-1}$, then absorption probs/times.
+\item \textbf{Need limit inside expectation?} Verify MCT/DCT/UI before swapping.
+\item \textbf{Final check:} assumptions (non-lattice? independence? finite mean?), units, and boundary cases.
+\end{enumerate}
+
+\hd{Queueing-Specific Quick Adds from EE621}
+\begin{itemize}
+\item $M/G/1/1$ loss model with offered load $\rho=\lambda\E[S]$:
+enter fraction $1/(1+\rho)$, busy fraction $\rho/(1+\rho)$.
+\item $M/G/1$ busy period ($\rho<1$):
+\[
+\E[B]=\frac{\E[S]}{1-\rho}.
+\]
+\[
+\E[\#\text{ served in busy period}]=\frac{1}{1-\rho}.
+\]
+\item Poisson bus ($\lambda$) and customer ($\mu$):
+customers on a bus $Y$ has
+\[
+\PP(Y=k)=\frac{\lambda\mu^k}{(\lambda+\mu)^{k+1}},
+\quad
+\E[Y]=\frac{\mu}{\lambda}.
+\]
+Regenerative state fraction formula:
+\[
+P_j=\frac{\E[\text{time in state }j\text{ per cycle}]}{\E[\text{cycle length}]}.
+\]
+At observation time, next-bus load adds past+future independent parts.
+\end{itemize}
+
+\end{multicols}
+\end{document}

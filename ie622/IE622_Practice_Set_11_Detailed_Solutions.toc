@@ -1,0 +1,12 @@
+\contentsline {section}{Core Ideas Used Throughout the Set}{2}{section*.2}%
+\contentsline {section}{\numberline {1}Problem 1: Reading Assignment}{2}{section.1}%
+\contentsline {section}{\numberline {2}Problem 2: Departures from a Stationary M/M/1 Queue}{3}{section.2}%
+\contentsline {section}{\numberline {3}Problem 3: The M/M/$\infty $ Queue}{5}{section.3}%
+\contentsline {section}{\numberline {4}Problem 4: Restricting a Reversible Chain to a Subset}{7}{section.4}%
+\contentsline {section}{\numberline {5}Problem 5: Two M/M/1 Queues in Tandem}{8}{section.5}%
+\contentsline {section}{\numberline {6}Problem 6: Jackson Networks}{9}{section.6}%
+\contentsline {section}{Shared Setup for Problems 7--10}{13}{section*.25}%
+\contentsline {section}{\numberline {7}Problem 7: Conditional Expectation Given $Z$ via a Joint Density}{13}{section.7}%
+\contentsline {section}{\numberline {8}Problem 8: Equality on a $G$-Measurable Set}{14}{section.8}%
+\contentsline {section}{\numberline {9}Problem 9: Basic Properties of Conditional Expectation}{15}{section.9}%
+\contentsline {section}{\numberline {10}Problem 10: Random Sums}{16}{section.10}%

@@ -1,0 +1,913 @@
+\documentclass[10pt]{article}
+\usepackage[a4paper,margin=0.28in]{geometry}
+\usepackage{amsmath,amssymb,mathtools,bm}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+\makeatletter
+\def\multicols#1{\col@number#1\relax
+  \ifnum\col@number<\tw@
+     \PackageWarning{multicol}%
+      {Using `\number\col@number'
+       columns doesn't seem a good idea.^^J
+       I therefore use two columns instead}%
+     \col@number\tw@ \fi
+  \ifnum\col@number>30
+     \PackageError{multicol}%
+      {Too many columns}%
+      {This local override supports at most 30 columns.%
+       \MessageBreak
+       I therefore use 30 columns instead}%
+     \col@number30 \fi
+     \ifx\@footnotetext\mult@footnotetext
+     \else
+       \let\orig@footnotetext\@footnotetext
+       \let\@footnotetext\mult@footnotetext
+     \fi
+  \@ifnextchar[\mult@cols{\mult@cols[]}}
+\makeatother
+
+\setlength{\columnsep}{0.14in}
+\setlength{\columnseprule}{0.1pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.12ex}
+\setlength{\abovedisplayskip}{2pt}
+\setlength{\belowdisplayskip}{2pt}
+\setlength{\abovedisplayshortskip}{1pt}
+\setlength{\belowdisplayshortskip}{1pt}
+\setlength{\premulticols}{0pt}
+\setlength{\postmulticols}{0pt}
+\setlength{\multicolsep}{1pt}
+\setlength{\emergencystretch}{2em}
+\allowdisplaybreaks
+\pagestyle{empty}
+\raggedbottom
+\setlist[itemize]{leftmargin=*,itemsep=0.15ex,topsep=0.2ex,parsep=0pt,partopsep=0pt}
+\setlist[enumerate]{leftmargin=*,itemsep=0.15ex,topsep=0.2ex,parsep=0pt,partopsep=0pt}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\hd}[1]{\vspace{0.32ex}\noindent{\bfseries\footnotesize #1}\par\vspace{0.08ex}}
+\newcommand{\pf}{\emph{Pf.} }
+\DeclareMathOperator{\Exp}{Exp}
+\DeclareMathOperator{\Pois}{Pois}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\Bin}{Bin}
+\DeclareMathOperator{\Geom}{Geom}
+
+\begin{document}
+\begin{center}
+{\bfseries\Large EE621 Quiz 3 Cheat Sheet}\\[-0.15em]
+{\small CTMCs (Mar 16, 17, 23, 24, 30) + Queueing Theory Part 1 (Apr 2, 6, 7, 9)}\\[-0.2em]
+{\small File: \texttt{quiz3\_cheat.tex} \qquad Layout: 2 columns/page}
+\end{center}
+
+\fontsize{7.2}{8.0}\selectfont
+\raggedright
+\begin{multicols}{2}
+
+\hd{CTMC Definition}
+\(X(t),t\ge 0\), on countable state space \(S\), is a homogeneous CTMC if
+\[
+\begin{aligned}
+\PP(X(t+s)=j\mid X(s)=i,\{X(u):0\le u<s\})
+&=\PP(X(t+s)=j\mid X(s)=i)\\
+&=P_{ij}(t).
+\end{aligned}
+\]
+Homogeneous means the RHS is independent of \(s\). The family \(P_{ij}(t)\) is the transition function.
+
+\hd{Sojourn Time in a State}
+If the chain enters state \(i\) at time \(0\) and \(\tau_i\) is the time spent in \(i\) before leaving, then
+\[
+\PP(\tau_i>s+t\mid \tau_i>s)=\PP(\tau_i>t), \qquad s,t\ge 0.
+\]
+\pf Once the process has already stayed in \(i\) for \(s\), the future from time \(s\) depends only on the present state \(i\), not on the age of the visit. Thus \(\tau_i\) is memoryless, hence \(\tau_i\sim \Exp(v_i)\) for some \(v_i\ge 0\). If \(v_i=0\), \(i\) is absorbing; if \(v_i=\infty\), \(i\) is instantaneous. In these notes we assume \(0\le v_i<\infty\).
+
+\hd{Structure of a CTMC}
+Each visit to \(i\) has:
+\begin{itemize}
+\item sojourn time \(\tau_i\sim \Exp(v_i)\),
+\item next state \(j\ne i\) chosen with probabilities \(P_{ij}\), \(\sum_{j\ne i}P_{ij}=1\),
+\item \(\tau_i\) independent of the next state.
+\end{itemize}
+\pf If the next state depended on \(\tau_i\), then knowing how long the process has already spent in \(i\) would change the conditional law of the future, contradicting the Markov property. A CTMC is therefore a semi-Markov process with \(F_{ij}(t)=1-e^{-v_it}\).
+
+\hd{Regular CTMCs}
+Regular means that, with probability \(1\), only finitely many transitions occur in every finite interval. Counterexample: \(P_{i,i+1}=1\), \(v_i=i^2\). Then \(\tau_i\sim \Exp(i^2)\) and the explosion time is \(\sum_{i\ge 1}\tau_i\) with mean \(\sum_{i\ge 1}1/i^2<\infty\). Hence for \(t>\sum_{i\ge 1}1/i^2\),
+\[
+\PP\Big(\sum_{i\ge 1}\tau_i\ge t\Big)\le \frac{\E[\sum_{i\ge 1}\tau_i]}{t}<1,
+\]
+so \(\PP(\sum_{i\ge 1}\tau_i<t)>0\): infinitely many jumps can occur in finite time. All models below are assumed regular.
+
+\hd{Transition Rates}
+For \(i\ne j\),
+\[
+q_{ij}=v_iP_{ij}, \qquad v_i=\sum_{k\ne i}q_{ik}, \qquad P_{ij}=\frac{q_{ij}}{v_i} \ \ (v_i>0).
+\]
+Interpretation: \(q_{ij}\) is the instantaneous rate of moving from \(i\) to \(j\). Equivalent competing-clock view: while in \(i\), independent clocks \(T_{ij}\sim \Exp(q_{ij})\), \(j\ne i\), run; the first clock to ring determines both the jump time and the destination.
+
+\hd{Basic CTMC Examples}
+\begin{itemize}
+\item \textbf{Shoe-shine shop}: states \(0\) (empty), \(1\) (chair 1 busy), \(2\) (chair 2 busy), with \(q_{01}=\lambda\), \(q_{12}=\mu_1\), \(q_{20}=\mu_2\).
+\item \textbf{Poisson process}: state \(n\) is count by time \(t\), \(q_{n,n+1}=\lambda\).
+\item \textbf{M/M/1 queue}: state \(n\) is the number in system. \(q_{0,1}=\lambda\); for \(n\ge 1\), \(q_{n,n+1}=\lambda\), \(q_{n,n-1}=\mu\).
+\end{itemize}
+
+\hd{Birth-Death Processes}
+States are \(0,1,2,\ldots\), births increase state by \(1\), deaths decrease it by \(1\):
+\[
+\lambda_n=q_{n,n+1}, \qquad \mu_n=q_{n,n-1}\ (n\ge 1).
+\]
+Then
+\[
+\begin{aligned}
+v_0&=\lambda_0, \qquad v_n=\lambda_n+\mu_n \ (n\ge 1),\\
+P_{n,n+1}&=\frac{\lambda_n}{\lambda_n+\mu_n}, \qquad
+P_{n,n-1}=\frac{\mu_n}{\lambda_n+\mu_n}.
+\end{aligned}
+\]
+Example: M/M/\(s\) queue has \(\lambda_n=\lambda\), \(\mu_n=n\mu\) for \(1\le n\le s\), \(\mu_n=s\mu\) for \(n>s\).
+
+\hd{Pure Birth Processes}
+Here \(\mu_n=0\) for all \(n\). The Poisson process is pure birth with \(\lambda_n=\lambda\). In a Yule process, \(\lambda_n=n\lambda\).
+
+\hd{Yule Process: Set-Up}
+Start with one individual at time \(0\). Let \(T_i\) be the time for population size to go from \(i\) to \(i+1\). Because each of the \(i\) existing individuals gives birth at rate \(\lambda\),
+\[
+T_i\sim \Exp(i\lambda), \qquad T_1,T_2,\ldots \text{ independent.}
+\]
+
+\hd{Yule Process: Distribution Proof}
+Claim:
+\[
+\PP(T_1+\cdots+T_j\le t)=(1-e^{-\lambda t})^j.
+\]
+\pf Base case \(j=1\): immediate. Induction step:
+\[
+\PP(T_1+\cdots+T_{j+1}\le t)=\int_0^t \PP(T_2+\cdots+T_{j+1}\le t-x)\lambda e^{-\lambda x}\,dx.
+\]
+By induction, the inside equals \((1-e^{-\lambda(t-x)})^j\). Integrating gives \((1-e^{-\lambda t})^{j+1}\). Therefore
+\[
+\begin{aligned}
+\PP(X(t)=j\mid X(0)=1)
+&=\PP\Big(\sum_{k=1}^{j-1}T_k\le t\Big)-\PP\Big(\sum_{k=1}^{j}T_k\le t\Big)\\
+&=e^{-\lambda t}(1-e^{-\lambda t})^{j-1}.
+\end{aligned}
+\]
+So \(X(t)\mid X(0)=1\) is geometric on \(\{1,2,\ldots\}\) with mean \(e^{\lambda t}\).
+
+\hd{Yule Process: \(i\) Initial Individuals}
+With \(X(0)=i\), the population is a sum of \(i\) iid geometric descendants, so for \(j\ge i\),
+\[
+P_{ij}(t)=\binom{j-1}{i-1} e^{-i\lambda t}(1-e^{-\lambda t})^{j-i}.
+\]
+This is a negative-binomial law.
+
+\hd{Simple Epidemic Model}
+Population size \(m\), initially one infected and \(m-1\) susceptible. Each infected-susceptible pair causes infection at rate \(\alpha\). If \(n\) are infected, there are \(n(m-n)\) active pairs, so
+\[
+\lambda_n=n(m-n)\alpha, \qquad n=1,\ldots,m-1.
+\]
+If \(T\) is the time until everybody is infected and \(T_i\) is the time to go from \(i\) infectives to \(i+1\), then \(T=\sum_{i=1}^{m-1}T_i\) with independent \(T_i\sim \Exp(i(m-i)\alpha)\). Therefore
+\[
+\E[T]=\sum_{i=1}^{m-1}\frac{1}{i(m-i)\alpha}, \qquad
+\Var(T)=\sum_{i=1}^{m-1}\frac{1}{i^2(m-i)^2\alpha^2}.
+\]
+\pf Independence comes from the memoryless property after each jump; then apply linearity of expectation and variance additivity.
+
+\hd{Kolmogorov Lemma 1}
+For \(i\ne j\),
+\[
+1-P_{ii}(t)=v_it+o(t), \qquad P_{ij}(t)=q_{ij}t+o(t).
+\]
+\pf In a short interval \(t\), the probability of two or more jumps is \(o(t)\). Hence the event \(\{X(t)\ne i\}\) is the event ``one jump occurs'' up to \(o(t)\), so its probability is \(v_it+o(t)\). Likewise, reaching \(j\ne i\) in time \(t\) means ``one jump occurs and it is to \(j\)'' up to \(o(t)\), so the probability is \(v_iP_{ij}t+o(t)=q_{ij}t+o(t)\).
+
+\hd{Kolmogorov Lemma 2}
+Chapman-Kolmogorov:
+\[
+P_{ij}(t+s)=\sum_k P_{ik}(t)P_{kj}(s).
+\]
+\pf Condition on the state \(X(t)\), then use the Markov property:
+\[
+\begin{aligned}
+\PP(X(t+s)=j\mid X(0)=i)
+=\sum_k \PP(X(t)=k\mid X(0)=i)\PP(X(t+s)=j\mid X(t)=k).
+\end{aligned}
+\]
+
+\hd{Backward Equations}
+Starting from
+\[
+P_{ij}(t+h)=\sum_k P_{ik}(h)P_{kj}(t),
+\]
+subtract \(P_{ij}(t)\), divide by \(h\), and use Lemma 1:
+\[
+P'_{ij}(t)=\sum_{k\ne i} q_{ik}P_{kj}(t)-v_iP_{ij}(t).
+\]
+With the generator \(R=(r_{ij})\) defined by \(r_{ij}=q_{ij}\) for \(i\ne j\), \(r_{ii}=-v_i\),
+\[
+P'(t)=RP(t).
+\]
+
+\hd{Forward Equations}
+Now write
+\[
+P_{ij}(t+h)=\sum_k P_{ik}(t)P_{kj}(h).
+\]
+Subtract \(P_{ij}(t)\), divide by \(h\), and use Lemma 1:
+\[
+P'_{ij}(t)=\sum_{k\ne j}P_{ik}(t)q_{kj}-v_jP_{ij}(t),
+\qquad\text{i.e.}\qquad
+P'(t)=P(t)R.
+\]
+The exchange of limit and sum needs justification; it is valid for finite-state CTMCs and all birth-death chains.
+
+\hd{Two-State CTMC}
+Suppose \(0\xrightarrow{\lambda}1\) and \(1\xrightarrow{\mu}0\). Forward equations give
+\[
+P'_{00}(t)=\mu P_{01}(t)-\lambda P_{00}(t)=\mu-(\lambda+\mu)P_{00}(t).
+\]
+Solving with \(P_{00}(0)=1\):
+\[
+P_{00}(t)=\frac{\mu}{\lambda+\mu}+\frac{\lambda}{\lambda+\mu}e^{-(\lambda+\mu)t}.
+\]
+Similarly
+\[
+P_{11}(t)=\frac{\lambda}{\lambda+\mu}+\frac{\mu}{\lambda+\mu}e^{-(\lambda+\mu)t},
+\]
+and \(P_{01}(t)=1-P_{00}(t)\), \(P_{10}(t)=1-P_{11}(t)\).
+
+\hd{Forward Equations for Birth-Death}
+For a birth-death process,
+\[
+P'_{i0}(t)=\mu_1P_{i1}(t)-\lambda_0P_{i0}(t),
+\]
+\[
+P'_{ij}(t)=\lambda_{j-1}P_{i,j-1}(t)+\mu_{j+1}P_{i,j+1}(t)-(\lambda_j+\mu_j)P_{ij}(t), \quad j\ge 1.
+\]
+For a pure-birth process,
+\[
+P'_{ii}(t)=-\lambda_i P_{ii}(t), \qquad
+P'_{ij}(t)=\lambda_{j-1}P_{i,j-1}(t)-\lambda_jP_{ij}(t), \ j>i.
+\]
+Hence \(P_{ii}(t)=e^{-\lambda_i t}\) and for \(j>i\),
+\[
+P_{ij}(t)=\lambda_{j-1}e^{-\lambda_j t}\int_0^t e^{\lambda_j s}P_{i,j-1}(s)\,ds.
+\]
+
+\hd{Backward Equations for Birth-Death}
+For pure birth,
+\[
+P'_{ij}(t)=\lambda_i P_{i+1,j}(t)-\lambda_i P_{ij}(t).
+\]
+For full birth-death,
+\[
+P'_{0j}(t)=\lambda_0P_{1j}(t)-\lambda_0P_{0j}(t),
+\]
+\[
+P'_{ij}(t)=\lambda_iP_{i+1,j}(t)+\mu_iP_{i-1,j}(t)-(\lambda_i+\mu_i)P_{ij}(t), \quad i>0.
+\]
+
+\hd{Machine Repair Example}
+State \(0\): machine working; state \(1\): machine under repair. Rates \(0\xrightarrow{\lambda}1\), \(1\xrightarrow{\mu}0\). Backward equations:
+\[
+P'_{00}(t)=\lambda P_{10}(t)-\lambda P_{00}(t), \qquad
+P'_{10}(t)=\mu P_{00}(t)-\mu P_{10}(t).
+\]
+Multiply the first by \(\mu\), the second by \(\lambda\), add, and integrate:
+\[
+\mu P_{00}(t)+\lambda P_{10}(t)=\mu.
+\]
+Substitute into the first ODE to get
+\[
+P'_{00}(t)=\mu-(\lambda+\mu)P_{00}(t),
+\]
+so
+\[
+P_{00}(t)=\frac{\mu}{\lambda+\mu}+\frac{\lambda}{\lambda+\mu}e^{-(\lambda+\mu)t}.
+\]
+
+\hd{Matrix Form and \(e^{Rt}\)}
+Generator \(R\) has off-diagonal entries \(q_{ij}\) and diagonal entries \(-v_i\); every row sums to \(0\). If \(v_i\) are bounded, then
+\[
+P(t)=e^{Rt}=\sum_{n=0}^{\infty}\frac{(Rt)^n}{n!}.
+\]
+This solves both \(P'(t)=RP(t)\) and \(P'(t)=P(t)R\), but direct matrix exponentiation is rarely the easiest computational route.
+
+\hd{Embedded DTMC}
+The embedded DTMC records only the sequence of visited states. A state \(i\) reaches \(j\) in the CTMC iff \(j\) is reachable from \(i\) in the embedded DTMC. Thus the CTMC and its embedded DTMC have the same communication classes; in particular, one is irreducible iff the other is.
+
+\hd{Limiting Probabilities: General Formula}
+If the embedded DTMC is irreducible and positive recurrent with stationary vector \(\pi\), then the CTMC steady-state probabilities are
+\[
+P_j=\frac{\pi_j/v_j}{\sum_i \pi_i/v_i}.
+\]
+\pf The embedded chain visits \(j\) a fraction \(\pi_j\) of the jump epochs. Each visit to \(j\) lasts on average \(1/v_j\). Hence the total long-run time spent in \(j\) is proportional to \(\pi_j(1/v_j)\); normalization gives the formula.
+
+\hd{Balance Equations}
+Equivalent characterization:
+\[
+v_jP_j=\sum_i P_i q_{ij}, \qquad \sum_j P_j=1.
+\]
+\pf The RHS is the total transition rate into \(j\), the LHS is the total transition rate out of \(j\). In stationarity they must agree. More generally, for any set \(A\),
+\[
+\sum_{i\in A}\sum_{j\in A^c} P_iq_{ij}
+\;=\;
+\sum_{i\in A^c}\sum_{j\in A} P_iq_{ij},
+\]
+which is the set-balance identity.
+
+\hd{Stationarity Proof}
+If \(X(0)\sim (P_j)\), then for every \(t\),
+\[
+\PP(X(t)=j)=\sum_i P_i P_{ij}(t)=P_j.
+\]
+\pf By the definition of limiting probabilities, \(P_i=\lim_{s\to\infty}P_{ki}(s)\) for any fixed \(k\). Hence
+\[
+\sum_i P_iP_{ij}(t)=\lim_{s\to\infty}\sum_i P_{ki}(s)P_{ij}(t)
+=\lim_{s\to\infty}P_{kj}(s+t)=P_j.
+\]
+Bounded convergence justifies passing the limit through the sum. Thus the process is stationary if started in steady state.
+
+\hd{Shoe-Shine Shop Steady State}
+Rates: \(q_{01}=\lambda\), \(q_{12}=\mu_1\), \(q_{20}=\mu_2\). Balance:
+\[
+\lambda P_0=\mu_2P_2, \qquad \mu_1P_1=\lambda P_0, \qquad \mu_2P_2=\mu_1P_1.
+\]
+After normalization,
+\[
+\begin{aligned}
+P_0&=\frac{\mu_1\mu_2}{\mu_1\mu_2+\lambda(\mu_1+\mu_2)},\\
+P_1&=\frac{\lambda\mu_2}{\mu_1\mu_2+\lambda(\mu_1+\mu_2)},\\
+P_2&=\frac{\lambda\mu_1}{\mu_1\mu_2+\lambda(\mu_1+\mu_2)}.
+\end{aligned}
+\]
+
+\hd{Birth-Death Steady State}
+Take \(A=\{0,\ldots,n\}\) in set balance. Because only boundary crossings \(n\leftrightarrow n+1\) are possible,
+\[
+\lambda_n P_n=\mu_{n+1}P_{n+1}, \qquad n\ge 0.
+\]
+Thus
+\[
+P_n=\frac{\lambda_{n-1}\lambda_{n-2}\cdots \lambda_0}{\mu_n\mu_{n-1}\cdots\mu_1}P_0, \qquad n\ge 1,
+\]
+and
+\[
+P_0=\Bigg(1+\sum_{n\ge 1}\frac{\lambda_{n-1}\lambda_{n-2}\cdots \lambda_0}{\mu_n\mu_{n-1}\cdots\mu_1}\Bigg)^{-1}.
+\]
+Steady state exists iff the series is finite.
+
+\hd{M/M/1 as a CTMC}
+Here \(\lambda_n=\lambda\), \(\mu_n=\mu\). Hence
+\[
+P_n=(1-\rho)\rho^n, \qquad \rho=\frac{\lambda}{\mu}, \qquad \rho<1.
+\]
+If \(\rho\ge 1\), there is no normalizable stationary law.
+
+\hd{Job Shop with \(M\) Machines + One Repairman}
+State \(n\): \(n\) machines are down. Each working machine fails at rate \(\lambda\), so \(\lambda_n=(M-n)\lambda\) for \(n\le M\), zero above \(M\). Repair rate is \(\mu_n=\mu\) for \(n\ge 1\). Therefore
+\[
+P_0=\left(1+\sum_{k=1}^M \Big(\frac{\lambda}{\mu}\Big)^k\frac{M!}{(M-k)!}\right)^{-1},
+\]
+\[
+P_n=\Big(\frac{\lambda}{\mu}\Big)^n\frac{M!}{(M-n)!}P_0, \qquad 1\le n\le M.
+\]
+Average number down is \(\sum_{n=0}^M nP_n\). A tagged machine is working with long-run fraction
+\[
+\sum_{n=0}^M \frac{M-n}{M}P_n.
+\]
+
+\hd{Time Reversal of a CTMC}
+Start the ergodic CTMC in steady state \((P_i)\). The reversed process is also a CTMC. The sojourn time in state \(i\) under time reversal is still \(\Exp(v_i)\) because the amount of clock time spent in a visit is the same whether the trajectory is read forward or backward.
+
+\hd{Reverse Embedded Chain}
+If \(\pi\) is the stationary law of the embedded DTMC, then the reverse embedded chain has transition probabilities
+\[
+P^*_{ij}=\frac{\pi_j P_{ji}}{\pi_i}.
+\]
+Hence the reverse CTMC has rates
+\[
+q^*_{ij}=v_i P^*_{ij}.
+\]
+Using \(P_i \propto \pi_i/v_i\),
+\[
+P_i q^*_{ij}=P_j q_{ji}.
+\]
+Summing over \(i\) shows that the reverse CTMC has the same stationary distribution \(P\).
+
+\hd{Time Reversibility}
+The stationary CTMC is time reversible iff \(q^*_{ij}=q_{ij}\) for all \(i,j\), equivalently
+\[
+P_i q_{ij}=P_j q_{ji} \qquad \text{(detailed balance)}.
+\]
+\pf If detailed balance holds, summing over \(i\) gives the ordinary balance equations, so \(P\) is stationary; and since \(P_iq^*_{ij}=P_jq_{ji}=P_iq_{ij}\), we obtain \(q^*_{ij}=q_{ij}\). Conversely, if \(q^*=q\), then the same identity gives detailed balance.
+
+\hd{Birth-Death Chains are Reversible}
+For a birth-death process, local balance already gave
+\[
+P_n\lambda_n=P_{n+1}\mu_{n+1}.
+\]
+These are exactly the detailed-balance equations for adjacent states; all other rate pairs are zero. So every stationary ergodic birth-death process is time reversible.
+
+\hd{General Detailed-Balance Test}
+If nonnegative \(x_j\) satisfy
+\[
+\sum_j x_j=1, \qquad x_i q_{ij}=x_j q_{ji}\ \ \forall i,j,
+\]
+then \((x_j)\) is the stationary law and the CTMC is time reversible. The proof is just ``sum detailed balance over \(i\)''.
+
+\hd{Truncating a Reversible CTMC}
+If a reversible CTMC on \(S\) is truncated to \(A\subseteq S\) by deleting all transitions from \(A\) to \(A^c\), and the truncated chain is still irreducible, then it stays reversible with
+\[
+P_j^{(A)}=\frac{P_j}{\sum_{k\in A} P_k}, \qquad j\in A.
+\]
+\pf For \(i,j\in A\), the internal rates are unchanged, so
+\[
+P_i^{(A)}q_{ij}=P_j^{(A)}q_{ji}
+\iff
+P_i q_{ij}=P_j q_{ji},
+\]
+which already held in the original chain.
+
+\hd{M/M/1/\(N\) via Truncation}
+The M/M/1/\(N\) queue is the M/M/1 queue truncated to \(\{0,1,\ldots,N\}\). Hence
+\[
+P_j=\frac{\rho^j}{\sum_{i=0}^N \rho^i}
+=\frac{(1-\rho)\rho^j}{1-\rho^{N+1}}, \qquad j=0,\ldots,N.
+\]
+
+\hd{Recurrence and Return Times}
+Let
+\[
+Y(t)=\inf\{s>0: X(t+s)\ne X(t)\},
+\]
+the residual holding time at time \(t\), and
+\[
+S_{jj}=\inf\{t\ge 0: t>Y(0),\ X(t)=j\},
+\]
+the time to return to \(j\) after leaving. A state is recurrent if \(\PP(S_{jj}<\infty)=1\), positive recurrent if additionally \(\E[S_{jj}]<\infty\), and null recurrent if \(\E[S_{jj}]=\infty\).
+
+\hd{No Periodicity for CTMCs}
+For any state \(i\) and any \(t>0\),
+\[
+P_{ii}(t)\ge e^{-v_i t}>0.
+\]
+So there is no discrete-time arithmetic structure of return times, hence no notion of period for the CTMC itself. Its embedded DTMC may still be periodic (e.g. M/M/\(s\) has embedded period \(2\)).
+
+\hd{Recurrence of CTMC vs Embedded DTMC}
+An irreducible CTMC is recurrent iff its embedded DTMC is recurrent.
+\pf If the embedded chain returns to \(j\) in a finite number of jumps almost surely, then the CTMC return time is the sum of finitely many exponential sojourns, hence finite almost surely. Conversely, if the embedded chain has positive probability never to return, then the CTMC also has positive probability never to return.
+
+\hd{Positive vs Null Recurrence}
+Let \(\pi\) be any strictly positive solution of \(\pi=\pi P\) for the embedded DTMC. Then for a recurrent irreducible CTMC,
+\[
+\E[S_{jj}] = \frac{1}{\pi_j}\sum_i \frac{\pi_i}{v_i}.
+\]
+Hence
+\[
+\begin{aligned}
+\text{CTMC positive recurrent}
+&\iff \sum_i \frac{\pi_i}{v_i}<\infty,\\
+\text{CTMC null recurrent}
+&\iff \sum_i \frac{\pi_i}{v_i}=\infty.
+\end{aligned}
+\]
+The embedded DTMC instead is positive recurrent iff \(\sum_i \pi_i<\infty\). Therefore a recurrent CTMC and its embedded DTMC need not share positive/null recurrence.
+
+\hd{Example: CTMC Positive, Embedded DTMC Null}
+One class example from the notes chooses rates so that the embedded chain is the simple symmetric random walk on \(\{0,1,2,\ldots\}\) reflected at \(0\), hence null recurrent, while the state-dependent holding rates become fast enough that
+\[
+\sum_i \frac{\pi_i}{v_i}<\infty.
+\]
+Therefore the CTMC is positive recurrent although its embedded DTMC is null recurrent.
+
+\hd{Uniformization}
+If all holding rates are equal, \(v_i=v\), then the jump count \(N(t)\) is \(\Pois(vt)\), and conditioning on \(N(t)\) yields
+\[
+P_{ij}(t)=\sum_{n=0}^{\infty} P^{(n)}_{ij}\, e^{-vt}\frac{(vt)^n}{n!},
+\]
+where \(P^{(n)}_{ij}\) are \(n\)-step probabilities of the embedded DTMC.
+
+\hd{General Uniformization}
+If \(v_i\le v\) for all \(i\), add fictitious self-jumps at rate \(v-v_i\). Then every state has total jump rate \(v\), and the uniformized jump matrix is
+\[
+P^*_{ij}=
+\begin{cases}
+q_{ij}/v, & i\ne j,\\
+1-v_i/v, & i=j.
+\end{cases}
+\]
+Hence
+\[
+P_{ij}(t)=\sum_{n=0}^{\infty} (P^{*n})_{ij} e^{-vt}\frac{(vt)^n}{n!}.
+\]
+For the two-state chain, choose \(v=\lambda+\mu\); then \(P^*\) has both rows equal to \(\big(\frac{\mu}{\lambda+\mu}, \frac{\lambda}{\lambda+\mu}\big)\), which immediately reproduces the earlier formulas for \(P_{00}(t)\) and \(P_{11}(t)\).
+
+\hd{Queueing: Definitions}
+Customers \(C_j\) arrive at times \(t_j\), \(t_0=0\), \(t_0\le t_1\le t_2\le \cdots\). Inter-arrival time:
+\[
+T_j=t_{j+1}-t_j.
+\]
+Service time of \(C_j\): \(S_j\). Queueing delay: \(D_j\). System time:
+\[
+W_j=D_j+S_j.
+\]
+Departure time of \(C_j\): \(t_j+W_j\). Number in system:
+\[
+N(t)=\sum_{j\ge 1}\mathbf 1\{t_j\le t<t_j+W_j\}.
+\]
+Also \(N_q(t)\) = number waiting, \(N_s(t)\) = number in service, so \(N(t)=N_q(t)+N_s(t)\). Arrivals by time \(t\): \(\Lambda(t)=\max\{j:t_j\le t\}\). Departures by time \(t\): \(\Omega(t)=\Lambda(t)-N(t)\).
+
+\hd{Performance Metrics}
+Assuming the limits exist a.s.:
+\[
+\lambda=\lim_{t\to\infty}\frac{\Lambda(t)}{t}, \qquad
+L=\lim_{t\to\infty}\frac{1}{t}\int_0^t N(u)\,du,
+\]
+\[
+Q=\lim_{t\to\infty}\frac{1}{t}\int_0^t N_q(u)\,du, \qquad
+L_s=\lim_{t\to\infty}\frac{1}{t}\int_0^t N_s(u)\,du,
+\]
+\[
+w=\lim_{n\to\infty}\frac{1}{n}\sum_{j=1}^n W_j, \qquad
+d=\lim_{n\to\infty}\frac{1}{n}\sum_{j=1}^n D_j, \qquad
+\frac{1}{\mu}=\lim_{n\to\infty}\frac{1}{n}\sum_{j=1}^n S_j.
+\]
+
+\hd{Little's Law}
+The central identity is
+\[
+L=\lambda w.
+\]
+\pf On \([0,t]\), the area under \(N(u)\) counts customer-time:
+\[
+\int_0^t N(u)\,du=\sum_{j=1}^{\Lambda(t)}W_j + R(t),
+\]
+where \(R(t)\) is a boundary error caused only by customers whose system time overlaps \(0\) or \(t\). Divide by \(t\):
+\[
+\frac{1}{t}\int_0^t N(u)\,du
+=
+\frac{\Lambda(t)}{t}\cdot \frac{1}{\Lambda(t)}\sum_{j=1}^{\Lambda(t)}W_j
+\;+\;
+\frac{R(t)}{t}.
+\]
+If \(\lambda<\infty\), \(w<\infty\), and the boundary term is negligible (\(R(t)/t\to 0\)), then the limit gives \(L=\lambda w\). Exactly the same area argument yields
+\[
+Q=\lambda d, \qquad L_s=\lambda/\mu.
+\]
+
+\hd{Little's Law Examples}
+Elementary school with \(30\) students entering first grade every year, each staying \(6\) years:
+\[
+L=\lambda w=30\times 6=180.
+\]
+No queueing system is needed; Little's law is purely a flow conservation law.
+
+\hd{M/G/\(\infty\) Queue}
+Poisson arrivals rate \(\lambda\), iid service CDF \(G\) with mean \(1/\mu\), infinitely many servers. Then
+\[
+N(t)\sim \Pois\Big(\lambda \int_0^t \bar G(u)\,du\Big),
+\qquad
+\bar G(u)=1-G(u).
+\]
+As \(t\to\infty\),
+\[
+N(t)\Rightarrow \Pois(\lambda/\mu), \qquad L=\lambda/\mu.
+\]
+Since there is no queue,
+\[
+W_j=S_j, \qquad w=\E[S_j]=1/\mu,
+\]
+and \(L=\lambda w\) checks Little's law.
+
+\hd{M/M/1 Queue}
+Steady-state distribution:
+\[
+P_n=(1-\rho)\rho^n,\qquad \rho=\lambda/\mu<1.
+\]
+Then
+\[
+L=\sum_{n\ge 0}nP_n=\frac{\rho}{1-\rho},
+\qquad
+Q=\sum_{n\ge 1}(n-1)P_n=\frac{\rho^2}{1-\rho},
+\qquad
+L_s=\rho.
+\]
+Hence
+\[
+w=\frac{L}{\lambda}=\frac{1}{\mu-\lambda},
+\qquad
+d=\frac{Q}{\lambda}=\frac{\lambda}{\mu(\mu-\lambda)}.
+\]
+If \(\rho\ge 1\), the queue is unstable and \(L,Q\) diverge.
+
+\hd{M/M/1 Design Example}
+Two servers with \(\mu_1=100\), \(\mu_2=200\), rent costs \(c_1=\$1000/\text{month}\), \(c_2=\$1800/\text{month}\), arrivals \(\lambda=80/\text{hr}\), \(200\) hours per month, waiting cost \(\$1\) per customer-hour. Total expected cost per hour of model \(i\):
+\[
+L_i+\frac{c_i}{200},
+\qquad
+L_i=\frac{\rho_i}{1-\rho_i},\quad \rho_i=\lambda/\mu_i.
+\]
+This gives \(\$9\)/hr for model 1 and \(\$9.67\)/hr for model 2, so model 1 is preferred.
+
+\hd{PASTA}
+If arrivals are Poisson with rate \(\lambda\) and \(B\) is any set of states of a process \(X(t)\), then
+\[
+\PP(X(t)\in B\mid \text{arrival at }t)=\PP(X(t)\in B).
+\]
+\pf For small \(\delta>0\),
+\[
+\PP(X(t)\in B\mid N(t+\delta)-N(t)=1)
+=\frac{\PP(X(t)\in B,\ N(t+\delta)-N(t)=1)}{\PP(N(t+\delta)-N(t)=1)}.
+\]
+By independent increments, \(X(t)\) is independent of the future Poisson increment \(N(t+\delta)-N(t)\), so the numerator factorizes and the ratio becomes \(\PP(X(t)\in B)\). Let \(\delta\downarrow 0\).
+
+\hd{PASTA as Time Average}
+If \(X(t)\) is ergodic, then the fraction of \emph{time} the system spends in \(B\) equals the fraction of \emph{arrivals} that see \(B\):
+\[
+P_B=a_B.
+\]
+For a positive recurrent queue with steady-state probabilities \(P_n\), the fraction of arrivals seeing \(n\) customers is also \(P_n\). If arrivals are not Poisson, this can fail. Counterexample: service times are always \(1\), inter-arrivals are always \(>1\); then every arrival sees an empty system even though the system is not empty all the time.
+
+\hd{M/M/1 Waiting-Time Distribution}
+Let \(N_a\) be the number in system seen by an arrival. By PASTA,
+\[
+\PP(N_a=n)=P_n=(1-\rho)\rho^n.
+\]
+Given \(N_a=n\), the tagged customer waits for \(n+1\) exponential-\(\mu\) service times:
+\[
+W=\sum_{j=1}^{N_a+1} S_j.
+\]
+Using the MGF of an exponential random variable,
+\[
+\E[e^{sW}]
+=\sum_{n\ge 0}\Big(\frac{\mu}{\mu-s}\Big)^{n+1}(1-\rho)\rho^n
+=\frac{\mu-\lambda}{\mu-\lambda-s},
+\]
+valid for \(s<\mu-\lambda\). Therefore
+\[
+W\sim \Exp(\mu-\lambda),
+\]
+whose mean is \(1/(\mu-\lambda)\), exactly matching Little's-law computation.
+
+\hd{M/M/1/\(N\) Queue}
+Blocking occurs when an arrival sees \(N\) customers already present. Steady state:
+\[
+P_n=\frac{(1-\rho)\rho^n}{1-\rho^{N+1}}, \qquad n=0,\ldots,N.
+\]
+Mean number in system:
+\[
+L=\sum_{n=0}^N nP_n
+=\frac{\rho\big(1-(N+1)\rho^N+N\rho^{N+1}\big)}{(1-\rho)(1-\rho^{N+1})}.
+\]
+Only accepted customers contribute to system time, so the carried arrival rate is
+\[
+\lambda_s=\lambda(1-P_N).
+\]
+Hence
+\[
+w=\frac{L}{\lambda_s}.
+\]
+If each blocked customer loses \(\$C\), then lost-sales cost rate is \(\lambda P_N C\).
+
+\hd{M/M/\(m\) Queue: Steady State}
+With Poisson arrivals \(\lambda\), \(m\) exponential servers each of rate \(\mu\), and load
+\[
+\rho=\frac{\lambda}{m\mu},
+\]
+the birth-death rates are \(\lambda_n=\lambda\), \(\mu_n=n\mu\) for \(1\le n\le m\), and \(\mu_n=m\mu\) for \(n\ge m+1\). Stability requires \(\rho<1\). The stationary law is
+\[
+P_0=\left[\sum_{n=0}^{m-1}\frac{(m\rho)^n}{n!}+\frac{(m\rho)^m}{m!(1-\rho)}\right]^{-1},
+\]
+\[
+P_n=
+\begin{cases}
+\dfrac{(m\rho)^n}{n!}P_0, & 1\le n\le m,\\[0.5em]
+\dfrac{(m\rho)^m}{m!}\rho^{\,n-m}P_0, & n\ge m.
+\end{cases}
+\]
+
+\hd{Erlang C Formula}
+Let \(P_Q\) be the probability that an arrival finds all servers busy and must wait. By PASTA,
+\[
+P_Q=\sum_{n=m}^{\infty} P_n
+=\frac{(m\rho)^m}{m!(1-\rho)}P_0.
+\]
+This is the Erlang C formula.
+
+\hd{M/M/\(m\): \(Q,d,w,L\)}
+Since states above \(m\) have geometric tail,
+\[
+Q=\sum_{n=0}^{\infty} n P_{m+n}=P_Q\sum_{n=0}^{\infty} n\rho^n=\frac{\rho P_Q}{1-\rho}.
+\]
+Therefore
+\[
+d=\frac{Q}{\lambda}=\frac{\rho P_Q}{\lambda(1-\rho)}=\frac{P_Q}{m\mu-\lambda},
+\]
+\[
+w=\frac{1}{\mu}+d=\frac{1}{\mu}+\frac{P_Q}{m\mu-\lambda},
+\]
+\[
+L=\lambda w=m\rho+\frac{\rho P_Q}{1-\rho}.
+\]
+
+\hd{M/M/\(m\) vs One Fast Server}
+Compare M/M/\(m\) with \(m\) servers of rate \(\mu\) each against M/M/1 with one server of rate \(m\mu\). Their mean system times are
+\[
+w=\frac{1}{\mu}+\frac{P_Q}{m\mu-\lambda},
+\qquad
+\tilde w=\frac{1}{m\mu}+\frac{\tilde P_Q}{m\mu-\lambda}.
+\]
+Light load: \(P_Q,\tilde P_Q\approx 0\), so \(\tilde w\approx w/m\). Heavy load: \(P_Q,\tilde P_Q\approx 1\) and \(1/\mu\ll 1/(m\mu-\lambda)\), so \(\tilde w\approx w\).
+
+\hd{M/M/\(m\)/\(m\) Queue (Loss System)}
+If all \(m\) servers are busy, arrivals are lost. Birth-death rates:
+\[
+\lambda_n=\lambda,\quad n=0,\ldots,m-1; \qquad \mu_n=n\mu,\quad n=1,\ldots,m.
+\]
+Thus
+\[
+P_n=\frac{(\lambda/\mu)^n/n!}{\sum_{k=0}^{m} (\lambda/\mu)^k/k!}, \qquad n=0,\ldots,m.
+\]
+Blocking probability:
+\[
+P_m=\frac{(\lambda/\mu)^m/m!}{\sum_{k=0}^{m} (\lambda/\mu)^k/k!},
+\]
+the Erlang B formula.
+
+\hd{Burke's Theorem}
+For a stationary M/M/\(m\) queue with arrival rate \(\lambda\):
+\begin{itemize}
+\item the departure process is Poisson with rate \(\lambda\);
+\item the current queue length \(N(t)\) is independent of the departure times prior to \(t\).
+\end{itemize}
+\pf M/M/\(m\) is a birth-death CTMC, hence time reversible. In the reversed process, departures of the forward process become arrivals. Since the reverse chain has the same law as the forward chain, its arrivals form a Poisson process of rate \(\lambda\); hence forward departures are Poisson of rate \(\lambda\). Also, departures before \(t\) in forward time correspond to arrivals after \(t\) in reverse time, and the future Poisson arrival process is independent of the present state. Therefore the past departures of the forward process are independent of \(N(t)\).
+
+\hd{Tandem M/M/1 Queues}
+Queue 1 receives Poisson \(\lambda\), service rate \(\mu_1\); departures immediately join queue 2, whose service rate is \(\mu_2\). By Burke, the input to queue 2 is Poisson \(\lambda\), so each queue behaves as an independent M/M/1:
+\[
+\PP(N_i=n_i)= (1-\rho_i)\rho_i^{n_i}, \qquad \rho_i=\lambda/\mu_i,\quad i=1,2.
+\]
+Moreover \(N_1(t)\) is independent of the arrival history into queue 2 up to time \(t\), and \(N_2(t)\) is a function of that arrival history, so \(N_1(t)\) and \(N_2(t)\) are independent. Hence
+\[
+\PP(N_1=n_1,N_2=n_2)=(1-\rho_1)\rho_1^{n_1}(1-\rho_2)\rho_2^{n_2}.
+\]
+The lecture example concludes that two pictured tandem systems have the same mean time in system because both have
+\[
+L=\frac{\rho_1}{1-\rho_1}+\frac{\rho_2}{1-\rho_2},
+\]
+so \(w=L/\lambda\) is identical.
+
+\hd{Open Queueing Networks}
+There are \(K\) FCFS single-server exponential queues. External arrivals to queue \(i\) form an independent Poisson process of rate \(r_i\). After service at \(i\), a customer goes to \(j\) with probability \(P_{ij}\), or leaves the network with probability \(1-\sum_j P_{ij}\). The total rate into queue \(j\) solves the traffic equations
+\[
+\lambda_j=r_j+\sum_{i=1}^{K}\lambda_i P_{ij}, \qquad j=1,\ldots,K.
+\]
+If every customer eventually leaves with probability \(1\), the linear system has a unique solution. Define \(\rho_j=\lambda_j/\mu_j\) and require \(\rho_j<1\) for all \(j\).
+
+\hd{Open Network as a CTMC}
+State \(n=(n_1,\ldots,n_K)\). The nonzero transitions are:
+\begin{itemize}
+\item external arrival at \(j\): \(n\to n+e_j\) at rate \(r_j\),
+\item service completion at \(j\) and exit: \(n\to n-e_j\) at rate \(\mu_j(1-\sum_i P_{ji})\) if \(n_j>0\),
+\item service completion at \(j\) routed to \(i\): \(n\to n-e_j+e_i\) at rate \(\mu_j P_{ji}\) if \(n_j>0\).
+\end{itemize}
+
+\hd{Jackson's Theorem (Open)}
+The stationary law factors:
+\[
+P(n_1,\ldots,n_K)=\prod_{j=1}^{K}(1-\rho_j)\rho_j^{n_j}.
+\]
+\pf sketch Let \(P(n)=c\prod_j \rho_j^{n_j}\). For each queue \(j\), the relation \(\rho_j=\lambda_j/\mu_j\) gives
+\[
+P(n+e_j)\mu_j=P(n)\lambda_j.
+\]
+Thus queue \(j\) behaves, from the viewpoint of stationary occupancies, exactly like an M/M/1 with arrival rate \(\lambda_j\) and service rate \(\mu_j\). Summing all incoming transitions that increase queue \(j\) uses the traffic equation
+\[
+\lambda_j=r_j+\sum_i \lambda_i P_{ij},
+\]
+which is precisely what is needed for the global balance equation of state \(n\). Therefore the product form is stationary.
+
+\hd{Internal Arrivals Need Not Be Poisson}
+Jackson's theorem is only about the stationary occupancy distribution. The total arrival process into a node need not be Poisson. In the lecture's feedback example with very high service rate and feedback probability \(p\approx 1\), a single external arrival often triggers a burst of repeated visits, so increments are dependent and the node's arrival process is not Poisson.
+
+\hd{CPU + I/O Open Network}
+External arrivals to CPU occur at rate \(\lambda\). After CPU service (\(\mu_1\)), a job exits with probability \(p_1\) and goes to I/O (\(\mu_2\)) with probability \(p_2=1-p_1\); after I/O it returns to CPU. Traffic equations:
+\[
+\lambda_1=\lambda+\lambda_2, \qquad \lambda_2=p_2\lambda_1.
+\]
+Solving,
+\[
+\lambda_1=\frac{\lambda}{p_1}, \qquad \lambda_2=\frac{\lambda p_2}{p_1}.
+\]
+Hence \(\rho_j=\lambda_j/\mu_j\) and
+\[
+L_j=\frac{\rho_j}{1-\rho_j}, \qquad L=L_1+L_2.
+\]
+Mean system time:
+\[
+w=\frac{L}{\lambda}
+=\frac{\rho_1}{\lambda(1-\rho_1)}+\frac{\rho_2}{\lambda(1-\rho_2)}.
+\]
+Define the mean total service demands per job
+\[
+S_1=\frac{1}{\mu_1 p_1}, \qquad S_2=\frac{p_2}{\mu_2 p_1}.
+\]
+Then \(\rho_1=\lambda S_1\), \(\rho_2=\lambda S_2\), and
+\[
+w=\frac{1}{S_1^{-1}-\lambda}+\frac{1}{S_2^{-1}-\lambda}.
+\]
+Interpretation: \(S_1\) is the total CPU time a job requires on average across all visits, \(S_2\) the total I/O time. The mean \(L\) and \(w\) match those of an equivalent tandem system with service rates \(1/S_1\) and \(1/S_2\), even though the full sojourn-time distribution is different.
+
+\hd{Closed Queueing Networks}
+Here the total number of jobs is fixed at \(M\), so no external arrivals or departures occur. Routing probabilities satisfy
+\[
+\sum_{j=1}^{K}P_{ij}=1, \qquad i=1,\ldots,K.
+\]
+Flow equations become
+\[
+\lambda_j=\sum_{i=1}^{K}\lambda_i P_{ij}, \qquad j=1,\ldots,K.
+\]
+If the routing DTMC on \(\{1,\ldots,K\}\) is irreducible, the solution is unique up to a multiplicative constant. Pick any positive solution and define
+\[
+\rho_j=\frac{\lambda_j}{\mu_j}.
+\]
+
+\hd{Closed-Network Product Form}
+Let
+\[
+G(M)=\sum_{n_1+\cdots+n_K=M}\rho_1^{n_1}\cdots \rho_K^{n_K}.
+\]
+Then for every state \(n=(n_1,\ldots,n_K)\) with \(\sum_j n_j=M\),
+\[
+P(n)=\frac{\rho_1^{n_1}\cdots \rho_K^{n_K}}{G(M)}.
+\]
+This is the Jackson/Gordon-Newell theorem for the closed network. The expression is independent of which scaled solution \((\lambda_j)\) was chosen because scaling multiplies numerator and denominator by the same factor \(\alpha^M\).
+
+\hd{Closed Network Example 1}
+CPU and I/O with fixed \(M\) jobs. Equations:
+\[
+\lambda_2=p_2\lambda_1, \qquad \lambda_1=\lambda_2+p_1\lambda_1.
+\]
+Choose \(\lambda_1=\mu_1\), so \(\lambda_2=p_2\mu_1\). Then
+\[
+\rho_1=1, \qquad \rho_2=\frac{p_2\mu_1}{\mu_2}.
+\]
+For states \((M-n,n)\),
+\[
+P(M-n,n)=\frac{\rho_2^n}{G(M)}, \qquad G(M)=\sum_{n=0}^{M}\rho_2^n.
+\]
+CPU utilization is
+\[
+U(M)=1-P(0,M)=1-\frac{\rho_2^M}{G(M)}=\frac{G(M-1)}{G(M)}.
+\]
+
+\hd{Closed Network Example 2}
+Lecture example: \(M=2\), \(\mu_1=1\), \(\mu_2=2\), \(\mu_3=3\), routing gives
+\[
+\lambda_1=\lambda_2+\lambda_3,\qquad \lambda_2=\lambda_1/3,\qquad \lambda_3=2\lambda_1/3.
+\]
+Choose \(\lambda_1=1\), then
+\[
+\lambda_2=\frac13,\qquad \lambda_3=\frac23,\qquad \rho_1=1,\qquad \rho_2=\frac16,\qquad \rho_3=\frac29.
+\]
+Normalization:
+\[
+G(2)=\rho_1^0\rho_2^0\rho_3^2+\rho_1^0\rho_2^2\rho_3^0+\rho_1^2\rho_2^0\rho_3^0+\rho_1\rho_2^0\rho_3+\rho_1\rho_2\rho_3^0+\rho_1^0\rho_2\rho_3
+=1.5031.
+\]
+The lecture values are
+\[
+P(0,0,2)=0.033,\quad P(0,2,0)=0.018,\quad P(2,0,0)=0.665,
+\]
+\[
+P(1,0,1)=0.148,\quad P(1,1,0)=0.111,\quad P(0,1,1)=0.025.
+\]
+Hence
+\[
+\E[N_1]=P(1,0,1)+P(1,1,0)+2P(2,0,0)=1.589,
+\]
+\[
+U_1=1-P(0,0,2)-P(0,2,0)-P(0,1,1)=0.924.
+\]
+
+\hd{High-Value Memory Hooks}
+\begin{itemize}
+\item CTMC steady-state time fractions are ``embedded-chain visit fractions weighted by mean holding times'': \(P_j\propto \pi_j/v_j\).
+\item Birth-death chains are reversible; queueing formulas often come from local balance.
+\item Little's law is an area identity, not a Markov result.
+\item PASTA converts ``what arrivals see'' into ordinary time averages.
+\item Burke + reversibility power the tandem-server and product-form queue results.
+\item Open Jackson: solve traffic equations first, then each node looks like an independent M/M/1 in steady state.
+\item Closed Jackson/Gordon-Newell: no external rates, only relative visit ratios matter; normalize with \(G(M)\).
+\end{itemize}
+
+\end{multicols}
+\end{document}

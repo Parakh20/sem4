@@ -1,0 +1,814 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{tcolorbox}
+
+\setlength{\parskip}{0.5em}
+\setlength{\parindent}{0pt}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\G}{\mathcal{G}}
+\newcommand{\1}{\mathbf{1}}
+\newcommand{\vol}{\mathrm{vol}}
+
+\theoremstyle{plain}
+\newtheorem{claim}{Claim}
+
+\title{IE 622 \\ Detailed Solutions --- Practice Problem Set 12}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+% ======================================================================
+\section*{Key Concepts Used in This Problem Set}
+
+This section summarises the central definitions and theorems that appear
+throughout the problems. Reading this first will make every proof below
+easier to follow.
+
+% ------ Concept 1 -------------------------------------------------------
+\subsection*{1. Conditional Expectation}
+
+\paragraph{Definition.}
+Let $(\Omega,\F,P)$ be a probability space, $X$ an integrable r.v., and
+$\G\subseteq\F$ a sub-$\sigma$-algebra. The \emph{conditional expectation}
+$E[X\mid\G]$ is the (a.s.\ unique) random variable $Z$ such that:
+\begin{enumerate}
+  \item $Z$ is $\G$-measurable.
+  \item $\displaystyle\int_G Z\,dP = \int_G X\,dP$ for every $G\in\G$
+        \quad(the \emph{partial-averaging} property).
+\end{enumerate}
+
+\paragraph{Key properties used in the solutions.}
+\begin{itemize}
+  \item \textbf{Tower property}: If $\mathcal{A}\subseteq\mathcal{B}\subseteq\F$,
+        then $E\bigl[E[X\mid\mathcal{B}]\mid\mathcal{A}\bigr]=E[X\mid\mathcal{A}]$ a.s.
+  \item \textbf{Pulling out knowns}: If $Y$ is $\G$-measurable and $E|XY|<\infty$,
+        then $E[XY\mid\G]=Y\cdot E[X\mid\G]$ a.s.
+  \item \textbf{Measurability}: If $X$ is $\G$-measurable, then $E[X\mid\G]=X$ a.s.
+  \item \textbf{Independence}: If $X\perp\G$, then $E[X\mid\G]=E[X]$ a.s.
+\end{itemize}
+
+% ------ Concept 2 -------------------------------------------------------
+\subsection*{2. Filtrations}
+
+A \emph{filtration} is an increasing sequence of $\sigma$-algebras
+$\F_1\subseteq\F_2\subseteq\cdots\subseteq\F$. Intuitively, $\F_n$ represents
+the information available up to time $n$. The \emph{natural filtration} of a
+process $\{X_n\}$ is $\F_n^X=\sigma(X_1,\ldots,X_n)$.
+
+% ------ Concept 3 -------------------------------------------------------
+\subsection*{3. Martingales, Supermartingales, and Submartingales}
+
+\paragraph{Definition.}
+An adapted, integrable process $\{M_n,\F_n\}$ is a:
+\begin{itemize}
+  \item \textbf{Martingale} if $E[M_{n+1}\mid\F_n]=M_n$ a.s.\ for all $n$.
+  \item \textbf{Supermartingale} if $E[M_{n+1}\mid\F_n]\le M_n$ a.s.\ for all $n$.
+  \item \textbf{Submartingale} if $E[M_{n+1}\mid\F_n]\ge M_n$ a.s.\ for all $n$.
+\end{itemize}
+
+\paragraph{Intuition.}
+A martingale models a \emph{fair game}: your expected future wealth equals your
+current wealth. A supermartingale models an \emph{unfair game} (losing on average),
+and a submartingale a winning one. The classic example: $M_n=$ fortune after $n$
+steps of a fair coin-flip game is a martingale.
+
+\paragraph{Standard martingales used in this set.}
+\begin{enumerate}
+  \item $\{X_n\}$ = symmetric random walk ($E[X_{n+1}\mid\F_n]=X_n$).
+  \item $\{X_n^2-n\}$ = squared symmetric random walk minus time (since
+        $\mathrm{Var}(Z_i)=1$).
+  \item $\{\mu^{-n}X_n\}$ in Galton--Watson process.
+  \item $\{R_n/(n+r+b)\}$ in P\'olya's urn.
+\end{enumerate}
+
+% ------ Concept 4 -------------------------------------------------------
+\subsection*{4. The Optional Stopping Theorem (OST)}
+
+\paragraph{Statement.}
+Let $\{M_n,\F_n\}$ be a martingale and $T$ a stopping time. Under any of the
+following sufficient conditions:
+\begin{enumerate}[label=(\alph*)]
+  \item $T$ is bounded ($T\le N$ for some fixed $N$), or
+  \item The stopped process $\{M_{n\wedge T}\}$ is dominated by an integrable
+        r.v.\ and $T<\infty$ a.s., or
+  \item $E[T]<\infty$ and increments $|M_{n+1}-M_n|$ are bounded,
+\end{enumerate}
+we have $E[M_T]=E[M_0]$.
+
+\paragraph{Why it's powerful.}
+OST lets us evaluate expectations at random (stopping) times by relating them to
+the initial value. In Problems 8(a) and 8(b), this is the core tool.
+
+% ------ Concept 5 -------------------------------------------------------
+\subsection*{5. Markov Property of DTMCs}
+
+A DTMC $\{X_n\}$ satisfies the \emph{Markov property}:
+\[
+  P(X_{n+1}=y\mid X_0,\ldots,X_n) = P(X_{n+1}=y\mid X_n) = p_{X_n,y}.
+\]
+Equivalently, for any measurable $g$,
+\[
+  E[g(X_{n+1})\mid\mathcal{F}_n] = E[g(X_{n+1})\mid X_n]
+  = \sum_{y}p_{X_n,y}\,g(y).
+\]
+This is used in Problems 3, 5, and 6 to simplify conditional expectations.
+
+% ------ Concept 6 -------------------------------------------------------
+\subsection*{6. Generator of a Markov Chain}
+
+For a DTMC with transition matrix $P$, the \emph{(discrete) generator} (or
+Dynkin operator) acting on $f:\mathcal{S}\to\R$ is
+\[
+  (\mathcal{L}f)(x) = \sum_{y}p_{x,y}(f(y)-f(x)) = E[f(X_1)-f(X_0)\mid X_0=x].
+\]
+This measures the \emph{expected drift} of $f$ in one step. When $(\mathcal{L}f)(x)=0$
+for all $x$, $f$ is called \emph{harmonic}, and $\{f(X_n)\}$ is a martingale.
+
+% ------ Concept 7 -------------------------------------------------------
+\subsection*{7. Superharmonic Functions and the Mean Value Property}
+
+A function $f:\R^d\to\R$ is \emph{superharmonic} if it satisfies the
+sub-mean-value property:
+\[
+  f(x) \ge \frac{1}{\vol(B(x,r))}\int_{B(x,r)}f(y)\,dy \quad\forall\,x,r>0.
+\]
+Intuitively: the value of $f$ at any point is at least the average of $f$ over
+any surrounding ball. Harmonic functions (like $f(x)=x$ in 1D, or $f(x)=\log|x|$
+in 2D for $x\neq0$) satisfy equality. The connection to supermartingales is
+explored in Problem 5.
+
+% ------ Concept 8 -------------------------------------------------------
+\subsection*{8. Doob Decomposition (background)}
+
+Any adapted integrable process $\{X_n\}$ can be uniquely written as
+$X_n=M_n+A_n$ where $\{M_n\}$ is a martingale and $\{A_n\}$ is a predictable
+process (i.e., $A_n$ is $\F_{n-1}$-measurable) with $A_0=0$. In Problem 3, the
+sum $\sum_{i=0}^{n-1}(\mathcal{L}f)(X_i)$ serves as the predictable compensator
+$A_n$, and $Y_n=f(X_n)-f(X_0)-A_n$ is the martingale part.
+
+% ======================================================================
+\section*{Problem 1}
+
+\paragraph{Problem statement.}
+Let $(\Omega,\F,P)$ be a probability space. Suppose $\{B_i\}_{i\ge1}\subset\F$ is
+a disjoint partition of $\Omega$ (i.e., $\Omega=\bigcup_{i=1}^{\infty}B_i$ and
+$B_i\cap B_j=\emptyset$ for $i\neq j$) with $P(B_i)>0$ for all $i$.
+Let $\G=\sigma(B_1,B_2,\ldots)$. For an $\F$-measurable, integrable random
+variable $X$, show that
+\[
+  E[X\mid\G] = \frac{E[X\mathbf{1}_{B_i}]}{P(B_i)}
+  \quad\text{on }B_i.
+\]
+
+\paragraph{Background: definition of conditional expectation.}
+Recall that $Z=E[X\mid\G]$ is the \emph{unique} (a.s.) $\G$-measurable,
+integrable random variable satisfying
+\[
+  \int_G Z\,dP = \int_G X\,dP \quad\text{for every }G\in\G.
+\]
+We will verify that $Z:=\sum_{i=1}^{\infty}\frac{E[X\mathbf{1}_{B_i}]}{P(B_i)}\mathbf{1}_{B_i}$
+satisfies both conditions.
+
+\paragraph{Solution.}
+
+\textbf{Step 1 — Describing the $\sigma$-algebra $\G$.}
+Because $\{B_i\}$ is a partition of $\Omega$, the atoms of $\G=\sigma(B_1,B_2,\ldots)$
+are exactly the sets $B_i$ themselves. Any $G\in\G$ is a (possibly empty, possibly
+infinite) union $G=\bigcup_{j\in J}B_j$ for some $J\subseteq\mathbb{N}$. This
+follows because: (a) every such union is a member of $\G$; (b) the class of such
+unions is closed under complements ($\Omega\setminus\bigcup_{j\in J}B_j
+=\bigcup_{j\notin J}B_j$) and countable unions, hence is itself a $\sigma$-algebra
+containing every $B_i$, making it equal to $\G$.
+
+\textbf{Step 2 — Defining the candidate $Z$.}
+For each $\omega\in\Omega$ there is a unique index $i(\omega)$ with
+$\omega\in B_{i(\omega)}$. Define
+\[
+  Z(\omega) := \frac{E[X\mathbf{1}_{B_{i(\omega)}}]}{P(B_{i(\omega)})},
+\]
+or equivalently,
+\[
+  Z = \sum_{i=1}^{\infty} c_i\,\mathbf{1}_{B_i}, \quad
+  c_i := \frac{E[X\mathbf{1}_{B_i}]}{P(B_i)}.
+\]
+Note: $E[X\mathbf{1}_{B_i}]$ is a real number (it is a finite constant because
+$X$ is integrable and $\mathbf{1}_{B_i}\le1$, so
+$|E[X\mathbf{1}_{B_i}]|\le E[|X|\mathbf{1}_{B_i}]<\infty$). Integrability of $Z$:
+\[
+  E|Z|
+  = \sum_{i=1}^{\infty}|c_i|\,P(B_i)
+  = \sum_{i=1}^{\infty}|E[X\mathbf{1}_{B_i}]|
+  \le \sum_{i=1}^{\infty}E[|X|\mathbf{1}_{B_i}]
+  = E|X| < \infty.
+\]
+
+\textbf{Step 3 — Measurability.}
+Each indicator $\mathbf{1}_{B_i}$ is $\G$-measurable (since $B_i\in\G$).
+A countable linear combination of $\G$-measurable functions (with deterministic
+coefficients $c_i$) is $\G$-measurable. Hence $Z$ is $\G$-measurable.
+
+\textbf{Step 4 — Partial averaging (the key verification).}
+Take any $G\in\G$. By Step 1, $G=\bigcup_{j\in J}B_j$ for some $J\subseteq\mathbb{N}$.
+The sets $\{B_j\}_{j\in J}$ are disjoint, so
+\begin{align*}
+  \int_G Z\,dP
+  &= E[Z\,\mathbf{1}_G]
+   = E\!\left[\left(\sum_{i=1}^{\infty}c_i\,\mathbf{1}_{B_i}\right)
+              \mathbf{1}_{\bigcup_{j\in J}B_j}\right].
+\end{align*}
+Since $\mathbf{1}_{B_i}\cdot\mathbf{1}_{\bigcup_{j\in J}B_j}=\mathbf{1}_{B_i}$
+if $i\in J$ and $0$ otherwise, the sum collapses to $j\in J$ only:
+\[
+  = E\!\left[\sum_{j\in J}c_j\,\mathbf{1}_{B_j}\right]
+  = \sum_{j\in J}c_j\,E[\mathbf{1}_{B_j}]
+  \quad\text{(Fubini/MCT, since terms are non-negative after splitting $X=X^+-X^-$)}
+\]
+\[
+  = \sum_{j\in J}\frac{E[X\mathbf{1}_{B_j}]}{P(B_j)}\cdot P(B_j)
+  = \sum_{j\in J}E[X\mathbf{1}_{B_j}]
+  = E\!\left[X\sum_{j\in J}\mathbf{1}_{B_j}\right]
+  = E[X\,\mathbf{1}_G]
+  = \int_G X\,dP.
+\]
+(The interchange of expectation and sum is justified because
+$\sum_{j\in J}E[|X|\mathbf{1}_{B_j}]\le E|X|<\infty$.)
+
+\textbf{Conclusion.}
+$Z$ is $\G$-measurable, integrable, and satisfies the partial-averaging property
+for every $G\in\G$. By uniqueness of conditional expectation (a.s.),
+\[
+  E[X\mid\G] = Z = \frac{E[X\mathbf{1}_{B_i}]}{P(B_i)}\quad\text{on }B_i.
+  \qquad\square
+\]
+
+% ======================================================================
+\section*{Problem 2}
+
+\paragraph{Problem statement.}
+Suppose $\{X_n\}$ is a martingale with respect to $\{\F_n\}$. Let
+$\G_n=\sigma(X_1,\ldots,X_n)$. Show that $\{X_n\}$ is a martingale with
+respect to $\{\G_n\}$.
+
+\paragraph{Key observations.}
+\begin{enumerate}
+  \item $\G_n\subseteq\F_n$: each $X_k$ for $k\le n$ is $\F_k\subseteq\F_n$-measurable,
+        so $\sigma(X_1,\ldots,X_n)\subseteq\F_n$.
+  \item The filtration $\{\G_n\}$ is increasing: $\G_n\subseteq\G_{n+1}$ since
+        $\sigma(X_1,\ldots,X_n)\subseteq\sigma(X_1,\ldots,X_n,X_{n+1})$.
+\end{enumerate}
+
+\paragraph{Solution.}
+
+\textbf{(i) Integrability.} Since $\{X_n\}$ is a martingale w.r.t.\ $\{\F_n\}$,
+$E|X_n|<\infty$ for all $n$. So $X_n$ is integrable.
+
+\textbf{(ii) Adaptedness.} By definition of $\G_n=\sigma(X_1,\ldots,X_n)$, the
+random variable $X_n$ is $\G_n$-measurable (it is one of the generating variables).
+
+\textbf{(iii) Martingale property.}
+We must show $E[X_{n+1}\mid\G_n]=X_n$ a.s.
+
+\underline{Step 1}: Apply the tower property. Since $\G_n\subseteq\F_n$,
+\[
+  E[X_{n+1}\mid\G_n]
+  = E\!\bigl[E[X_{n+1}\mid\F_n]\mid\G_n\bigr].
+\]
+(The tower property states: if $\mathcal{A}\subseteq\mathcal{B}$ are
+sub-$\sigma$-algebras, then $E[E[Y\mid\mathcal{B}]\mid\mathcal{A}]
+=E[Y\mid\mathcal{A}]$.)
+
+\underline{Step 2}: Since $\{X_n\}$ is a martingale w.r.t.\ $\{\F_n\}$,
+\[
+  E[X_{n+1}\mid\F_n] = X_n\quad\text{a.s.}
+\]
+
+\underline{Step 3}: Substituting,
+\[
+  E[X_{n+1}\mid\G_n]
+  = E[X_n\mid\G_n].
+\]
+
+\underline{Step 4}: $X_n$ is $\G_n$-measurable (Step (ii)), so
+$E[X_n\mid\G_n]=X_n$ a.s. (a measurable random variable is its own conditional
+expectation given its own $\sigma$-algebra).
+
+Combining:
+\[
+  E[X_{n+1}\mid\G_n] = X_n\quad\text{a.s.}
+\]
+Therefore $\{X_n\}$ is a martingale with respect to $\{\G_n\}$. $\square$
+
+\paragraph{Remark.}
+The key structural fact is that $\G_n\subseteq\F_n$: passing to a \emph{coarser}
+filtration preserves the martingale property. The $\G_n$-martingale property then
+follows by smoothing over the extra information in $\F_n$.
+
+% ======================================================================
+\section*{Problem 3 (Dynkin's Martingale)}
+
+\paragraph{Problem statement.}
+Let $\{X_n\}$ be a DTMC on state space $\mathcal{S}$ with transition matrix $P$.
+Define the \emph{generator} operator
+\[
+  (\mathcal{L}f)(x) := \sum_{y\in\mathcal{S}}p_{x,y}(f(y)-f(x))
+  = E[f(X_1)-f(X_0)\mid X_0=x].
+\]
+Set $Y_0=0$ and, for $n\ge1$,
+\[
+  Y_n := f(X_n) - f(X_0) - \sum_{i=0}^{n-1}(\mathcal{L}f)(X_i).
+\]
+Show that $\{Y_n\}$ is a martingale with respect to $\mathcal{H}_n:=\sigma(X_0,\ldots,X_n)$.
+
+\paragraph{Intuition.}
+The sum $\sum_{i=0}^{n-1}(\mathcal{L}f)(X_i)$ is the \emph{predictable compensator}
+of the process $\{f(X_n)\}$, i.e., it removes the expected drift so that the
+residual is a martingale. This construction mirrors the Doob decomposition.
+
+\paragraph{Solution.}
+
+\textbf{(i) Adaptedness.}
+$Y_n$ depends only on $X_0,X_1,\ldots,X_n$, hence is $\mathcal{H}_n$-measurable.
+
+\textbf{(ii) Integrability.}
+Assume $f$ is bounded (or that $E|f(X_n)|<\infty$ for all $n$; since $(\mathcal{L}f)(x)
+=\sum_y p_{x,y}f(y)-f(x)$ is a finite linear combination of values of $f$, finiteness
+of $E|f(X_k)|$ implies finiteness of $E|(\mathcal{L}f)(X_k)|$). Then $E|Y_n|<\infty$.
+
+\textbf{(iii) Martingale property.}
+Compute the increment:
+\[
+  Y_{n+1} - Y_n
+  = \Bigl[f(X_{n+1})-f(X_0)-\sum_{i=0}^{n}(\mathcal{L}f)(X_i)\Bigr]
+    - \Bigl[f(X_n)-f(X_0)-\sum_{i=0}^{n-1}(\mathcal{L}f)(X_i)\Bigr]
+  = f(X_{n+1}) - f(X_n) - (\mathcal{L}f)(X_n).
+\]
+Now take the conditional expectation given $\mathcal{H}_n$:
+\begin{align*}
+  E[Y_{n+1}-Y_n\mid\mathcal{H}_n]
+  &= E[f(X_{n+1})\mid\mathcal{H}_n] - f(X_n) - (\mathcal{L}f)(X_n).
+\end{align*}
+By the Markov property of $\{X_n\}$,
+\[
+  E[f(X_{n+1})\mid\mathcal{H}_n]
+  = E[f(X_{n+1})\mid X_n]
+  = \sum_{y\in\mathcal{S}}p_{X_n,y}\,f(y).
+\]
+Note that
+\[
+  (\mathcal{L}f)(X_n)
+  = \sum_{y\in\mathcal{S}}p_{X_n,y}(f(y)-f(X_n))
+  = \sum_{y\in\mathcal{S}}p_{X_n,y}f(y) - f(X_n)\sum_{y\in\mathcal{S}}p_{X_n,y}
+  = \sum_{y\in\mathcal{S}}p_{X_n,y}f(y) - f(X_n),
+\]
+since $\sum_y p_{X_n,y}=1$. Therefore,
+\[
+  E[f(X_{n+1})\mid\mathcal{H}_n] = (\mathcal{L}f)(X_n) + f(X_n).
+\]
+Substituting back:
+\begin{align*}
+  E[Y_{n+1}-Y_n\mid\mathcal{H}_n]
+  &= \bigl[(\mathcal{L}f)(X_n)+f(X_n)\bigr] - f(X_n) - (\mathcal{L}f)(X_n)
+   = 0.
+\end{align*}
+Therefore $E[Y_{n+1}\mid\mathcal{H}_n]=Y_n$ a.s., proving $\{Y_n\}$ is a
+martingale. $\square$
+
+% ======================================================================
+\section*{Problem 4 (Galton--Watson Branching Process)}
+
+\paragraph{Problem statement.}
+Let $\{Z_i^n\}$ be i.i.d.\ nonneg.\ integer-valued r.v.'s with mean $\mu>0$.
+Define $X_0=1$ and $X_{n+1}=\sum_{i=1}^{X_n}Z_i^{n+1}$ for $n\ge0$.
+Let $\mathcal{F}_n=\sigma(Z^1,Z^2,\ldots,Z^n)$, where $Z^k=(Z_1^k,Z_2^k,\ldots)$.
+Show that $\{M_n\}:=\{\mu^{-n}X_n, n\ge0\}$ is a martingale w.r.t.\ $\{\mathcal{F}_n\}$.
+
+\paragraph{Setup and notation.}
+$X_n$ = population size at generation $n$.
+$Z_i^{n+1}$ = number of offspring of individual $i$ in generation $n$.
+The key independence: the offspring counts $\{Z_i^{n+1}\}_{i\ge1}$ are
+independent of $\mathcal{F}_n$ (they are ``new'' randomness in generation $n+1$).
+
+\paragraph{Solution.}
+
+\textbf{(i) Adaptedness.}
+$X_n$ is determined by the first $n$ generations' offspring:
+\begin{align*}
+  X_1 &= Z_1^1 \quad\text{(from the single ancestor)}, \\
+  X_2 &= \sum_{i=1}^{X_1}Z_i^2, \quad\ldots
+\end{align*}
+So $X_n\in\mathcal{F}_n$, and hence $M_n=\mu^{-n}X_n\in\mathcal{F}_n$.
+
+\textbf{(ii) Integrability.}
+We show by induction that $E[X_n]=\mu^n$, which gives $E[M_n]=1<\infty$.
+
+\emph{Base case}: $E[X_0]=1=\mu^0$.
+
+\emph{Inductive step}: Assume $E[X_n]=\mu^n$. Then
+\[
+  E[X_{n+1}] = E\!\left[\sum_{i=1}^{X_n}Z_i^{n+1}\right]
+  = E\!\left[E\!\left[\sum_{i=1}^{X_n}Z_i^{n+1}\,\Bigg|\,X_n\right]\right].
+\]
+Given $X_n=k$, the sum $\sum_{i=1}^{k}Z_i^{n+1}$ consists of $k$ i.i.d.\ terms
+each with mean $\mu$, so $E[\sum_{i=1}^{k}Z_i^{n+1}]=k\mu$. Hence
+\[
+  E\!\left[\sum_{i=1}^{X_n}Z_i^{n+1}\,\Bigg|\,X_n\right] = X_n\mu,
+\]
+and
+\[
+  E[X_{n+1}] = E[X_n\mu] = \mu E[X_n] = \mu\cdot\mu^n = \mu^{n+1}.
+\]
+
+\textbf{(iii) Martingale property.}
+We compute $E[M_{n+1}\mid\mathcal{F}_n]$:
+\begin{align*}
+  E[M_{n+1}\mid\mathcal{F}_n]
+  &= \mu^{-(n+1)}E[X_{n+1}\mid\mathcal{F}_n] \\
+  &= \mu^{-(n+1)}E\!\left[\sum_{i=1}^{X_n}Z_i^{n+1}\,\Bigg|\,\mathcal{F}_n\right].
+\end{align*}
+Since $X_n$ is $\mathcal{F}_n$-measurable and $\{Z_i^{n+1}\}_{i\ge1}$ are
+independent of $\mathcal{F}_n$, we can condition on $X_n=k$ and use:
+\[
+  E\!\left[\sum_{i=1}^{X_n}Z_i^{n+1}\,\Bigg|\,\mathcal{F}_n\right]
+  = \sum_{k=0}^{\infty}\mathbf{1}_{\{X_n=k\}}\,E\!\left[\sum_{i=1}^{k}Z_i^{n+1}\right]
+  = \sum_{k=0}^{\infty}\mathbf{1}_{\{X_n=k\}}\cdot k\mu
+  = X_n\mu.
+\]
+(This is a standard application of: if $N$ is $\mathcal{F}_n$-measurable and
+$\{W_i\}$ are i.i.d.\ independent of $\mathcal{F}_n$, then
+$E[\sum_{i=1}^{N}W_i\mid\mathcal{F}_n]=N\cdot EW_1$.) Therefore,
+\[
+  E[M_{n+1}\mid\mathcal{F}_n]
+  = \mu^{-(n+1)}\cdot X_n\mu
+  = \mu^{-n}X_n = M_n.
+\]
+Hence $\{M_n\}$ is a martingale. $\square$
+
+\paragraph{Remark.}
+The martingale $\{M_n\}$ converges a.s.\ (by the martingale convergence theorem,
+since $M_n\ge0$). The limit $M_\infty=\lim_{n\to\infty}\mu^{-n}X_n$ is related
+to the extinction probability: if $\mu\le1$, then $M_\infty=0$ a.s.
+
+% ======================================================================
+\section*{Problem 5 (Superharmonic Functions)}
+
+\paragraph{Problem statement.}
+A function $f:\R^d\to\R$ is \emph{superharmonic} if, for all $x\in\R^d$ and all
+$r>0$,
+\[
+  f(x) \ge \frac{1}{\vol(B(0,r))}\int_{B(x,r)}f(y)\,dy.
+\]
+Let $\{Z_n\}$ be i.i.d., uniformly distributed on $B(0,1)$. Set $S_0=0$ and
+$S_n=S_{n-1}+Z_n$. Define $X_n=f(S_n)$. Show $\{X_n\}$ is a supermartingale
+with respect to $\mathcal{F}_n=\sigma(Z_1,\ldots,Z_n)=\sigma(S_1,\ldots,S_n)$.
+
+\paragraph{Solution.}
+
+\textbf{(i) Adaptedness.}
+$X_n=f(S_n)$. Since $S_n=Z_1+\cdots+Z_n$ is $\sigma(Z_1,\ldots,Z_n)=\mathcal{F}_n$-measurable,
+so is $X_n=f(S_n)$.
+
+\textbf{(ii) Integrability.}
+We assume $f$ is integrable enough (e.g., $E|f(S_n)|<\infty$ for all $n$).
+This holds, e.g., if $f$ is bounded.
+
+\textbf{(iii) Supermartingale property.}
+We compute $E[X_{n+1}\mid\mathcal{F}_n]$.
+
+Since $S_{n+1}=S_n+Z_{n+1}$ and $Z_{n+1}$ is independent of $\mathcal{F}_n$
+(it is the ``new'' increment), and $S_n$ is $\mathcal{F}_n$-measurable:
+\[
+  E[X_{n+1}\mid\mathcal{F}_n]
+  = E[f(S_n+Z_{n+1})\mid\mathcal{F}_n].
+\]
+Condition on $\mathcal{F}_n$: since $Z_{n+1}\perp\mathcal{F}_n$ and $S_n$ is
+$\mathcal{F}_n$-measurable, the conditional distribution of $S_n+Z_{n+1}$ given
+$\mathcal{F}_n$ is the distribution of $S_n+Z_{n+1}$ with $S_n$ frozen at its
+current value. That is, for fixed $s=S_n(\omega)$,
+\[
+  E[f(S_n+Z_{n+1})\mid\mathcal{F}_n](\omega)
+  = E[f(s+Z_{n+1})]
+  = \int_{B(0,1)} f(s+z)\,\frac{dz}{\vol(B(0,1))}.
+\]
+Now make the substitution $y=s+z$ (i.e., $z=y-s$). As $z$ ranges over
+$B(0,1)=\{z:|z|\le1\}$, $y$ ranges over $\{y:|y-s|\le1\}=B(s,1)$. The Jacobian
+is $1$. Hence:
+\[
+  \int_{B(0,1)}f(s+z)\,\frac{dz}{\vol(B(0,1))}
+  = \frac{1}{\vol(B(s,1))}\int_{B(s,1)}f(y)\,dy
+\]
+where we use that $\vol(B(s,1))=\vol(B(0,1))$ (both are balls of radius 1 in $\R^d$,
+just centered differently; their volume is the same).
+
+By the \emph{superharmonic} property of $f$ applied at the point $x=s=S_n$ with
+$r=1$:
+\[
+  f(s) \ge \frac{1}{\vol(B(s,1))}\int_{B(s,1)}f(y)\,dy.
+\]
+Therefore,
+\[
+  E[X_{n+1}\mid\mathcal{F}_n]
+  = \frac{1}{\vol(B(S_n,1))}\int_{B(S_n,1)}f(y)\,dy
+  \le f(S_n) = X_n.
+\]
+This holds a.s.\ (since it holds for every fixed realization of $S_n$).
+
+Hence $E[X_{n+1}\mid\mathcal{F}_n]\le X_n$ a.s., so $\{X_n\}$ is a supermartingale.
+$\square$
+
+\paragraph{Remark.}
+If $f$ is harmonic ($\ge$ replaced by $=$), then $\{X_n\}$ becomes a martingale.
+Superharmonic functions correspond to supermartingales, and subharmonic to
+submartingales --- this is the deep connection between potential theory and
+martingale theory.
+
+% ======================================================================
+\section*{Problem 6}
+
+\paragraph{Problem statement.}
+Let $\{X_n\}$ be a DTMC on $\mathcal{X}$ with transition probabilities $\{p_{x,y}\}$.
+Suppose $f:\mathcal{X}\to\R$ is bounded and satisfies
+\[
+  \sum_{y\in\mathcal{X}}p_{x,y}f(y)\le\lambda f(x)
+\]
+for some $\lambda>0$ and all $x\in\mathcal{X}$. Show that
+$\{N_n\}:=\{\lambda^{-n}f(X_n)\}$ is a supermartingale with respect to
+$\mathcal{F}_n=\sigma(X_0,\ldots,X_n)$.
+
+\paragraph{Interpretation.}
+The condition $\sum_y p_{x,y}f(y)\le\lambda f(x)$ says: the expected value of
+$f$ after one step from $x$ is at most $\lambda f(x)$. This is the \emph{Foster-Lyapunov}
+type condition. When we discount by $\lambda^{-n}$, the expected value after the
+discount is non-increasing.
+
+\paragraph{Solution.}
+
+\textbf{(i) Adaptedness.}
+$N_n=\lambda^{-n}f(X_n)$ is $\mathcal{F}_n$-measurable (it is a function of $X_n$,
+which is $\mathcal{F}_n$-measurable).
+
+\textbf{(ii) Integrability.}
+Since $f$ is bounded, say $|f|\le M$, we have $|N_n|\le\lambda^{-n}M<\infty$, so
+$N_n$ is bounded and integrable.
+
+\textbf{(iii) Supermartingale property.}
+\begin{align*}
+  E[N_{n+1}\mid\mathcal{F}_n]
+  &= \lambda^{-(n+1)}\,E[f(X_{n+1})\mid\mathcal{F}_n].
+\end{align*}
+By the Markov property:
+\[
+  E[f(X_{n+1})\mid\mathcal{F}_n]
+  = E[f(X_{n+1})\mid X_n]
+  = \sum_{y\in\mathcal{X}}p_{X_n,y}\,f(y).
+\]
+By the given condition applied at $x=X_n$:
+\[
+  \sum_{y\in\mathcal{X}}p_{X_n,y}\,f(y) \le \lambda\,f(X_n).
+\]
+Therefore,
+\[
+  E[N_{n+1}\mid\mathcal{F}_n]
+  \le \lambda^{-(n+1)}\cdot\lambda\,f(X_n)
+  = \lambda^{-n}f(X_n) = N_n.
+\]
+Hence $E[N_{n+1}\mid\mathcal{F}_n]\le N_n$ a.s., so $\{N_n\}$ is a supermartingale.
+$\square$
+
+\paragraph{Remark.}
+If $\lambda=1$ and the inequality is an equality $\sum_y p_{x,y}f(y)=f(x)$, then
+$f$ is a \emph{harmonic function} for the chain and $\{f(X_n)\}$ is a martingale.
+If $\lambda=1$ and $\le$ holds, $f$ is superharmonic and $\{f(X_n)\}$ is a supermartingale.
+Problem 6 generalizes this to arbitrary $\lambda>0$.
+
+% ======================================================================
+\section*{Problem 7 (P\'olya's Urn)}
+
+\paragraph{Setup.}
+Start with $r$ red and $b$ blue balls (total $r+b$, both $r,b>0$). At each step:
+draw a ball uniformly at random, note its color, replace it, add a new ball of
+the same color. $R_n$ = \#red balls after $n$ draws.
+
+\subsection*{Part (a): $Y_n=R_n/(n+r+b)$ is a martingale}
+
+\paragraph{Solution.}
+
+\textbf{Setup.} After $n$ steps, total balls $= n+r+b$, red balls $= R_n$, blue balls $= n+r+b-R_n$.
+
+\textbf{Adaptedness.} $Y_n=R_n/(n+r+b)$ is $\mathcal{F}_n=\sigma(R_1,\ldots,R_n)$-measurable.
+
+\textbf{Integrability.} $0\le Y_n\le1$, so $E|Y_n|<\infty$.
+
+\textbf{Martingale property.} At step $n+1$, given $\mathcal{F}_n$ (so $R_n$ is known):
+\begin{itemize}
+  \item With probability $\dfrac{R_n}{n+r+b}$, a red ball is drawn, so $R_{n+1}=R_n+1$.
+  \item With probability $\dfrac{(n+r+b)-R_n}{n+r+b}$, a blue ball is drawn, so $R_{n+1}=R_n$.
+\end{itemize}
+Therefore,
+\begin{align*}
+  E[R_{n+1}\mid\mathcal{F}_n]
+  &= (R_n+1)\cdot\frac{R_n}{n+r+b}
+    + R_n\cdot\frac{(n+r+b-R_n)}{n+r+b} \\
+  &= \frac{R_n^2+R_n + R_n(n+r+b)-R_n^2}{n+r+b} \\
+  &= \frac{R_n(n+r+b) + R_n}{n+r+b} \\
+  &= \frac{R_n(n+r+b+1)}{n+r+b}.
+\end{align*}
+Hence,
+\[
+  E[Y_{n+1}\mid\mathcal{F}_n]
+  = \frac{E[R_{n+1}\mid\mathcal{F}_n]}{(n+1)+r+b}
+  = \frac{R_n(n+r+b+1)}{(n+r+b)(n+r+b+1)}
+  = \frac{R_n}{n+r+b}
+  = Y_n.
+\]
+So $\{Y_n\}$ is a martingale. $\square$
+
+\subsection*{Part (b): $E[(T+2)^{-1}]=1/4$ when $r=b=1$}
+
+\paragraph{Setup.}
+With $r=b=1$, the urn starts with 1 red and 1 blue ball (2 total). $T$ = number of
+draws until the first blue ball.
+
+\paragraph{Step 1: Distribution of $T$.}
+At each draw, suppose the current number of red balls is $k$ and the total number of
+balls is $k+1$ (since only red balls were added so far, having drawn all red for the
+first $k-1$ draws). The probability of drawing blue (the only blue ball) is $\frac{1}{k+1}$.
+
+More carefully:
+\begin{itemize}
+  \item At draw 1: urn has 1R, 1B. $P(\text{draw B})=\frac{1}{2}$, so $P(T=1)=\frac{1}{2}$.
+  \item If draw 1 is red: urn becomes 2R, 1B (total 3). $P(\text{draw B})=\frac{1}{3}$.
+  \item If draws 1,2 are red: urn becomes 3R, 1B (total 4). $P(\text{draw B at step 3})=\frac{1}{4}$.
+\end{itemize}
+In general, $T=k$ means the first $k-1$ draws were all red and draw $k$ is blue:
+\[
+  P(T=k)
+  = \underbrace{\frac{1}{2}\cdot\frac{2}{3}\cdots\frac{k-1}{k}}_{\text{prob.\ first }k-1\text{ are red}}
+    \cdot\underbrace{\frac{1}{k+1}}_{\text{draw }k\text{ is blue}}.
+\]
+The numerator of the first product is $(k-1)!$ and the denominator is
+$2\cdot3\cdots k=\frac{k!}{1!}=k!$, so the first product is $\frac{(k-1)!}{k!}=\frac{1}{k}$.
+Hence
+\[
+  \boxed{P(T=k) = \frac{1}{k(k+1)}}, \quad k=1,2,3,\ldots
+\]
+\emph{Verification}: $\sum_{k=1}^{\infty}\frac{1}{k(k+1)}
+=\sum_{k=1}^{\infty}\!\left(\frac{1}{k}-\frac{1}{k+1}\right)=1$. $\checkmark$
+
+\paragraph{Step 2: Computing $E[(T+2)^{-1}]$.}
+\[
+  E\!\left[\frac{1}{T+2}\right]
+  = \sum_{k=1}^{\infty}\frac{1}{k+2}\cdot P(T=k)
+  = \sum_{k=1}^{\infty}\frac{1}{k+2}\cdot\frac{1}{k(k+1)}
+  = \sum_{k=1}^{\infty}\frac{1}{k(k+1)(k+2)}.
+\]
+
+\paragraph{Step 3: Partial fractions for $\frac{1}{k(k+1)(k+2)}$.}
+We decompose:
+\[
+  \frac{1}{k(k+1)(k+2)} = \frac{A}{k}+\frac{B}{k+1}+\frac{C}{k+2}.
+\]
+Multiplying both sides by $k(k+1)(k+2)$:
+\[
+  1 = A(k+1)(k+2)+Bk(k+2)+Ck(k+1).
+\]
+\begin{itemize}
+  \item $k=0$: $1=A\cdot1\cdot2$, so $A=\frac{1}{2}$.
+  \item $k=-1$: $1=B(-1)(1)$, so $B=-1$.
+  \item $k=-2$: $1=C(-2)(-1)$, so $C=\frac{1}{2}$.
+\end{itemize}
+Therefore $\dfrac{1}{k(k+1)(k+2)}=\dfrac{1/2}{k}-\dfrac{1}{k+1}+\dfrac{1/2}{k+2}$.
+
+\paragraph{Step 4: Summing the series.}
+\begin{align*}
+  \sum_{k=1}^{\infty}\frac{1}{k(k+1)(k+2)}
+  &= \frac{1}{2}\sum_{k=1}^{\infty}\frac{1}{k}
+     - \sum_{k=1}^{\infty}\frac{1}{k+1}
+     + \frac{1}{2}\sum_{k=1}^{\infty}\frac{1}{k+2}.
+\end{align*}
+Re-index: let $j=k+1$ in the second sum and $j=k+2$ in the third:
+\begin{align*}
+  &= \frac{1}{2}\sum_{k=1}^{\infty}\frac{1}{k}
+     - \sum_{j=2}^{\infty}\frac{1}{j}
+     + \frac{1}{2}\sum_{j=3}^{\infty}\frac{1}{j}.
+\end{align*}
+Split the first sum as $\sum_{k=1}^{\infty}\frac{1}{k}
+=\frac{1}{1}+\frac{1}{2}+\sum_{j=3}^{\infty}\frac{1}{j}$, and the second sum as
+$\sum_{j=2}^{\infty}\frac{1}{j}=\frac{1}{2}+\sum_{j=3}^{\infty}\frac{1}{j}$.
+Let $S=\sum_{j=3}^{\infty}\frac{1}{j}$:
+\begin{align*}
+  &= \frac{1}{2}\!\left(1+\frac{1}{2}+S\right)
+     - \!\left(\frac{1}{2}+S\right)
+     + \frac{1}{2}S \\
+  &= \frac{1}{2}+\frac{1}{4}+\frac{S}{2}
+     - \frac{1}{2} - S
+     + \frac{S}{2} \\
+  &= \frac{1}{4} + \left(\frac{S}{2}-S+\frac{S}{2}\right)
+   = \frac{1}{4} + 0
+   = \frac{1}{4}.
+\end{align*}
+Hence $E\!\left[(T+2)^{-1}\right]=\dfrac{1}{4}$. $\square$
+
+% ======================================================================
+\section*{Problem 8 (Symmetric Random Walk: Gambler's Ruin)}
+
+\paragraph{Setup.}
+$Z_i$ i.i.d., $P(Z_i=1)=P(Z_i=-1)=\frac{1}{2}$. $X_0=0$, $X_n=\sum_{i=1}^nZ_i$.
+Fix $a,b\in\mathbb{Z}_{>0}$ and $T=\min\{n\ge0:X_n\in\{-a,b\}\}$.
+
+\paragraph{Preliminary: $T<\infty$ a.s.\ and $E[T]<\infty$.}
+By standard results on the symmetric random walk on $\mathbb{Z}$, the walk
+will hit any finite set of integers in finite expected time. In particular,
+$T<\infty$ a.s.\ and $E[T]<\infty$ (in fact $E[T]=ab$ as we will show).
+
+\subsection*{Part (a): $P(X_T=-a)=b/(a+b)$}
+
+\paragraph{Martingale used.}
+$\{X_n\}$ is itself a martingale, since $E[X_{n+1}\mid\mathcal{F}_n]
+=X_n+E[Z_{n+1}]=X_n+0=X_n$.
+
+\paragraph{Verifying OST conditions.}
+For $n\le T$, we have $X_n\in(-a,b)$ (or $X_n\in\{-a,b\}$ when $n=T$), so
+$|X_{n\wedge T}|\le\max(a,b)$. The stopped process $\{X_{n\wedge T}\}$ is bounded.
+By the Bounded Optional Stopping Theorem (or Doob's OST), since the stopped process
+is a bounded martingale and $T<\infty$ a.s.,
+\[
+  E[X_T] = E[X_0] = 0.
+\]
+
+\paragraph{Computing the probability.}
+Let $p=P(X_T=b)$ so $P(X_T=-a)=1-p$. Since $X_T\in\{-a,b\}$:
+\[
+  0 = E[X_T] = b\cdot p + (-a)\cdot(1-p) = bp - a + ap = (a+b)p - a.
+\]
+Solving:
+\[
+  p = \frac{a}{a+b},
+  \qquad
+  P(X_T=-a) = 1-p = \frac{b}{a+b}.
+  \qquad\square
+\]
+
+\subsection*{Part (b): $E[T]=ab$}
+
+\paragraph{Key martingale.}
+Consider $M_n=X_n^2-n$. We verify it is a martingale:
+\begin{align*}
+  E[M_{n+1}\mid\mathcal{F}_n]
+  &= E[(X_n+Z_{n+1})^2-(n+1)\mid\mathcal{F}_n] \\
+  &= E[X_n^2+2X_nZ_{n+1}+Z_{n+1}^2\mid\mathcal{F}_n] - (n+1) \\
+  &= X_n^2 + 2X_n E[Z_{n+1}] + E[Z_{n+1}^2] - n - 1 \\
+  &= X_n^2 + 0 + 1 - n - 1 = X_n^2-n = M_n.
+\end{align*}
+(We used $E[Z_{n+1}]=0$, $E[Z_{n+1}^2]=1$, and $Z_{n+1}\perp\mathcal{F}_n$.)
+
+\paragraph{Applying OST.}
+We apply OST to $\{M_n\}$ at time $T$. We need $E[M_T]$ to be well-defined.
+The stopped martingale $\{M_{n\wedge T}\}$ satisfies:
+\[
+  |M_{n\wedge T}| = |X_{n\wedge T}^2-(n\wedge T)|
+  \le \max(a,b)^2 + n\wedge T
+  \le \max(a,b)^2 + T.
+\]
+Since $E[T]<\infty$ (established in Part (a) context and confirmed below), by
+dominated convergence, $E[M_{n\wedge T}]\to E[M_T]$ as $n\to\infty$. Since
+$\{M_{n\wedge T}\}$ is a martingale, $E[M_{n\wedge T}]=E[M_0]=0$ for all $n$.
+Hence $E[M_T]=0$, i.e.,
+\[
+  E[X_T^2] = E[T].
+\]
+
+\paragraph{Computing $E[X_T^2]$.}
+We use $P(X_T=b)=a/(a+b)$ and $P(X_T=-a)=b/(a+b)$:
+\begin{align*}
+  E[X_T^2]
+  &= b^2\cdot\frac{a}{a+b} + a^2\cdot\frac{b}{a+b}
+   = \frac{ab^2+a^2b}{a+b}
+   = \frac{ab(a+b)}{a+b}
+   = ab.
+\end{align*}
+
+\paragraph{Conclusion.}
+\[
+  E[T] = E[X_T^2] = ab.
+  \qquad\square
+\]
+
+\paragraph{Remark on $E[T]<\infty$.}
+To close the argument, we sketch why $E[T]<\infty$. Note $T\le T'$ where
+$T'=\min\{n: X_n\notin(-a-b, a+b)\}$, and the random walk on a finite interval
+has $E[T']<\infty$ by standard analysis (e.g., using the fact that at each step
+there is a positive probability of exiting a box of size $a+b$ within $a+b$
+steps). From $E[T]=ab$ itself being finite (once derived), we also get the
+self-consistent conclusion.
+
+\end{document}

@@ -1,0 +1,385 @@
+\documentclass[10pt,fleqn]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper,margin=0.42in]{geometry}
+\usepackage{multicol}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage[protrusion=true,expansion=false]{microtype}
+
+% EE621-style compact layout (readability-focused)
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1.4pt}
+\setlength{\columnsep}{8pt}
+\setlength{\mathindent}{0pt}
+\setlength{\abovedisplayskip}{2.5pt}
+\setlength{\belowdisplayskip}{2.5pt}
+\setlength{\abovedisplayshortskip}{1.5pt}
+\setlength{\belowdisplayshortskip}{1.5pt}
+\setlist[itemize]{leftmargin=*,itemsep=1pt,topsep=1pt,parsep=0pt}
+\titlespacing*{\section}{0pt}{3pt}{2pt}
+\titleformat{\section}{\bfseries\scriptsize}{}{0em}{}
+\pagestyle{empty}
+\allowdisplaybreaks
+
+\begin{document}
+\tiny
+\begin{multicols}{2}
+
+\section*{A. Core Concepts}
+\begin{itemize}
+  \item \textbf{MLP} = stack of \textbf{AFFINE + NONLINEARITY}: \(a^0=x,\; z^\ell=W^\ell a^{\ell-1}+b^\ell,\; a^\ell=\phi^\ell(z^\ell)\).
+  \item \textbf{TRAINING GOAL}: minimize empirical loss \(E(w)=\sum_{i=1}^{S} e_i(w)\) over all weights \(w\).
+  \item \textbf{FORWARD PASS} computes \(\hat y\); \textbf{BACKPROP} computes \(\nabla_w e\) via chain rule from last layer to first.
+  \item \textbf{MULTICLASS} needs \(C\) output neurons + \textbf{SOFTMAX}; labels are \textbf{ONE-HOT}.
+  \item \textbf{BAYESIAN LR}: PRIOR \(p(w)\) + LIKELIHOOD \(p(y|X,w)\Rightarrow\) POSTERIOR \(p(w|X,y)\).
+  \item \(X^TX\) captures feature-feature interaction; \(X^Ty\) captures feature-target alignment.
+  \item \textbf{USE WHEN}: MLP for nonlinear decision boundaries; Bayesian LR for uncertainty-aware linear prediction.
+\end{itemize}
+
+\section*{B. Key Definitions}
+\begin{itemize}
+  \item \textbf{DESIGN MATRIX}: \(X\in\mathbb{R}^{N\times d}\), row \(n\): \(x_n^\top\). With intercept, first column is all \(1\)'s.
+  \item \textbf{ONE-HOT LABEL}: \(y\in\{1,\dots,C\}\Rightarrow y^{\text{OH}}\in\{0,1\}^C\), exactly one entry \(=1\).
+  \item \textbf{LOGITS}: pre-softmax vector \(z\in\mathbb{R}^C\).
+  \item \textbf{SOFTMAX OUTPUT}: \(q_j=\dfrac{e^{z_j}}{\sum_{r=1}^C e^{z_r}}\), \(q_j>0\), \(\sum_j q_j=1\).
+  \item \textbf{CROSS-ENTROPY}: \(\mathrm{CE}(p,q)=-\sum_{j=1}^C p_j\log q_j\).
+  \item \textbf{KL RELATION}: \(\mathrm{KL}(p\|q)=\sum_j p_j\log\frac{p_j}{q_j}= \mathrm{NE}(p)+\mathrm{CE}(p,q)\).
+  \item \(\mathrm{KL}(p\|q)\neq \mathrm{KL}(q\|p)\): NOT symmetric, NOT a distance.
+\end{itemize}
+
+\section*{C. Important Formulas}
+\textbf{ACTIVATIONS + DERIVATIVES}
+\begin{itemize}
+  \item \(\sigma(z)=\dfrac{1}{1+e^{-z}},\quad \sigma'(z)=\sigma(z)\left(1-\sigma(z)\right)\).
+  \item \(\tanh(z)=\dfrac{e^z-e^{-z}}{e^z+e^{-z}},\quad \tanh'(z)=1-\tanh^2(z)\).
+  \item \(\mathrm{ReLU}(z)=\max(0,z),\quad \mathrm{ReLU}'(z)=\begin{cases}1,&z>0\\0,&z<0\end{cases}\).
+  \item \(\mathrm{PReLU}(z)=\begin{cases}z,&z>0\\\alpha z,&z\le 0\end{cases},\quad
+\dfrac{d}{dz}\mathrm{PReLU}(z)=\begin{cases}1,&z>0\\\alpha,&z\le0\end{cases}\).
+  \item \(\tanh(z)=2\sigma(2z)-1,\quad \sigma(z)=\frac{1+\tanh(z/2)}{2}\) (sigmoid\(\leftrightarrow\)tanh trick).
+\end{itemize}
+
+\textbf{SOFTMAX + CE}
+\[
+q_j=\frac{e^{z_j}}{\sum_{r=1}^C e^{z_r}},\qquad
+\mathrm{CE}(y,q)=-\sum_{j=1}^C y_j\log q_j.
+\]
+\[
+\text{If one-hot true class }c:\quad \mathrm{CE}(y,q)=-\log q_c.
+\]
+\[
+\begin{aligned}
+\frac{\partial q_j}{\partial z_k}&=q_j(\mathbf{1}_{j=k}-q_k),\\
+\delta^L:=\frac{\partial e}{\partial z^L}&=q-y \;\;(\text{SOFTMAX+CE}).
+\end{aligned}
+\]
+
+\textbf{BACKPROP (MATRIX FORM)}
+\[
+\begin{aligned}
+\delta^\ell&=\left(W^{\ell+1}\right)^\top\delta^{\ell+1}\odot \phi'^\ell(z^\ell),\\
+\nabla_{W^\ell}e&=\delta^\ell (a^{\ell-1})^\top,\qquad
+\nabla_{b^\ell}e=\delta^\ell.
+\end{aligned}
+\]
+\[
+\nabla_{W^\ell}e=\mathrm{Diag}(\phi'^\ell)\,\delta^\ell (a^{\ell-1})^\top
+\]
+(same pattern used in your slides).
+
+\textbf{OPTIMIZATION UPDATES}
+\[
+\text{GD: } w_{k+1}=w_k-\eta_k\sum_{i=1}^S \nabla e_i(w_k)
+\]
+\[
+\text{SGD: } w_{k+1}=w_k-\eta_k\nabla e_{j_k}(w_k)
+\]
+\[
+\text{MINI-BATCH: } w_{k+1}=w_k-\eta_k\sum_{j\in B_k}\nabla e_j(w_k).
+\]
+\[
+\sum_k \eta_k=\infty,\quad \sum_k \eta_k^2<\infty \quad (\text{standard SGD condition}).
+\]
+
+\textbf{BAYESIAN LINEAR REGRESSION}
+\[
+y_n=w^\top x_n+\epsilon_n,\quad \epsilon_n\sim\mathcal N(0,\sigma^2).
+\]
+\[
+p(y|X,w,\sigma^2)=\mathcal N(y\,|\,Xw,\sigma^2 I),\qquad
+p(w)=\mathcal N(w\,|\,m_0,S_0).
+\]
+\[
+p(w|X,y,\sigma^2)=\mathcal N(w\,|\,m_N,S_N)
+\]
+\[
+\begin{aligned}
+S_N&=\left(S_0^{-1}+\frac{1}{\sigma^2}X^\top X\right)^{-1},\\
+m_N&=S_N\left(S_0^{-1}m_0+\frac{1}{\sigma^2}X^\top y\right).
+\end{aligned}
+\]
+\[
+p(y_*|x_*,D)=\mathcal N\!\left(y_*\,\middle|\,\mu_*,\sigma_*^2\right),
+\]
+\[
+\mu_*=x_*^\top m_N,\qquad
+\sigma_*^2=\sigma^2+x_*^\top S_N x_*.
+\]
+\[
+\hat w_{\text{OLS}}=(X^\top X)^{-1}X^\top y.
+\]
+
+\section*{D. Model Architectures}
+\begin{itemize}
+  \item \textbf{BINARY CLASSIFICATION MLP}: one output neuron + SIGMOID + BCE/SE loss.
+  \item \textbf{MULTICLASS CLASSIFICATION MLP}: \(C\) outputs (logits) + SOFTMAX + CATEGORICAL CE.
+  \item \textbf{MULTICLASS} uses one label among \(C\); \textbf{MULTI-LABEL} uses independent labels.
+  \item \textbf{MULTI-LABEL LAST LAYER}: \(C\) independent SIGMOIDS + sum/mean BCE across labels.
+  \item Use RELU/PRELU in hidden layers to reduce vanishing-gradient vs deep sigmoid stacks.
+\end{itemize}
+
+\section*{E. Loss Functions}
+\begin{itemize}
+  \item \textbf{SQUARED ERROR}: \(e=(y-\hat y)^2\). Use for regression / simple lecture examples.
+  \item \textbf{BINARY CE}: \(e=-[y\log\hat y+(1-y)\log(1-\hat y)]\), \(\hat y=\sigma(z)\).
+  \item \textbf{MULTICLASS CE}: \(e=-\sum_{j=1}^C y_j\log q_j\), \(q=\text{softmax}(z)\).
+  \item If \(y\) is one-hot, CE only penalizes predicted probability of true class.
+  \item Don’t apply SIGMOID to each class for single-label multiclass; use SOFTMAX.
+\end{itemize}
+
+\section*{F. Algorithms / Procedures}
+\textbf{MLP TRAINING LOOP (QUIZ-FORM)}
+\begin{itemize}
+  \item Initialize \(w^0\), choose \(\eta_k\), epochs \(K\).
+  \item For each step \(k\): sample \(j_k\) (SGD) or \(B_k\) (mini-batch).
+  \item Forward pass: \(\hat y=\mathrm{MLP}(x;w^k)\).
+  \item Compute loss \(e_{j_k}(w^k)\) (CE or SE).
+  \item Backprop: compute \(\nabla_w e_{j_k}(w^k)\).
+  \item Update: \(w^{k+1}=w^k-\eta_k\nabla_w e_{j_k}(w^k)\).
+\end{itemize}
+
+\textbf{BAYESIAN LR QUICK COMPUTE}
+\begin{itemize}
+  \item Build \(X=[\mathbf{1}\;\;x]\) for single-feature linear model \(w_0+w_1x\).
+  \item Compute \(X^\top X\) and \(X^\top y\) first (most asked computational step).
+  \item Plug into \(S_N,m_N\), then compute \(\mu_*,\sigma_*^2\) at test \(x_*\).
+  \item As \(N\uparrow\), data term \(\frac1{\sigma^2}X^\top X\) dominates \(S_0^{-1}\) (prior influence shrinks).
+\end{itemize}
+
+\section*{G. Derivations (High-Yield)}
+\begin{itemize}
+  \item \textbf{SOFTMAX+CE GRADIENT}: memorize final result \(\delta^L=q-y\).\\
+  Trick: CE derivative gives \(-y_j/q_j\), softmax Jacobian collapses to \(q-y\).
+  \item \textbf{SIGMOID \(\leftrightarrow\) TANH LAYER CONVERSION}:\\
+  If \(a=\sigma(z)\), then \(2a-1=\tanh(z/2)\); if \(u=\tanh(v)\), then \(\sigma(2v)=\frac{u+1}{2}\).
+  \item \textbf{POSTERIOR \(m_N,S_N\) DERIVATION}: final matrix completion pattern\\
+  \(\exp\{-\frac12[w^\top A w-2w^\top b]\}\Rightarrow S_N=A^{-1},\; m_N=A^{-1}b\).
+  \item \textbf{PREDICTIVE VARIANCE}: \(\sigma_*^2=\sigma^2+x_*^\top S_Nx_*\).\\
+  noise term + parameter-uncertainty term.
+\end{itemize}
+
+\textbf{DELTA (\(\delta^\ell\)) DERIVATION BOX}
+\[
+z^\ell=W^\ell a^{\ell-1}+b^\ell,\qquad a^\ell=\phi^\ell(z^\ell),\qquad
+\delta^\ell:=\frac{\partial e}{\partial z^\ell}.
+\]
+\[
+\delta^\ell=\frac{\partial e}{\partial a^\ell}\odot \phi'^\ell(z^\ell)
+\]
+(chain rule core identity).
+\[
+\delta^\ell=\left(W^{\ell+1}\right)^\top\delta^{\ell+1}\odot \phi'^\ell(z^\ell)
+\]
+(hidden-layer recursion).
+\[
+\text{SOFTMAX+CE: }\delta^L=q-y,\qquad
+\text{SIGMOID+BCE: }\delta^L=\hat y-y.
+\]
+\[
+\text{Squared error } e=\|a^L-y\|_2^2:\quad
+\delta^L=2(a^L-y)\odot \phi'^L(z^L).
+\]
+\[
+\frac{\partial e}{\partial W^\ell}=\delta^\ell (a^{\ell-1})^\top,\quad
+\frac{\partial e}{\partial b^\ell}=\delta^\ell,\quad
+\frac{\partial e}{\partial a^{\ell-1}}=(W^\ell)^\top\delta^\ell.
+\]
+\[
+\frac{\partial e}{\partial w_{ij}^\ell}=\delta_i^\ell a_j^{\ell-1},\quad
+\frac{\partial e}{\partial b_i^\ell}=\delta_i^\ell,\quad
+\delta_i^\ell=\phi'^\ell(z_i^\ell)\sum_k w_{ki}^{\ell+1}\delta_k^{\ell+1}.
+\]
+
+\section*{H. Common Exam Traps}
+\begin{itemize}
+  \item Missing intercept column in DESIGN MATRIX (\(X\)) gives wrong \(X^\top X,\;X^\top y\).
+  \item In SOFTMAX denominator, sum over \textbf{ALL} classes, not just true class.
+  \item For one-hot CE, do not keep full sum in numerics: use \(-\log q_c\).
+  \item In mini-batch update, be consistent: sum vs average changes effective learning rate.
+  \item \(\mathrm{KL}(p\|q)\) non-symmetric; never call it a metric.
+  \item Using threshold per class in multiclass single-label tasks is wrong; use \(\arg\max_j q_j\).
+  \item For PReLU derivative at \(z\le 0\), slope is \(\alpha\), not \(0\).
+  \item Deep SIGMOID/TANH may cause VANISHING GRADIENT; RELU/PRELU often safer.
+  \item Prior strength in Bayesian LR: small \(S_0\) (large precision) pulls \(m_N\) toward \(m_0\).
+\end{itemize}
+
+\section*{I. Likely Quiz Questions (Extended)}
+\begin{itemize}
+  \item Derive \(\frac{d}{dz}\mathrm{PReLU}(z)\); which ReLU issue is fixed?\\
+  Hint: negative side slope \(=\alpha\) prevents dead neurons.
+  \item Show sigmoid layer in tanh form.\\
+  Hint: \(\sigma(z)=\frac{1+\tanh(z/2)}{2}\).
+  \item For multiclass MLP, write output layer + loss + prediction rule.\\
+  Hint: SOFTMAX + CE + \(\arg\max\).
+  \item Write GD vs SGD vs Mini-batch updates and compute per-step complexity.
+  \item For softmax, derive diagonal and off-diagonal Jacobian terms \(\partial q_j/\partial z_k\).
+  \item Derive backprop recursion \(\delta^\ell=(W^{\ell+1})^\top\delta^{\ell+1}\odot \phi'^\ell(z^\ell)\).
+  \item In one sentence each: when does exploding gradient happen, when does vanishing happen?
+  \item Write a valid last layer + loss for multi-label classification and justify in 2 lines.
+  \item Given \(Y=\{1,\dots,C\}\), explain why \(C\) output neurons are needed (not one neuron).
+  \item Prove softmax outputs are a probability vector: \(q_j>0\), \(\sum_j q_j=1\).
+  \item Write one trap example where student wrongly uses sigmoid + argmax for single-label multiclass.
+\end{itemize}
+
+\section*{J. Likelihood Questions + Solutions (Combined)}
+\begin{itemize}
+  \item \textbf{Q: For data \((x_i,y_i)\), how to form \(X,\;X^\top X,\;X^\top y\)?}\\
+  \textbf{Sol:} for scalar feature, \(X=[\mathbf 1\;\;x]\in\mathbb R^{N\times 2}\),
+  \[
+  X^\top X=\begin{bmatrix}N&\sum_i x_i\\[1pt]\sum_i x_i&\sum_i x_i^2\end{bmatrix},\quad
+  X^\top y=\begin{bmatrix}\sum_i y_i\\[1pt]\sum_i x_i y_i\end{bmatrix}.
+  \]
+  \item \textbf{Q: Write BLR likelihood.}\\
+  \textbf{Sol:}
+  \[
+  p(y|X,w,\sigma^2)=\mathcal N(y|Xw,\sigma^2I)
+  =(2\pi\sigma^2)^{-N/2}\exp\!\left(-\frac{\|y-Xw\|_2^2}{2\sigma^2}\right).
+  \]
+  \item \textbf{Q: Log-likelihood / NLL for Gaussian noise model?}\\
+  \textbf{Sol:}
+  \[
+  \log p(y|X,w,\sigma^2)= -\frac{N}{2}\log(2\pi\sigma^2)-\frac{1}{2\sigma^2}\|y-Xw\|_2^2.
+  \]
+  Max log-likelihood \(\Leftrightarrow\) min NLL \(\Leftrightarrow\) min \(\|y-Xw\|_2^2\).
+  \item \textbf{Q: Show MLE of \(w\) equals OLS.}\\
+  \textbf{Sol:} set gradient of SSE to zero:
+  \[
+  \nabla_w\|y-Xw\|_2^2=-2X^\top(y-Xw)=0
+  \Rightarrow X^\top X\,\hat w=X^\top y
+  \Rightarrow \hat w=(X^\top X)^{-1}X^\top y.
+  \]
+  \item \textbf{Q: Why minimizing KL is same as minimizing CE (fixed true \(p\))?}\\
+  \textbf{Sol:}
+  \[
+  \mathrm{KL}(p\|q)=\sum_j p_j\log\frac{p_j}{q_j}
+  =\underbrace{\sum_j p_j\log p_j}_{\mathrm{NE}(p),\;\text{constant in }q}
+  +\mathrm{CE}(p,q).
+  \]
+  So \(\arg\min_q\mathrm{KL}(p\|q)=\arg\min_q\mathrm{CE}(p,q)\).
+  \item \textbf{Q: One-hot CE from categorical likelihood?}\\
+  \textbf{Sol:} if \(y\) is one-hot with true class \(c\),
+  \[
+  p(y|x,w)=\prod_{j=1}^C q_j^{y_j}=q_c,\qquad
+  -\log p(y|x,w)=-\sum_j y_j\log q_j=-\log q_c.
+  \]
+  \item \textbf{Q: Posterior (Gaussian prior + Gaussian likelihood) final form?}\\
+  \textbf{Sol:}
+  \[
+  p(w|X,y,\sigma^2)=\mathcal N(w|m_N,S_N),
+  \]
+  \[
+  S_N=\left(S_0^{-1}+\frac1{\sigma^2}X^\top X\right)^{-1},\quad
+  m_N=S_N\left(S_0^{-1}m_0+\frac1{\sigma^2}X^\top y\right).
+  \]
+  \item \textbf{Q: Compute posterior predictive mean/variance at \(x_*\).}\\
+  \textbf{Sol:}
+  \[
+  p(y_*|x_*,D)=\mathcal N(y_*|\mu_*,\sigma_*^2),\quad
+  \mu_*=x_*^\top m_N,\quad
+  \sigma_*^2=\sigma^2+x_*^\top S_Nx_*.
+  \]
+  \item \textbf{Q: Interpret predictive variance split.}\\
+  \textbf{Sol:} \(\sigma^2\) = data noise, \(x_*^\top S_Nx_*\) = parameter uncertainty.
+  \item \textbf{Q: For \(N=0\), what is posterior?}\\
+  \textbf{Sol:} no data update, so \(m_N=m_0,\;S_N=S_0\) (posterior equals prior).
+  \item \textbf{Q: Tight prior \(S_0=0.01I\) vs loose \(S_0=100I\): effect on \(m_N\)?}\\
+  \textbf{Sol:} tight prior \(\Rightarrow S_0^{-1}\) large \(\Rightarrow m_N\) pulled more toward \(m_0\); loose prior gives weaker pull.
+  \item \textbf{Q: As \(N\) gets large, which term dominates \(m_N\)?}\\
+  \textbf{Sol:} data term \(\frac1{\sigma^2}X^\top y\) and \(\frac1{\sigma^2}X^\top X\) dominate; prior influence shrinks.
+  \item \textbf{Q: How does OLS arise from BLR?}\\
+  \textbf{Sol:} weak prior \(S_0^{-1}\to 0\) gives
+  \[
+  m_N\to\left(\frac1{\sigma^2}X^\top X\right)^{-1}\left(\frac1{\sigma^2}X^\top y\right)
+  =(X^\top X)^{-1}X^\top y=\hat w_{\text{OLS}}.
+  \]
+\end{itemize}
+
+\section*{K. Activation/Loss: What To Use When}
+\begin{itemize}
+  \item \textbf{ReLU (hidden)}: best default for deeper nets; faster training, sparse features, and stable gradients.
+  \item \textbf{ReLU caveat}: can create dead neurons under large negative updates; monitor many-zero activations.
+  \item \textbf{PReLU (hidden)}: use when dead-ReLU behavior appears; small negative slope keeps gradient flow alive.
+  \item \textbf{TANH (hidden)}: good when zero-centered activations help optimization; useful in smaller/shallow nets.
+  \item \textbf{SIGMOID (hidden)}: use sparingly; saturates for large \(|z|\), causing slow learning in deep MLPs.
+  \item \textbf{Binary single-label}: 1 output sigmoid + BCE; interpretable as \(p(y=1|x)\), threshold tunes precision/recall.
+  \item \textbf{Multiclass single-label}: \(C\) logits + softmax + CE; enforces competition between classes (\(\sum q_j=1\)).
+  \item \textbf{Multi-label}: \(C\) sigmoids + BCE; classes are independent (multiple labels can be true simultaneously).
+  \item \textbf{Regression}: linear output + MSE; keep output unbounded when target is continuous.
+  \item \textbf{Why CE over MSE for classification}: CE penalizes confident wrong predictions more strongly; better gradients.
+  \item \textbf{Imbalance handling}: class-weighted BCE/CE or resampling; otherwise model over-predicts majority class.
+  \item \textbf{GD vs SGD vs mini-batch}: GD stable but slow; SGD noisy but can escape sharp minima; mini-batch balances both.
+  \item \textbf{Learning-rate choice}: too high = divergence/oscillation, too low = very slow; decay schedules improve late training.
+  \item \textbf{When Bayesian LR is better}: small data, prior domain knowledge, or uncertainty-critical decisions.
+  \item \textbf{When OLS/point estimate is enough}: large data + quick baseline + uncertainty not required.
+  \item \textbf{Practical exam heuristic}: identify label type first (binary/multiclass/multi-label) then choose output+loss pair.
+\end{itemize}
+
+\section*{L. Bayesian Regression Add-Ons (From Notebook)}
+\begin{itemize}
+  \item \textbf{Bayes update identity}: \(p(w|D)\propto p(D|w)\,p(w)\); posterior = prior updated by evidence from data.
+  \item \textbf{Two equivalent prior forms}:
+  \[
+  w\sim\mathcal N(m_0,S_0)
+  \quad\Longleftrightarrow\quad
+  w\sim\mathcal N(0,\alpha^{-1}I)\;\text{(special case)}.
+  \]
+  \item \textbf{Precision view}: \(S_0^{-1}=\alpha I\), precision \(=1/\)variance; larger \(\alpha\Rightarrow\) tighter prior.
+  \item \textbf{Regularization link}: Gaussian prior with \(\alpha^{-1}I\) corresponds to L2/ridge-style shrinkage of weights.
+  \item \textbf{Data-size behavior}: as \(N\) increases, posterior covariance \(S_N\) shrinks and posterior mass concentrates.
+  \item \textbf{Sanity check from notebook}: at \(N=0\), posterior equals prior (\(m_N=m_0,\;S_N=S_0\)).
+  \item \textbf{Noise effect}: larger \(\sigma^2\) weakens data term \((1/\sigma^2)X^\top X\), so posterior stays closer to prior.
+  \item \textbf{Predictive as marginalization}:
+  \[
+  p(y_*|x_*,D)=\int p(y_*|x_*,w)\,p(w|D)\,dw.
+  \]
+  \item \textbf{Uncertainty decomposition}:
+  \[
+  \sigma_*^2=\underbrace{\sigma^2}_{\text{aleatoric noise}}
+  +\underbrace{x_*^\top S_Nx_*}_{\text{parameter uncertainty}}.
+  \]
+  \item \textbf{Far from training region}: \(x_*^\top S_Nx_*\) typically rises, so prediction intervals widen.
+  \item \textbf{BLR vs OLS qualitative}: OLS gives one best line; BLR gives line + confidence over weights + predictive bands.
+  \item \textbf{Exam workflow for BLR numericals}: build \(X\)\(\rightarrow\)\(X^\top X,X^\top y\)\(\rightarrow\)\(S_N,m_N\)\(\rightarrow\)\(\mu_*,\sigma_*^2\).
+\end{itemize}
+
+\section*{M. Last-Minute Memory Grid}
+\[
+\boxed{\delta^L=q-y\;(\text{SOFTMAX+CE})}
+\]
+\[
+\boxed{\nabla_{W^\ell}e=\delta^\ell(a^{\ell-1})^\top}\quad
+\boxed{w^+=w-\eta g}
+\]
+\[
+\boxed{S_N=\left(S_0^{-1}+\frac1{\sigma^2}X^\top X\right)^{-1}}
+\]
+\[
+\boxed{m_N=S_N\left(S_0^{-1}m_0+\frac1{\sigma^2}X^\top y\right)}
+\]
+\[
+\boxed{\mu_*=x_*^\top m_N,\;\sigma_*^2=\sigma^2+x_*^\top S_Nx_*}
+\]
+
+\end{multicols}
+\end{document}

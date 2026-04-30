@@ -1,0 +1,341 @@
+\documentclass[10pt,fleqn]{article}
+\usepackage[a4paper,margin=0.09in]{geometry}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+\setlength{\columnsep}{0.08in}
+\setlength{\columnseprule}{0.1pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.05ex}
+\setlength{\abovedisplayskip}{1pt}
+\setlength{\belowdisplayskip}{1pt}
+\setlength{\abovedisplayshortskip}{0pt}
+\setlength{\belowdisplayshortskip}{0pt}
+\setlength{\premulticols}{0pt}
+\setlength{\postmulticols}{0pt}
+\setlength{\multicolsep}{1pt}
+\setlength{\mathindent}{0pt}
+\setlength{\jot}{1pt}
+\hfuzz=200pt
+\hbadness=100000
+\vbadness=100000
+\pagestyle{empty}
+\allowdisplaybreaks
+\setlist[itemize]{leftmargin=*,itemsep=0.05ex,topsep=0.05ex,parsep=0pt,partopsep=0pt}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\shead}[1]{\vspace{0.1ex}\textbf{\scriptsize #1}\par}
+\newcommand{\topic}[1]{\textbf{#1}\ }
+\newcommand{\qa}[2]{\textbf{#1} #2\par}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\tr}{tr}
+
+\begin{document}
+\fontsize{6.3}{6.65}\selectfont
+\sloppy
+\raggedright
+
+\begin{multicols*}{2}
+\raggedcolumns
+
+\shead{IE206 Quiz 4}
+Topic: \textbf{Principal Component Analysis (PCA)} + \textbf{Clustering}. Sources used: PCA notebook, clustering notebook, and the practice PDF. Use rows-as-samples convention \(X\in\R^{n\times d}\) unless a question explicitly uses the transpose convention.
+
+\shead{PCA Essentials}
+\topic{Setup} Samples \(x_1,\dots,x_n\in\R^d\). Mean \(\mu=\frac1n\sum_{i=1}^n x_i\). Centered data \(X_c=X-\mathbf 1\mu^\top\), i.e. rows are \(x_i-\mu\). Covariance matrix:
+\[
+S=\frac1n X_c^\top X_c \in \R^{d\times d}.
+\]
+If notes use \(X\in\R^{d\times n}\) with features as rows, then covariance is \(\frac1n XX^\top\): same idea, just transposed convention.
+
+\topic{Eigen decomposition} \(S\) is symmetric (\(S=S^\top\)) and positive semidefinite (PSD): for any \(u\), \(u^\top Su = \frac1n\|X_cu\|^2\ge 0\). By the spectral theorem for real symmetric matrices:
+\[
+S=V\Lambda V^\top,\quad \Lambda=\operatorname{diag}(\lambda_1,\dots,\lambda_d),\quad \lambda_1\ge\lambda_2\ge\cdots\ge 0.
+\]
+Columns \(v_1,\dots,v_d\) of \(V\) are orthonormal eigenvectors (\(V^\top V=I\), \(VV^\top=I\)). \(\lambda_j=\) variance of scores along PC \(j\). \(\lambda_j\ge 0\) because \(S\) is PSD. \(\lambda_j=0\) iff data lie in a subspace perpendicular to \(v_j\) (redundant/collinear features).
+
+\topic{Projection / scores} Score of sample \(x_i\) on PC \(v_j\):
+\[
+z_{ij}=(x_i-\mu)^\top v_j.
+\]
+All reduced coordinates onto first \(r\) PCs:
+\[
+Z_r=X_cV_r,\qquad V_r=[v_1\ \cdots\ v_r].
+\]
+Reconstruction from \(r\) PCs:
+\[
+\widehat X = Z_rV_r^\top+\mathbf 1\mu^\top.
+\]
+
+\topic{Explained variance} Total variance \(=\tr(S)=\sum_j\lambda_j\). Explained variance ratio (EVR):
+\[
+\mathrm{EVR}_j=\frac{\lambda_j}{\sum_{m=1}^d\lambda_m},\qquad
+\mathrm{CumEVR}(r)=\frac{\sum_{j=1}^r\lambda_j}{\sum_{m=1}^d\lambda_m}.
+\]
+Retain the smallest \(r\) with \(\mathrm{CumEVR}(r)\ge \alpha\) for \(\alpha=0.9,0.95,\dots\).
+
+\topic{Optimization view} Two equivalent formulations:
+\textbf{(A) Max variance:} \(v_1=\arg\max_{\|u\|=1}u^\top Su\). By Rayleigh quotient theorem: \(\max_{\|u\|=1} u^\top Su = \lambda_1\), attained at \(u=v_1\). For \(v_k\): same maximization with constraints \(u\perp v_1,\dots,u\perp v_{k-1}\) (Courant-Fischer).
+\textbf{(B) Min reconstruction error:} \(V_r=\arg\min_{\text{rank-}r} \|X_c - X_c V V^\top\|_F^2\). By Eckart-Young theorem, the minimizer is the top-\(r\) eigenvectors of \(S\). Both (A) and (B) give \emph{the same} \(V_r\). Minimizing reconstruction error \(\Leftrightarrow\) maximizing variance retained.
+
+\topic{Whitening (bonus)} Divide scores by \(\sqrt{\lambda_j}\): \(\tilde z_{ij}=z_{ij}/\sqrt{\lambda_j}\). Whitened data has identity covariance. Useful for algorithms that assume unit variance (e.g.\ spherical K-means after PCA).
+
+\topic{Facts} Always center before PCA. If feature scales/units differ, standardize first. PC signs are arbitrary: \(v\) and \(-v\) are the same PC. PCs are orthogonal. PCA does \emph{not} create new information. If \(S\) is already diagonal \(\Rightarrow\) features are already uncorrelated \(\Rightarrow\) original axes are PCs. \textbf{PCA is unsupervised}: it ignores class labels. Correlation between two PCs is always 0 (by P6). \textbf{Dimensionality}: if \(n < d\), at most \(n-1\) nonzero PCs exist regardless of \(d\).
+
+\topic{How to solve numericals} \(1.\) Compute \(\mu\). \(2.\) Center data. \(3.\) Form \(S\). \(4.\) Find eigenvalues/eigenvectors. \(5.\) Sort by decreasing eigenvalue. \(6.\) Project using \(X_cV_r\). \(7.\) Use EVR / CumEVR for dimension choice.
+
+\shead{Clustering Essentials}
+\topic{Hard vs Soft clustering} \textbf{Hard}: each point belongs to exactly one cluster (K-means). \textbf{Soft}: each point has a probability of belonging to each cluster (Gaussian Mixture Models/EM). K-means is the hard-assignment limiting case of EM on equal-weight isotropic Gaussians. In hard clustering, the total number of distinct partitions of \(n\) points into \(K\) groups is the Stirling number \(S(n,K)\) — finite, so K-means must converge.
+
+\topic{K-means objective} Standard objective is within-cluster sum of squares (WCSS, SSD):
+\[
+J=\sum_{j=1}^{K}\sum_{x\in C_j}\|x-\mu_j\|^2,\qquad
+\mu_j=\frac1{|C_j|}\sum_{x\in C_j}x.
+\]
+Lower \(J\) means tighter clusters, but \(J\) always decreases as \(K\) increases, so do \emph{not} choose \(K\) only by minimizing WCSS.
+
+\topic{Algorithm} Start with initial centroids \(\mu_1,\dots,\mu_K\). Repeat:
+\[
+\text{Assign }x_i\to \arg\min_j \|x_i-\mu_j\|,\qquad
+\text{Update }\mu_j\gets \frac1{|C_j|}\sum_{x_i\in C_j}x_i.
+\]
+Stop when assignments or centroids stop changing. K-means converges to a \emph{local} optimum; initialization matters.
+
+\topic{K-means++ initialization} Choose \(\mu_1\) uniformly at random. For each subsequent centroid: compute \(d_i^2=\min_{j<k}\|x_i-\mu_j\|^2\) (squared distance to nearest chosen centroid), then sample \(\mu_k\propto d_i^2\). This spreads initial centroids. Guarantee: expected cost is \(O(\log K)\) times optimal. Sklearn uses this by default (\texttt{init=`k-means++'}).
+
+\topic{Convergence guarantee} At each iteration \(J\) is non-increasing (P3). \(J\ge 0\). Total distinct hard partitions = \(S(n,K)\) (finite Stirling number). Since \(J\) decreases or stays same and there are finitely many states, K-means terminates. Typical convergence: \(\ll 100\) iterations in practice.
+
+\topic{Elbow method} Plot \(K\) vs WCSS. Choose \(K\) at the elbow/knee where further increase in \(K\) gives only marginal improvement.
+
+\topic{Silhouette} For point \(x_i\) in cluster \(C_j\),
+\[
+a_i=\text{avg distance from }x_i\text{ to other points in }C_j,
+\]
+\[
+b_i=\min_{m\neq j}\{\text{avg distance from }x_i\text{ to points in }C_m\},
+\]
+\[
+s_i=\frac{b_i-a_i}{\max(a_i,b_i)}\in[-1,1].
+\]
+Overall silhouette \(=\frac1n\sum_i s_i\). Interpretation: near \(1\)=well clustered, near \(0\)=boundary/overlap, near \(-1\)=likely misclustered. Common singleton convention: \(s_i=0\).
+
+\topic{Calinski-Harabasz index} Let \(\bar x=\frac1n\sum_i x_i\), \(n_j=|C_j|\),
+\[
+W_K=\sum_{j=1}^K\sum_{x\in C_j}\|x-\mu_j\|^2,\qquad
+B_K=\sum_{j=1}^K n_j\|\mu_j-\bar x\|^2.
+\]
+Then
+\[
+\mathrm{CH}(K)=\frac{B_K/(K-1)}{W_K/(n-K)}.
+\]
+Larger CH is better.
+
+\topic{Davies-Bouldin (DB) index} For each cluster \(j\), let \(s_j=\frac1{|C_j|}\sum_{x\in C_j}\|x-\mu_j\|\) (avg intra-cluster dist). Let \(d_{jk}=\|\mu_j-\mu_k\|\) (centroid separation). Define:
+\[
+R_{jk}=\frac{s_j+s_k}{d_{jk}},\qquad D_j=\max_{k\neq j}R_{jk},\qquad \mathrm{DB}=\frac1K\sum_{j=1}^K D_j.
+\]
+\textbf{Lower DB is better} (tight clusters, well separated). Choose \(K\) minimizing DB. Unlike CH, DB is normalized per-cluster so it is less sensitive to outlier clusters.
+
+\topic{Inertia} sklearn calls WCSS ``inertia'': \texttt{kmeans.inertia\_}. Same formula \(\sum_{j,x}\|x-\mu_j\|^2\).
+
+\topic{Practical cautions} K-means assumes roughly spherical equal-size clusters, is sensitive to feature scaling and outliers, and can give different answers for different initializations. Standardize features when units differ. Use K-means++ to reduce bad-initialization risk. K-medoids (uses actual data points as centers) is more robust to outliers than K-means.
+
+\shead{High-Yield Proofs}
+\qa{P1. Why is PC1 the top eigenvector?}{For unit \(u\), projected variance is \(u^\top Su\). By the Rayleigh quotient, the maximum over \(\|u\|=1\) equals the largest eigenvalue \(\lambda_1\), attained at its eigenvector \(v_1\).}
+\qa{P2. Why is the centroid the mean?}{Fix cluster \(C\). Minimize \(f(\mu)=\sum_{x\in C}\|x-\mu\|^2\). Differentiate: \(\nabla_\mu f=2|C|\mu-2\sum_{x\in C}x\). Set to \(0\): \(\mu=\frac1{|C|}\sum_{x\in C}x\).}
+\qa{P3. Why does each k-means iteration not increase \(J\)?}{Assignment step minimizes distance to fixed centroids, so \(J\) cannot increase. Update step replaces each centroid by the cluster mean, which minimizes that cluster's squared error, so \(J\) cannot increase again.}
+\qa{P4. Can WCSS increase when \(K\) increases?}{No. The optimization with \(K+1\) centroids has a larger feasible set than with \(K\). Duplicate one of the \(K\) centroids to get a feasible \(K+1\) solution with the same objective value, so \(\mathrm{WCSS}_{K+1}\le \mathrm{WCSS}_{K}\).}
+
+\shead{Direct Use}
+\qa{If asked ``project onto PC''}{First center, then use \(z=(x-\mu)^\top v\). For \(r\) PCs use \(z=(x-\mu)^\top V_r\).}
+\qa{If asked ``variance captured by a PC''}{Use the corresponding eigenvalue.}
+\qa{If asked ``how many PCs for \(90\%\) or \(95\%\) variance''}{Use smallest \(r\) with \(\sum_{j=1}^r\lambda_j/\sum_m\lambda_m\ge 0.9\) or \(0.95\).}
+\qa{If asked ``best \(K\)''}{Use elbow + maximum silhouette/CH; explain that WCSS alone always decreases with \(K\).}
+\qa{If asked ``why initialization matters''}{K-means is non-convex and converges only to a local optimum. Different starts can lead to different final partitions.}
+\qa{If asked ``PCA or K-means before scaling?''}{If feature units differ significantly, standardize first. Both methods are distance/variance based and scale sensitive.}
+
+\shead{Solved Practice: PCA Numerical}
+\topic{Given} \(x_1=(3,5),\ x_2=(1,1),\ x_3=(5,3),\ x_4=(3,3)\). Mean:
+\[
+\mu=\frac14[(3,5)+(1,1)+(5,3)+(3,3)]=(3,3).
+\]
+Centered rows:
+\[
+\widetilde X=
+\begin{bmatrix}
+0&2\\
+-2&-2\\
+2&0\\
+0&0
+\end{bmatrix}.
+\]
+Covariance:
+\[
+S=\frac14\widetilde X^\top\widetilde X=
+\begin{bmatrix}
+2&1\\
+1&2
+\end{bmatrix}.
+\]
+Characteristic polynomial: \((2-\lambda)^2-1=0\Rightarrow \lambda_1=3,\ \lambda_2=1\).
+\[
+v_1=\frac1{\sqrt2}\begin{bmatrix}1\\1\end{bmatrix},\qquad
+v_2=\frac1{\sqrt2}\begin{bmatrix}-1\\1\end{bmatrix}
+\]
+(signs may flip). Projections on \(v_1\):
+\[
+\widetilde Xv_1=
+\begin{bmatrix}
+\sqrt2\\
+-2\sqrt2\\
+\sqrt2\\
+0
+\end{bmatrix}.
+\]
+Variance explained by PC1:
+\[
+\frac{\lambda_1}{\lambda_1+\lambda_2}=\frac34=75\%.
+\]
+To retain at least \(90\%\): one PC is not enough; need \(\boxed{2\text{ PCs}}\).
+
+\shead{Solved Practice: PCA Concepts}
+\qa{What does projection onto a PC mean?}{Coordinate of centered data along that eigenvector direction. Geometrically: length of the shadow of \((x-\mu)\) cast along \(v_j\). Sign depends on which side of the origin.}
+\qa{What does the first PC maximize?}{Projected variance \(u^\top Su\) among all unit directions \(\|u\|=1\). Equivalently, it minimizes reconstruction error when keeping only 1 direction (Eckart-Young). Both formulations yield the same \(v_1\).}
+\qa{If \(\lambda_1=8,\lambda_2=2\)}{Total variance \(=10\). EVR\(=(0.8,0.2)\). CumEVR\(=(0.8,1.0)\). For \(75\%\): CumEVR\((1)=0.8\ge 0.75\) so \(r=\boxed{1}\). For \(95\%\): CumEVR\((1)=0.8<0.95\), CumEVR\((2)=1.0\ge 0.95\) so \(r=\boxed{2}\). Note: variance of scores along PC1 is \(8\), along PC2 is \(2\).}
+\qa{T/F with reasons}{(a) Centering required: \(\mathbf{T}\) — without it, PC1 aligns with mean not max-variance direction. (b) PCs orthogonal: \(\mathbf{T}\) — eigenvectors of real symmetric matrix are orthogonal. (c) PCA can increase dimensionality: \(\mathbf{F}\) — output has at most \(\min(n-1,d)\) nonzero-eigenvalue directions. (d) Larger eigenvalue = more variance: \(\mathbf{T}\) — variance of scores on PC\(j\) is exactly \(\lambda_j\). (e) PCA needs class labels: \(\mathbf{F}\) — purely unsupervised, uses only \(X\).}
+
+\shead{Solved Practice: Choosing \(K\)}
+\topic{Given table} \(K=1,2,3,4,5,6\); WCSS: \(4800,2200,1100,980,950,930\); silhouette: \(-,0.52,0.61,0.58,0.50,0.44\).
+
+\qa{WCSS drop analysis}{Drops \(\Delta W\): \(4800\to2200=2600\), \(2200\to1100=1100\), \(1100\to980=120\), \(980\to950=30\), \(950\to930=20\). Relative drops: \(54\%,50\%,11\%,3\%,2\%\). Huge fall at \(K=2\to3\), then near-flat. Elbow: \(\boxed{K=3}\). Rule: look for the \(K\) after which \(\Delta W\) falls by \(>\!10\times\).}
+\qa{Silhouette analysis}{Values: \(0.52,0.61,0.58,0.50,0.44\). Maximum \(=0.61\) at \(K=3\). Silhouette \(>0.5\) at \(K=2,3\) indicates reasonable structure; drops off at \(K=4,5,6\) suggesting over-splitting. Choice: \(\boxed{K=3}\).}
+\qa{When criteria disagree}{If elbow says \(K=3\) but silhouette says \(K=2\): prefer silhouette for tighter clusters. If CH says different: compute DB and see which two of three agree.}
+\qa{Can WCSS increase with \(K\)?}{No; WCSS\(_{K+1}\le\)WCSS\(_K\) by P4 (feasible set argument). Any decrease in WCSS is non-negative by construction.}
+
+\shead{Solved Practice: 1D K-Means}
+\topic{Data} \(\{1,2,3,10,11,12\}\), \(K=2\).
+
+\qa{Start \(\mu_1=1,\ \mu_2=2\)}{
+\textit{Iter 1 — Assign:} Midpoint \((\mu_1+\mu_2)/2=1.5\). Points \(<1.5\): \(C_1=\{1\}\). Points \(\ge1.5\): \(C_2=\{2,3,10,11,12\}\).
+\textit{Iter 1 — Update:} \(\mu_1=1\), \(\mu_2=(2+3+10+11+12)/5=7.6\).
+\textit{Iter 2 — Assign:} Midpoint \((1+7.6)/2=4.3\). \(C_1=\{1,2,3\}\), \(C_2=\{10,11,12\}\).
+\textit{Iter 2 — Update:} \(\mu_1=2\), \(\mu_2=11\). Midpoint now \(6.5\); assignments unchanged. \textbf{Converged.} \(\boxed{C_1=\{1,2,3\},\ C_2=\{10,11,12\}}\).}
+\qa{Start \(\mu_1=1,\ \mu_2=12\)}{Midpoint \(6.5\). Iter 1: \(C_1=\{1,2,3\}\), \(C_2=\{10,11,12\}\). Update: \(\mu_1=2,\mu_2=11\). Midpoint \(6.5\), same assignment. \textbf{Converged in 1 iteration.} Same result, fewer steps.}
+\qa{Final WCSS}{\(C_1=\{1,2,3\},\mu_1=2\): \((1{-}2)^2+(2{-}2)^2+(3{-}2)^2=1+0+1=2\). \(C_2=\{10,11,12\},\mu_2=11\): \(1+0+1=2\). \(\boxed{J=4}\).}
+\qa{Bad init example}{Start \(\mu_1=1,\mu_2=3\): \(C_1=\{1,2\},C_2=\{3,10,11,12\}\). Update: \(\mu_1=1.5,\mu_2=9\). Midpoint \(5.25\): \(C_1=\{1,2,3\},C_2=\{10,11,12\}\). Same final state — shows that even bad inits converge to global optimum here because the gap is very large. In tighter data, bad inits cause different local optima.}
+
+\shead{More Proofs}
+\qa{P5. Reconstruction error equals dropped eigenvalues.}{Best rank-\(r\) approx of \(X_c\) (Eckart-Young) gives \(\|\widehat X_c - X_c\|_F^2 = n\sum_{j=r+1}^d\lambda_j\). Minimizing reconstruction error \(\Leftrightarrow\) retaining largest eigenvalues.}
+\qa{P6. PCA decorrelates.}{Cov of projected scores: \(\frac1n Z_r^\top Z_r = \frac1n (X_cV_r)^\top(X_cV_r) = V_r^\top SV_r = \Lambda_r\) (diagonal). So PCs are uncorrelated.}
+\qa{P7. SVD link.}{\(X_c = U\Sigma V^\top\). Then \(S=\frac1n X_c^\top X_c=\frac1n V\Sigma^2V^\top\), so eigenvectors of \(S\) = right singular vectors of \(X_c\), and \(\lambda_j=\sigma_j^2/n\).}
+\qa{P8. TSS = WCSS + BCSS.}{For cluster \(C_j\) with mean \(\mu_j\) and global mean \(\bar x\): expand \(\|x-\bar x\|^2 = \|x-\mu_j\|^2 + 2(x-\mu_j)^\top(\mu_j-\bar x)+\|\mu_j-\bar x\|^2\). Sum over all \(x\); cross term vanishes. Hence \(\sum_i\|x_i-\bar x\|^2=W_K+B_K\).}
+\qa{P9. Silhouette in \([-1,1\)].}{\(s_i=(b_i-a_i)/\max(a_i,b_i)\). If \(a_i < b_i\): \(s_i=(b_i-a_i)/b_i\in(0,1]\); if \(a_i > b_i\): \(s_i=(b_i-a_i)/a_i\in[-1,0)\). Worst case \(s_i=-1\) when \(b_i=0\), best \(s_i=1\) when \(a_i=0\).}
+
+\shead{Potential Quiz Questions}
+\qa{Q1. Centering.}{If you skip centering, what goes wrong with PCA? \textit{The first PC aligns with the mean direction, not max variance direction. PCs are biased toward the origin.}}
+\qa{Q2. Sign flip.}{A student says PC directions changed sign after rerunning PCA. Is this a problem? \textit{No. Eigenvector signs are arbitrary; projected scores just flip sign but the subspace is the same.}}
+\qa{Q3. Units sensitivity.}{Features: height in cm and weight in kg. Should you standardize before PCA / K-means? \textit{Yes. Different units create artificial scale dominance. Standardize to zero mean, unit variance.}}
+\qa{Q4. EVR quick compute.}{\(\lambda=(6,2,1,1)\). How many PCs for \(\ge 90\%\) variance? \textit{Total=10. CumEVR: \(0.6,0.8,0.9,1.0\). Need \(r=3\).}}
+\qa{Q5. Silhouette of singleton.}{Cluster with 1 point — define \(a_i\). \textit{Undefined (no neighbors); convention is \(s_i=0\).}}
+\qa{Q6. K-means iteration.}{Data \(D=\{1,4,7,10\}\), \(K=2\), init \(\mu_1=1,\mu_2=4\). \textit{Assign (midpoint \(=2.5\)):} \(1<2.5\to C_1\); \(4,7,10>2.5\to C_2\). So \(C_1=\{1\}, C_2=\{4,7,10\}\). \textit{Update:} \(\mu_1=1,\ \mu_2=(4+7+10)/3=7\). After iter 2 (midpoint \(4\)): \(C_1=\{1\},C_2=\{4,7,10\}\). No change. \textbf{Converged.} Final centroids: \(\boxed{\mu_1=1,\mu_2=7}\). WCSS\(=0+(9+0+9)=18\).}
+\qa{Q7. CH formula components.}{What does \(B_K\) measure in CH index? \textit{Between-cluster scatter: weighted sum of squared distances of cluster centroids from the global mean. Larger = better separated clusters.}}
+\qa{Q8. T/F rapid fire.}{(a) Adding a duplicate feature to data does not change PCA directions: \textbf{F} (changes \(S\)). (b) K-means always converges: \textbf{T} (finite partitions, \(J\) non-increasing). (c) K-means converges to global optimum: \textbf{F}. (d) Silhouette requires knowing true labels: \textbf{F} (unsupervised). (e) Cov matrix of PCA scores is diagonal: \textbf{T} (P6).}
+\qa{Q9. Reconstruction.}{Given \(r=1\), \(v_1=\tfrac1{\sqrt2}(1,1)^\top\), \(x=(4,2)\), \(\mu=(2,2)\). \textit{Step 1 — center:} \(x-\mu=(2,0)\). \textit{Step 2 — score:} \(z=(2,0)\cdot\tfrac1{\sqrt2}(1,1)=\tfrac{2}{\sqrt2}=\sqrt2\). \textit{Step 3 — reconstruct:} \(\hat x = z\cdot v_1+\mu = \sqrt2\cdot\tfrac1{\sqrt2}(1,1)+(2,2)=(1,1)+(2,2)=\boxed{(3,3)}\). \textit{Error:} \(\|x-\hat x\|^2=\|(1,-1)\|^2=2=\lambda_2\) (dropped eigenvalue, consistent with P5).}
+\qa{Q10. Covariance shape.}{\(n=100\) samples in \(\R^{50}\). Rank of \(S\)? \textit{At most \(\min(n-1,d)=\min(99,50)=50\). Could be less if data lie in a lower-dim subspace.}}
+\qa{Q11. Silhouette numerical.}{Points in 1D: \(C_1=\{1,2,3\},\ C_2=\{8,9\}\). Compute \(s\) for \(x=3\). \textit{\(a=\text{avg dist to }C_1\setminus\{3\}: \frac{|3-1|+|3-2|}2=1.5\). \(b=\text{avg dist to }C_2:\frac{|3-8|+|3-9|}2=5.5\). \(s=(5.5-1.5)/5.5\approx0.73\).}}
+\qa{Q12. K choice trade-offs.}{Name two advantages of K-means over K=1 (all in one cluster). \textit{(i) WCSS strictly decreases, capturing internal structure. (ii) Silhouette becomes defined and improves if clusters are well-separated.}}
+
+\shead{Solved Practice: CH Index Numerical}
+\topic{Data} \(n=6\) points in 1-D: \(C_1=\{1,2,3\}\), \(C_2=\{7,8,9\}\), \(K=2\). Global mean \(\bar x=(1+2+3+7+8+9)/6=5\).
+\[
+W_K=\underbrace{(0+1+1)}_{\text{var }C_1}+\underbrace{(1+0+1)}_{\text{var }C_2}=4,\qquad
+B_K=3(2-5)^2+3(8-5)^2=27+27=54.
+\]
+\[
+\mathrm{CH}(2)=\frac{54/(2-1)}{4/(6-2)}=\frac{54}{1}=54.\quad (\text{denominator }4/4=1.)
+\]
+Repeat for \(K=3\): \(C_1=\{1,2\},C_2=\{3,7\},C_3=\{8,9\}\). \(\mu_1=1.5,\mu_2=5,\mu_3=8.5\).
+\[
+W_3=(0.25+0.25)+(4+4)+(0.25+0.25)=9,\quad B_3=2(1.5-5)^2+2(5-5)^2+2(8.5-5)^2=49.
+\]
+\(\mathrm{CH}(3)=\frac{49/2}{9/3}=\frac{24.5}{3}\approx 8.2\). So \(K=2\) wins: \(\boxed{\mathrm{CH}(2)=54\gg 8.2}\). Natural gap \(\Rightarrow\) \(K=2\) is the right choice.
+
+\shead{Standardization: When to Use Correlation Matrix}
+\topic{Covariance PCA (default)} Features in \emph{same} units and similar scales: use \(S=\frac1n X_c^\top X_c\).
+\topic{Correlation PCA} Features in \emph{different} units (e.g.\ height cm, income \$): \emph{standardize} each feature to mean 0, std 1 first, then PCA. Equivalently, use the correlation matrix \(R_{ij}=S_{ij}/\sqrt{S_{ii}S_{jj}}\). Eigenvalues of \(R\) sum to \(d\); eigenvalue \(>1\) means the PC explains more variance than a single original feature (Kaiser rule).
+
+\shead{Degenerate \& Edge Cases}
+\qa{Equal eigenvalues \(\lambda_i=\lambda_j\).}{Any unit vector in the span \(\{v_i,v_j\}\) is equally valid as a PC. PCA is under-determined in that subspace; different software may return different (but equally correct) vectors.}
+\qa{Empty cluster in K-means.}{An assignment step can leave a centroid with no points. Common fix: reinitialize that centroid to a random point or the point farthest from existing centroids.}
+\qa{Rank of \(S\) when \(n<d\).}{At most \(n-1\) nonzero eigenvalues: at most \(n-1\) meaningful PCs no matter how large \(d\) is.}
+\qa{K=n in K-means.}{Each point is its own cluster: \(W_K=0\). Perfect fit, zero information about structure.}
+\qa{Silhouette undefined for K=1.}{No ``nearest other cluster'' exists. Score is undefined; skip or set to 0.}
+
+\shead{Common Exam Traps}
+\qa{Trap 1: Forgetting to center.}{PCA on uncentered data gives first PC pointing at the mean, not the direction of maximum spread. Always subtract \(\mu\).}
+\qa{Trap 2: Using raw \(S\) formula with \(n-1\) vs \(n\).}{Numpy's \texttt{np.cov} defaults to \(n-1\) (Bessel correction). Course notes use \(1/n\). Eigenvalues scale by \(n/(n-1)\) but eigenvectors are identical. Check which convention a problem uses.}
+\qa{Trap 3: Confusing ``variance explained'' with ``eigenvalue''.}{EVR\(_j = \lambda_j/\sum\lambda\), not \(\lambda_j\) itself. If asked ``fraction explained'' give EVR; if asked ``variance of scores'' give \(\lambda_j\).}
+\qa{Trap 4: Picking \(K\) by minimum WCSS.}{WCSS always decreases with \(K\) by P4. Picking minimum gives \(K=n\). Always use elbow + silhouette / CH.}
+\qa{Trap 5: Silhouette sign.}{\(s_i > 0\) when \(b_i > a_i\) (well-placed). \(s_i < 0\) when \(a_i > b_i\) (closer to another cluster). Don't flip the sign.}
+\qa{Trap 6: K-means convergence \(\ne\) global optimum.}{K-means converges (finite partitions, J non-increasing) but to a local minimum. Different initializations can give different local optima.}
+\qa{Trap 7: Reconstruction.}{Reconstruct as \(\hat x = V_r z + \mu\) where \(z = V_r^\top(x-\mu)\). Students often forget to add back \(\mu\).}
+\qa{Trap 8: PC count when asking for \(\ge\alpha\).}{Use \emph{smallest} \(r\) s.t.\ CumEVR \(\ge\alpha\). Do not choose the \(r\) whose individual EVR is closest to \(\alpha\).}
+\qa{Trap 9: CH with K=1.}{CH is undefined at \(K=1\) because denominator \(K-1=0\). Only evaluate CH for \(K\ge 2\).}
+\qa{Trap 10: Outlier effect.}{A single far outlier can drag a centroid away from the real cluster and inflate WCSS. K-means has no outlier robustness; silhouette of the outlier will be near \(-1\) or \(0\).}
+
+\shead{Last-Minute Connections}
+\qa{PCA\(\to\)K-means}{PCA first (reduce dim), then K-means. If 2 PCs \(>90\%\) variance: cluster in 2-D, visualize.}
+\qa{WCSS\(=n\,\)Var}{Single cluster WCSS\(=n\,\mathrm{Var}\). Silhouette avg \(<0.25\Rightarrow\) spurious clustering.}
+\qa{K-means\(=\)hard EM}{Hard-assignment EM on isotropic Gaussians. Soft version = GMM.}
+
+\shead{Comparison: K-Selection Methods}
+\begin{itemize}
+\item \textbf{Elbow (WCSS):} Plot WCSS vs \(K\); pick bend. \textit{Pros:} simple, intuitive. \textit{Cons:} subjective; no absolute threshold; always decreasing so hard to pinpoint.
+\item \textbf{Silhouette:} Pick \(K\) maximizing avg \(s_i\in[-1,1]\). \textit{Pros:} directly measures cluster quality; interpretable scale. \textit{Cons:} \(O(n^2)\) pairwise distances; undefined at \(K=1\).
+\item \textbf{Calinski-Harabasz (CH):} Pick \(K\) maximizing \(B_K(K{-}1)^{-1}/W_K(n{-}K)^{-1}\). \textit{Pros:} fast \(O(nd)\); penalizes excess clusters via d.o.f. \textit{Cons:} favors convex, similar-size clusters; undefined at \(K=1\).
+\item \textbf{Davies-Bouldin (DB):} Pick \(K\) minimizing avg of worst-case \((s_j+s_k)/d_{jk}\). \textit{Pros:} per-cluster normalized; less sensitive to outlier clusters than CH. \textit{Cons:} lower is better (opposite to others; easy to confuse).
+\end{itemize}
+\textbf{Rule of thumb:} use elbow to narrow range, silhouette or CH to confirm. If all three agree, high confidence.
+
+\shead{Comparison: Clustering Metrics at a Glance}
+\qa{Silhouette vs CH vs DB}{\(s_i\): uses pairwise distances, \([-1,1]\), higher better. CH: ratio of between/within scatter with d.o.f.\ correction, higher better. DB: ratio of within-cluster avg dist to centroid separation, lower better. All are \textbf{internal} (no ground truth). All sensitive to scale — standardize features first.}
+\qa{Internal vs External}{Internal: use data only (silhouette, CH, DB, WCSS). External: compare to ground-truth labels (accuracy, NMI, ARI). Quiz likely tests internal.}
+
+\shead{Comparison: PCA Formulations}
+\qa{Max variance vs Min error}{Both solved by top-\(r\) eigenvectors of \(S\). Max variance: \(\arg\max_{V_r^\top V_r=I}\tr(V_r^\top SV_r)\). Min error: \(\arg\min\|X_c-X_cV_rV_r^\top\|_F^2\). They are mathematically equivalent — same \(V_r\) solves both.}
+\qa{Cov PCA vs Corr PCA}{Cov: \(S=\frac1n X_c^\top X_c\). Corr: standardize each feature (divide by std), then form \(S\) = correlation matrix \(R\), eigenvalues sum to \(d\). Use corr PCA when features have different units. Use cov PCA when all in same units and scale matters.}
+\qa{PCA vs no PCA}{Use PCA when: \(d\) large relative to \(n\) (curse of dimensionality), features highly correlated (redundancy), visualization needed (project to 2-3 PCs). Skip PCA when: features already interpretable and independent, sample size much larger than \(d\).}
+
+\shead{Solved: 2D K-means — Bad Init \(\to\) Worse Optimum}
+\topic{Data} \(A=(0,0),\ B=(2,0),\ C=(1,2)\), \(K=2\).
+\qa{Init 1: \(\mu_1=(0,0),\ \mu_2=(2,0)\)}{Tie at \(C\): assign to \(C_1\). \(C_1=\{A,C\},C_2=\{B\}\). Update: \(\mu_1=(0.5,1),\mu_2=(2,0)\). Stable. WCSS: \(C_1\) mean \((0.5,1)\): \(1.25+1.25=2.5\); \(C_2=0\). \(\boxed{J=2.5}\).}
+\qa{Init 2: \(\mu_1=(0,0),\ \mu_2=(1,2)\)}{\(A,B\to C_1\); \(C\to C_2\). Update: \(\mu_1=(1,0),\mu_2=(1,2)\). Stable. WCSS: \(C_1\) mean \((1,0)\): \(1+1=2\); \(C_2=0\). \(\boxed{J=2.0}\).}
+\qa{Lesson}{Init 1 \(\to J=2.5\), Init 2 \(\to J=2.0\). Both are local optima but Init 2 is better. Initialization directly affects solution quality — not just speed.}
+
+\shead{Solved: DB Index Numerical}
+\topic{K=2} Same data \(C_1=\{1,2,3\}\), \(C_2=\{7,8,9\}\), \(\mu_1=2,\mu_2=8\). \(s_1=s_2=\tfrac{1+0+1}{3}=\tfrac23\). \(d_{12}=6\). \(R_{12}=\tfrac{4/3}{6}=\tfrac29\approx0.22\). \(D_1=D_2=0.22\). \(\mathrm{DB}(2)=\boxed{0.22}\) (low = good).
+\topic{K=3} \(C_1=\{1,2\},C_2=\{3,7\},C_3=\{8,9\}\). \(s_1=s_3=0.5,s_2=2\). \(d_{12}=3.5,d_{23}=3.5\). \(R_{12}=\tfrac{2.5}{3.5}=0.71=R_{23}\). All \(D_j=0.71\). \(\mathrm{DB}(3)=0.71>0.22\). \(\boxed{K=2}\) wins on DB too — consistent with CH and silhouette.
+
+\shead{sklearn Reference}
+\qa{PCA}{\texttt{explained\_variance\_}\(=\lambda_j\) (uses \(n{-}1\)). \texttt{explained\_variance\_ratio\_}\(=\)EVR\(_j\). \texttt{components\_}: rows are \(v_j^\top\) (not columns!). \texttt{transform}\(=Z_r\). \texttt{inverse\_transform}\(=\hat X\).}
+\qa{K-means}{\texttt{inertia\_}\(=J\). \texttt{labels\_}\(=\)assignments. \texttt{cluster\_centers\_}\(=\mu_j\). \texttt{n\_init=10} (default) runs 10 random starts; keeps lowest-WCSS result.}
+
+\shead{More Practice Questions}
+\qa{Q13. \(S\) diagonal.}{\(S=\operatorname{diag}(5,3,1)\). PCs\(=e_1,e_2,e_3\). EVR\(=(5/9,3/9,1/9)\). For 90\%: CumEVR\((0.56,0.89,1)\Rightarrow r=3\).}
+\qa{Q14. Boundary silhouette.}{\(a_i=3.1,b_i=3.2\). \(s_i=(0.1)/3.2\approx0.03\). Near 0 = on cluster boundary.}
+\qa{Q15. CH numerics.}{\(K=2,n=20,B=100,W=180\). CH\(=\tfrac{100/1}{180/18}=10\).}
+
+\shead{PC Selection + Geometry}
+\qa{95\% rule}{Smallest \(r\) s.t.\ CumEVR\(\ge0.95\). Default.}
+\qa{Kaiser}{Correlation PCA only: keep \(\lambda_j>1\) (above avg = \(1\) since \(\sum\lambda_j=d\)).}
+\qa{Geometry}{PCA = center \(\to\) rotate to ellipse \(\to\) project onto long axes. \(\lambda_j\)=variance=squared semi-axis. \(\lambda\approx0\)=drop.}
+\qa{Extra T/F}{(a) \(-v_1\) valid: \textbf{T}. (b) Error\(=0\) at \(r=d\): \textbf{T}. (c) \(S\) diag\(\Rightarrow\)features are PCs: \textbf{T}. (d) Silhouette needs labels: \textbf{F}. (e) CH at \(K=1\): \textbf{F}. (f) Cov\((Z_r)=I\): \textbf{F} (\(=\Lambda_r\); \(I\) after whitening).}
+
+
+
+\end{multicols*}
+\end{document}
